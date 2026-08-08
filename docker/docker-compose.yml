@@ -1,0 +1,32 @@
+name: health-ai-env
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: health-ai-mongodb
+    restart: unless-stopped
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-healthai_secret_pass}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-health_ai_db}
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --username $$MONGO_INITDB_ROOT_USERNAME --password $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval \"db.adminCommand('ping')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - health-ai-network
+
+volumes:
+  mongodb_data:
+    name: health_ai_mongodb_data
+
+networks:
+  health-ai-network:
+    name: health_ai_network
+    driver: bridge
