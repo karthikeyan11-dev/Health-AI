@@ -41,8 +41,7 @@ mongodb://admin:healthai_secret_pass@localhost:27017/health_ai_db?authSource=adm
 - **Port**: `27017`
 - **Authentication**: `Username / Password`
 - **Username**: `admin`
-- **Password**: `healthai_secret_pass`
-- **Authentication Database**: `admin`
+- **Password**: Set `MONGO_ROOT_PASSWORD` in `docker/.env`
 - **Default Database**: `health_ai_db`
 
 ---
