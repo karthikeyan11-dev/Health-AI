@@ -91,3 +91,5 @@ temp/
 **/temp/
 *.tmp
 *.bak
+*.mp4
+*.db
