@@ -10,7 +10,7 @@ if (process.env.JEST_WORKER_ID !== undefined) {
 export const Config = cleanEnv(process.env, {
   NODE_ENV: str({ choices: ['development', 'production', 'test'], default: 'development' }),
   PORT: port({ default: 5000 }),
-  MONGODB_URI: str({ desc: 'MongoDB connection connection string' }),
+  MONGODB_URI: str({ desc: 'MongoDB connection string' }),
 
   SUPER_ADMIN_EMAIL: str({ desc: 'Default system super administrator email' }),
   SUPER_ADMIN_PASSWORD: str({ desc: 'Default system super administrator password' }),
