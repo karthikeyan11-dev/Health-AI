@@ -93,3 +93,6 @@ temp/
 *.bak
 *.mp4
 *.db
+
+
+emotion_detection
