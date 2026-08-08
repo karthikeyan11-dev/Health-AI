@@ -1,0 +1,17 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Digital Twin profile retrieved successfully"
+  data:
+    $ref: './DigitalTwin.yaml'
+  meta:
+    $ref: '../common/Metadata.yaml'

@@ -1,0 +1,50 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Health trend analysis computed successfully"
+  data:
+    type: object
+    required:
+      - userId
+      - period
+      - heartRateTrend
+      - stressTrend
+      - cardioRiskTrend
+      - insights
+    properties:
+      userId:
+        type: string
+        example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      period:
+        type: string
+        example: "7_DAYS"
+      heartRateTrend:
+        type: string
+        enum: [STABLE, INCREASING, DECREASING, VOLATILE]
+        example: "STABLE"
+      stressTrend:
+        type: string
+        enum: [STABLE, INCREASING, DECREASING, VOLATILE]
+        example: "DECREASING"
+      cardioRiskTrend:
+        type: string
+        enum: [STABLE, INCREASING, DECREASING, VOLATILE]
+        example: "STABLE"
+      insights:
+        type: array
+        items:
+          type: string
+        example:
+          - "Heart rate baseline has remained consistent over the last 7 days."
+          - "Stress levels decreased by 12% following improved sleep patterns."
+  meta:
+    $ref: '../common/Metadata.yaml'

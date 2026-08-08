@@ -1,0 +1,38 @@
+type: object
+required:
+  - page
+  - limit
+  - totalItems
+  - totalPages
+  - hasNextPage
+  - hasPrevPage
+properties:
+  page:
+    type: integer
+    minimum: 1
+    example: 1
+    description: Current page number (1-indexed)
+  limit:
+    type: integer
+    minimum: 1
+    maximum: 100
+    example: 20
+    description: Number of items per page
+  totalItems:
+    type: integer
+    minimum: 0
+    example: 150
+    description: Total number of items available
+  totalPages:
+    type: integer
+    minimum: 0
+    example: 8
+    description: Total number of pages
+  hasNextPage:
+    type: boolean
+    example: true
+    description: Indicates whether a next page exists
+  hasPrevPage:
+    type: boolean
+    example: false
+    description: Indicates whether a previous page exists

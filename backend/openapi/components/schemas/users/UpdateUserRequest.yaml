@@ -1,0 +1,22 @@
+type: object
+properties:
+  firstName:
+    type: string
+    example: "John"
+  lastName:
+    type: string
+    example: "Doe"
+  phoneNumber:
+    type: string
+    example: "+1234567890"
+  isActive:
+    type: boolean
+    example: true
+  dateOfBirth:
+    type: string
+    format: date
+    example: "1990-05-15"
+  gender:
+    type: string
+    enum: [MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY]
+    example: "MALE"

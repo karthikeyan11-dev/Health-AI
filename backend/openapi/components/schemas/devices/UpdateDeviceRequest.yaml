@@ -1,0 +1,10 @@
+type: object
+properties:
+  firmwareVersion:
+    type: string
+    example: "v1.2.5"
+  status:
+    $ref: './DeviceStatusEnum.yaml'
+  userId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d1"

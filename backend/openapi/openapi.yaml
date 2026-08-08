@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: Health AI - Smart Healthcare Monitoring Platform API
+  description: >
+    Production-grade OpenAPI 3.0.3 specification for the Health AI platform backend architecture.
+    Provides RESTful endpoints for IoT sensor telemetry ingestion (ESP32), computer vision facial emotion recognition,
+    Digital Twin physiological state modelling, real-time stress assessment, cardiovascular risk evaluation,
+    AI chatbot interaction, automated clinical recommendations, and notification services.
+  version: 1.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  contact:
+    name: Health AI Engineering Team
+    email: dev@healthai.org
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Local Development Node.js Gateway Backend
+  - url: https://api.healthai.org/api/v1
+    description: Production Gateway Endpoint
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+paths:
+  $ref: './paths/index.yaml'
+components:
+  $ref: './components/index.yaml'

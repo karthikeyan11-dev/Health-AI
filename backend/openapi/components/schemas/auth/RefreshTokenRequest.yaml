@@ -1,0 +1,7 @@
+type: object
+required:
+  - refreshToken
+properties:
+  refreshToken:
+    type: string
+    example: "d98f7e2a-4b3c-4d5e-8f9a-0b1c2d3e4f5a"

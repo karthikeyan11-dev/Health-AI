@@ -1,0 +1,38 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Device status retrieved successfully"
+  data:
+    type: object
+    required:
+      - deviceId
+      - status
+      - lastSeenAt
+      - uptimeSeconds
+    properties:
+      deviceId:
+        type: string
+        example: "ESP32-HEALTH-001"
+      status:
+        $ref: './DeviceStatusEnum.yaml'
+      lastSeenAt:
+        type: string
+        format: date-time
+        example: "2026-08-07T08:59:30.000Z"
+      uptimeSeconds:
+        type: integer
+        example: 86400
+      batteryPercentage:
+        type: number
+        example: 95.5
+  meta:
+    $ref: '../common/Metadata.yaml'

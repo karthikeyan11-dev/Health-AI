@@ -1,0 +1,31 @@
+post:
+  tags:
+    - Authentication
+  summary: Register new user account
+  description: Registers a new patient, clinician, or administrator account into the Health AI platform.
+  operationId: registerUser
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/auth/RegisterRequest.yaml'
+  responses:
+    '201':
+      description: User registered successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/users/UserResponse.yaml'
+    '400':
+      description: Validation error or duplicate email
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

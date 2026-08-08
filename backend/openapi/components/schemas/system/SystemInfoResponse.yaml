@@ -1,0 +1,35 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "System info retrieved successfully"
+  data:
+    type: object
+    required:
+      - name
+      - version
+      - environment
+      - nodeVersion
+    properties:
+      name:
+        type: string
+        example: "Health AI Backend"
+      version:
+        type: string
+        example: "1.0.0"
+      environment:
+        type: string
+        example: "development"
+      nodeVersion:
+        type: string
+        example: "v20.11.0"
+  meta:
+    $ref: '../common/Metadata.yaml'

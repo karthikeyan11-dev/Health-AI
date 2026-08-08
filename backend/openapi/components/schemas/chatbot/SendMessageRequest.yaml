@@ -1,0 +1,9 @@
+type: object
+required:
+  - message
+properties:
+  message:
+    type: string
+    example: "I am feeling anxious and my heart is beating fast. What should I do?"
+  currentEmotion:
+    $ref: '../emotion/EmotionEnum.yaml'

@@ -1,0 +1,8 @@
+type: string
+enum:
+  - LIFESTYLE
+  - EXERCISE
+  - MEDICATION_REMINDER
+  - STRESS_RELIEF
+  - CLINICAL_ALERT
+example: "LIFESTYLE"

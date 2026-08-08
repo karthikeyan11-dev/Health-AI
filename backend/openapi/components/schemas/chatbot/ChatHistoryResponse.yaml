@@ -1,0 +1,19 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Chat history retrieved successfully"
+  data:
+    type: array
+    items:
+      $ref: './ChatMessage.yaml'
+  meta:
+    $ref: '../common/Metadata.yaml'

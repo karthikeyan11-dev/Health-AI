@@ -1,0 +1,95 @@
+get:
+  tags:
+    - Users
+  summary: Get user by ID
+  description: Fetches detailed information for a specific user ID.
+  operationId: getUserById
+  security:
+    - BearerAuth: []
+  parameters:
+    - $ref: '../../components/parameters/UserIdParam.yaml'
+  responses:
+    '200':
+      description: User details retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/users/UserResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '404':
+      description: User not found
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+
+put:
+  tags:
+    - Users
+  summary: Update user details
+  description: Updates profile attributes for a specific user.
+  operationId: updateUser
+  security:
+    - BearerAuth: []
+  parameters:
+    - $ref: '../../components/parameters/UserIdParam.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/users/UpdateUserRequest.yaml'
+  responses:
+    '200':
+      description: User updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/users/UserResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '404':
+      description: User not found
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+
+delete:
+  tags:
+    - Users
+  summary: Soft delete user
+  description: Deactivates or soft-deletes a user profile in the platform.
+  operationId: deleteUser
+  security:
+    - BearerAuth: []
+  parameters:
+    - $ref: '../../components/parameters/UserIdParam.yaml'
+  responses:
+    '200':
+      description: User deleted/deactivated successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/SuccessResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '404':
+      description: User not found
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

@@ -1,0 +1,73 @@
+get:
+  tags:
+    - Users
+  summary: List all users
+  description: Fetches a paginated list of users filtered optionally by role or active status.
+  operationId: getUsers
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 1
+    - name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+    - name: role
+      in: query
+      required: false
+      schema:
+        $ref: '../../components/schemas/users/UserRoleEnum.yaml'
+  responses:
+    '200':
+      description: Users list retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/users/UserListResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+
+post:
+  tags:
+    - Users
+  summary: Create user (Admin/Clinician)
+  description: Creates a new user record in the system with specified role and credentials.
+  operationId: createUser
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/users/CreateUserRequest.yaml'
+  responses:
+    '201':
+      description: User created successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/users/UserResponse.yaml'
+    '400':
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '403':
+      description: Forbidden - Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

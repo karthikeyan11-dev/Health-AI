@@ -1,0 +1,22 @@
+type: object
+required:
+  - deviceId
+  - macAddress
+  - deviceType
+  - userId
+properties:
+  deviceId:
+    type: string
+    example: "ESP32-HEALTH-001"
+  macAddress:
+    type: string
+    example: "A4:CF:12:89:56:AB"
+  deviceType:
+    type: string
+    example: "ESP32-MULTI-SENSOR"
+  firmwareVersion:
+    type: string
+    example: "v1.2.4"
+  userId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d1"

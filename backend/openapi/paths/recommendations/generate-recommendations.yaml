@@ -1,0 +1,21 @@
+post:
+  tags:
+    - Recommendation Engine
+  summary: Trigger automated health recommendation generation
+  description: Analyzes user's latest Digital Twin state, stress scores, and vitals to generate actionable personalized wellness & clinical recommendations.
+  operationId: generateRecommendations
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/recommendations/GenerateRecommendationRequest.yaml'
+  responses:
+    '200':
+      description: Recommendations generated
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/recommendations/RecommendationResponse.yaml'

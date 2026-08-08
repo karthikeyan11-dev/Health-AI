@@ -1,0 +1,27 @@
+get:
+  tags:
+    - Sensors
+  summary: Get current body temperature telemetry
+  description: Returns latest body temperature in Celsius and Fahrenheit with clinical threshold analysis.
+  operationId: getTemperature
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: query
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Temperature data retrieved successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              data:
+                $ref: '../../components/schemas/sensors/TemperatureData.yaml'

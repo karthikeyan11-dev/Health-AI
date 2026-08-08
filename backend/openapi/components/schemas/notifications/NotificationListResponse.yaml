@@ -1,0 +1,19 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Notifications list retrieved successfully"
+  data:
+    type: array
+    items:
+      $ref: './Notification.yaml'
+  meta:
+    $ref: '../common/Metadata.yaml'

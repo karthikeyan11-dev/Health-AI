@@ -1,0 +1,27 @@
+get:
+  tags:
+    - Sensors
+  summary: Get current SpO2 blood oxygen telemetry
+  description: Returns latest SpO2 percentage reading and oxygenation status.
+  operationId: getSpO2
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: query
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: SpO2 data retrieved successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              data:
+                $ref: '../../components/schemas/sensors/SpO2Data.yaml'

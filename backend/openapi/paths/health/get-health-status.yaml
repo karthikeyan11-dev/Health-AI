@@ -1,0 +1,19 @@
+get:
+  tags:
+    - Health & System Ops
+  summary: Detailed health check
+  description: Evaluates status and connectivity of MongoDB, Redis cache, and Python AI microservices.
+  operationId: getHealthStatus
+  responses:
+    '200':
+      description: Overall system healthy
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/health/HealthCheckResponse.yaml'
+    '503':
+      description: System degraded or unhealthy
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/health/HealthCheckResponse.yaml'

@@ -1,0 +1,39 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "System metrics retrieved successfully"
+  data:
+    type: object
+    required:
+      - cpuUsagePercent
+      - memoryUsageMb
+      - totalMemoryMb
+      - activeConnections
+      - requestsPerMinute
+    properties:
+      cpuUsagePercent:
+        type: number
+        example: 12.4
+      memoryUsageMb:
+        type: number
+        example: 148.2
+      totalMemoryMb:
+        type: number
+        example: 16384.0
+      activeConnections:
+        type: integer
+        example: 24
+      requestsPerMinute:
+        type: number
+        example: 150.0
+  meta:
+    $ref: '../common/Metadata.yaml'

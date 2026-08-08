@@ -1,0 +1,21 @@
+get:
+  tags:
+    - Cardiovascular Risk Assessment
+  summary: Get current cardiovascular risk score
+  description: Returns current risk score classification (LOW, MODERATE, HIGH, CRITICAL) for a patient.
+  operationId: getCurrentCardiovascularRisk
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: query
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Current risk score retrieved
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/cardiovascular/RiskAssessmentResponse.yaml'
