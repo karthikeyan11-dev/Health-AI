@@ -1,0 +1,6 @@
+dist
+node_modules
+openapi/dist
+src/types/generated
+package-lock.json
+pnpm-lock.yaml
