@@ -1,0 +1,8 @@
+dist
+node_modules
+.pnpm-store
+.vite
+coverage
+*.local
+public
+src/sdk
