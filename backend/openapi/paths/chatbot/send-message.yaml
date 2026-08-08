@@ -1,0 +1,27 @@
+post:
+  tags:
+    - Emotion AI Chatbot
+  summary: Send query to Emotion AI Chatbot
+  description: Routes natural language user query and emotion context to Python AI Microservice (`MLChatbot`) for intelligent response generation.
+  operationId: sendChatMessage
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/chatbot/SendMessageRequest.yaml'
+  responses:
+    '200':
+      description: Chatbot message generated successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/chatbot/ChatMessageResponse.yaml'
+    '503':
+      description: Chatbot AI Microservice unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

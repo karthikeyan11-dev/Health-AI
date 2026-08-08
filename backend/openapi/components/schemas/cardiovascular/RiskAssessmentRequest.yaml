@@ -1,0 +1,40 @@
+type: object
+required:
+  - userId
+properties:
+  userId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d1"
+  heartRate:
+    type: number
+    example: 85.0
+    description: Continuous PPG heart rate in BPM
+  spo2:
+    type: number
+    example: 98.0
+    description: Continuous blood oxygen saturation percentage
+  temperature:
+    type: number
+    example: 36.6
+    description: Continuous body temperature in Celsius
+  currentEmotion:
+    $ref: '../emotion/EmotionEnum.yaml'
+    description: Facial emotion classified by Python AI Microservice
+  stressScore:
+    type: number
+    example: 35.0
+    description: Calculated real-time stress index score (0-100)
+  digitalTwinHealthScore:
+    type: number
+    example: 88.5
+    description: Historical health baseline score from Digital Twin
+  systolicBp:
+    type: number
+    nullable: true
+    example: null
+    description: Optional future enhancement parameter for systolic blood pressure (mmHg)
+  diastolicBp:
+    type: number
+    nullable: true
+    example: null
+    description: Optional future enhancement parameter for diastolic blood pressure (mmHg)

@@ -1,0 +1,18 @@
+type: object
+required:
+  - field
+  - message
+properties:
+  field:
+    type: string
+    example: "email"
+    description: Target field or path where validation failed
+  message:
+    type: string
+    example: "Must be a valid email address"
+    description: Human-readable validation failure reason
+  value:
+    type: string
+    nullable: true
+    example: "invalid-email"
+    description: Invalid input value provided

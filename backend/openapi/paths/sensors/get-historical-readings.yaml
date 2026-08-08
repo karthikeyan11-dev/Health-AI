@@ -1,0 +1,44 @@
+get:
+  tags:
+    - Sensors
+  summary: Get historical sensor telemetry
+  description: Returns time-series sensor telemetry data for analytics and charts.
+  operationId: getHistoricalSensorReadings
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: query
+      required: true
+      schema:
+        type: string
+    - name: sensorType
+      in: query
+      required: false
+      schema:
+        $ref: '../../components/schemas/sensors/SensorTypeEnum.yaml'
+    - name: startDate
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+    - name: endDate
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+    - name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 100
+  responses:
+    '200':
+      description: Historical sensor readings retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/sensors/HistoricalReadingsResponse.yaml'

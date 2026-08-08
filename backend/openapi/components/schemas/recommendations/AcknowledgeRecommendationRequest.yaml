@@ -1,0 +1,5 @@
+type: object
+properties:
+  notes:
+    type: string
+    example: "Completed box breathing exercise."

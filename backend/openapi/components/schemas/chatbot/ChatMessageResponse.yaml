@@ -1,0 +1,25 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Chatbot response generated successfully"
+  data:
+    type: object
+    required:
+      - userMessage
+      - botResponse
+    properties:
+      userMessage:
+        $ref: './ChatMessage.yaml'
+      botResponse:
+        $ref: './ChatMessage.yaml'
+  meta:
+    $ref: '../common/Metadata.yaml'

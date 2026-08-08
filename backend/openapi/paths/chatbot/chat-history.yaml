@@ -1,0 +1,50 @@
+get:
+  tags:
+    - Emotion AI Chatbot
+  summary: Get conversation history
+  description: Fetches chronological history of messages exchanged between user and AI chatbot.
+  operationId: getChatHistory
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 50
+  responses:
+    '200':
+      description: Chat history retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/chatbot/ChatHistoryResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+
+delete:
+  tags:
+    - Emotion AI Chatbot
+  summary: Clear user conversation history
+  description: Purges chat interaction history for authenticated user.
+  operationId: clearChatHistory
+  security:
+    - BearerAuth: []
+  responses:
+    '200':
+      description: Chat history cleared successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/SuccessResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

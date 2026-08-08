@@ -1,0 +1,17 @@
+type: object
+required:
+  - serviceName
+  - status
+  - latencyMs
+properties:
+  serviceName:
+    type: string
+    example: "mongodb"
+  status:
+    $ref: './HealthStatusEnum.yaml'
+  latencyMs:
+    type: number
+    example: 4.2
+  message:
+    type: string
+    example: "Connection pool active"

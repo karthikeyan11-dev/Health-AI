@@ -1,0 +1,107 @@
+get:
+  tags:
+    - Devices
+  summary: Get device by ID
+  description: Fetches metadata for a specific registered device.
+  operationId: getDeviceById
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Device details retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/devices/DeviceResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '404':
+      description: Device not found
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+
+put:
+  tags:
+    - Devices
+  summary: Update device metadata
+  description: Updates device status, assigned user, or firmware version.
+  operationId: updateDevice
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/devices/UpdateDeviceRequest.yaml'
+  responses:
+    '200':
+      description: Device updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/devices/DeviceResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '404':
+      description: Device not found
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+
+delete:
+  tags:
+    - Devices
+  summary: Unregister device
+  description: Removes device registration from system registry.
+  operationId: deleteDevice
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Device unregistered successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/SuccessResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '404':
+      description: Device not found
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

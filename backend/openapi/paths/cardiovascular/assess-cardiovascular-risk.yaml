@@ -1,0 +1,33 @@
+post:
+  tags:
+    - Cardiovascular Risk Assessment
+  summary: Evaluate cardiovascular risk
+  description: Calculates cardiovascular risk rating using continuous vitals stream (Heart Rate, SpO2, Body Temperature), Facial Emotion Detection, Stress Score, and Digital Twin health trends.
+  operationId: assessCardiovascularRisk
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/cardiovascular/RiskAssessmentRequest.yaml'
+  responses:
+    '200':
+      description: Cardiovascular risk evaluated successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/cardiovascular/RiskAssessmentResponse.yaml'
+    '400':
+      description: Invalid vitals or patient parameters
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

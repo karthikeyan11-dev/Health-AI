@@ -1,0 +1,21 @@
+get:
+  tags:
+    - Health Reports
+  summary: List generated reports for user
+  description: Returns history of all generated clinical and personal health reports.
+  operationId: getReports
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: query
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Reports list retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/reports/ReportListResponse.yaml'

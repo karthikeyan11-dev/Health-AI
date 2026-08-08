@@ -1,0 +1,33 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Stress assessment history retrieved successfully"
+  data:
+    type: array
+    items:
+      type: object
+      required:
+        - stressScore
+        - stressLevel
+        - timestamp
+      properties:
+        stressScore:
+          type: number
+          example: 42.0
+        stressLevel:
+          $ref: './StressLevelEnum.yaml'
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-08-07T09:00:00.000Z"
+  meta:
+    $ref: '../common/Metadata.yaml'

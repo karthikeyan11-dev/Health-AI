@@ -1,0 +1,13 @@
+type: object
+properties:
+  baselineHeartRate:
+    type: number
+    example: 72.0
+  baselineTemperature:
+    type: number
+    example: 36.6
+  baselineSpO2:
+    type: number
+    example: 98.5
+  healthState:
+    $ref: './TwinHealthStateEnum.yaml'

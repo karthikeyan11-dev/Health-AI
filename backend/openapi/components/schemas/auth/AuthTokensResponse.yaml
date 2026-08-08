@@ -1,0 +1,20 @@
+type: object
+required:
+  - accessToken
+  - refreshToken
+  - tokenType
+  - expiresIn
+properties:
+  accessToken:
+    type: string
+    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  refreshToken:
+    type: string
+    example: "d98f7e2a-4b3c-4d5e-8f9a-0b1c2d3e4f5a"
+  tokenType:
+    type: string
+    example: "Bearer"
+  expiresIn:
+    type: integer
+    example: 3600
+    description: Access token expiration time in seconds

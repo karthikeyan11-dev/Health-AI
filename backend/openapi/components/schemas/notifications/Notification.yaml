@@ -1,0 +1,44 @@
+type: object
+required:
+  - id
+  - userId
+  - title
+  - message
+  - type
+  - priority
+  - isRead
+  - createdAt
+  - updatedAt
+properties:
+  id:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d9"
+  userId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d1"
+  title:
+    type: string
+    example: "Elevated Heart Rate Warning"
+  message:
+    type: string
+    example: "Heart rate exceeded 120 bpm for over 5 minutes."
+  type:
+    $ref: './NotificationTypeEnum.yaml'
+  priority:
+    $ref: './NotificationPriorityEnum.yaml'
+  isRead:
+    type: boolean
+    example: false
+  readAt:
+    type: string
+    format: date-time
+    nullable: true
+    example: null
+  createdAt:
+    type: string
+    format: date-time
+    example: "2026-08-07T09:00:00.000Z"
+  updatedAt:
+    type: string
+    format: date-time
+    example: "2026-08-07T09:00:00.000Z"

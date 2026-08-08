@@ -1,0 +1,39 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Emotion prediction successful"
+  data:
+    type: object
+    required:
+      - detectedEmotion
+      - confidence
+      - probabilities
+    properties:
+      detectedEmotion:
+        $ref: './EmotionEnum.yaml'
+      confidence:
+        type: number
+        example: 0.942
+      probabilities:
+        type: object
+        additionalProperties:
+          type: number
+        example:
+          Angry: 0.01
+          Disgust: 0.00
+          Fear: 0.02
+          Happy: 0.94
+          Neutral: 0.02
+          Sad: 0.00
+          Surprise: 0.01
+  meta:
+    $ref: '../common/Metadata.yaml'

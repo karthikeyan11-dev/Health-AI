@@ -1,0 +1,23 @@
+type: object
+required:
+  - userId
+  - reportType
+  - startDate
+  - endDate
+properties:
+  userId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d1"
+  reportType:
+    $ref: './ReportTypeEnum.yaml'
+  format:
+    $ref: './ReportFormatEnum.yaml'
+    default: PDF
+  startDate:
+    type: string
+    format: date
+    example: "2026-08-01"
+  endDate:
+    type: string
+    format: date
+    example: "2026-08-07"

@@ -1,0 +1,33 @@
+put:
+  tags:
+    - Recommendation Engine
+  summary: Acknowledge or complete recommendation
+  description: Marks a health recommendation as acknowledged or completed by patient.
+  operationId: acknowledgeRecommendation
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: false
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/recommendations/AcknowledgeRecommendationRequest.yaml'
+  responses:
+    '200':
+      description: Recommendation acknowledged successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/SuccessResponse.yaml'
+    '404':
+      description: Recommendation not found
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

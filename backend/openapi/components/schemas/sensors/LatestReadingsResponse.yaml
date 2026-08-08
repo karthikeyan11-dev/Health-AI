@@ -1,0 +1,44 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Latest sensor readings fetched successfully"
+  data:
+    type: object
+    required:
+      - userId
+      - deviceId
+      - heartRate
+      - temperature
+      - spo2
+      - timestamp
+    properties:
+      userId:
+        type: string
+        example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      deviceId:
+        type: string
+        example: "ESP32-HEALTH-001"
+      heartRate:
+        type: number
+        example: 72.0
+      temperature:
+        type: number
+        example: 36.6
+      spo2:
+        type: number
+        example: 98.5
+      timestamp:
+        type: string
+        format: date-time
+        example: "2026-08-07T09:00:00.000Z"
+  meta:
+    $ref: '../common/Metadata.yaml'

@@ -1,0 +1,10 @@
+type: string
+enum:
+  - Angry
+  - Disgust
+  - Fear
+  - Happy
+  - Neutral
+  - Sad
+  - Surprise
+example: "Happy"

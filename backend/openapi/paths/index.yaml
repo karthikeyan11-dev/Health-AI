@@ -1,0 +1,127 @@
+# Authentication Endpoints
+/auth/register:
+  $ref: './auth/register.yaml'
+/auth/login:
+  $ref: './auth/login.yaml'
+/auth/refresh-token:
+  $ref: './auth/refresh-token.yaml'
+/auth/logout:
+  $ref: './auth/logout.yaml'
+/auth/forgot-password:
+  $ref: './auth/forgot-password.yaml'
+/auth/reset-password:
+  $ref: './auth/reset-password.yaml'
+/auth/profile:
+  $ref: './auth/get-profile.yaml'
+/auth/change-password:
+  $ref: './auth/change-password.yaml'
+
+# Users Endpoints
+/users:
+  $ref: './users/users.yaml'
+/users/{userId}:
+  $ref: './users/user-item.yaml'
+
+# Devices Endpoints
+/devices:
+  $ref: './devices/devices.yaml'
+/devices/{id}:
+  $ref: './devices/device-item.yaml'
+/devices/{id}/status:
+  $ref: './devices/get-device-status.yaml'
+
+# Sensor Readings Endpoints
+/sensors/readings:
+  $ref: './sensors/ingest-readings.yaml'
+/sensors/readings/latest:
+  $ref: './sensors/get-latest-readings.yaml'
+/sensors/readings/history:
+  $ref: './sensors/get-historical-readings.yaml'
+/sensors/heart-rate:
+  $ref: './sensors/get-heart-rate.yaml'
+/sensors/temperature:
+  $ref: './sensors/get-temperature.yaml'
+/sensors/spo2:
+  $ref: './sensors/get-spo2.yaml'
+
+# Emotion AI Service Endpoints
+/emotion/predict:
+  $ref: './emotion/predict-emotion.yaml'
+/emotion/logs:
+  $ref: './emotion/get-emotion-logs.yaml'
+/emotion/latest:
+  $ref: './emotion/get-latest-emotion.yaml'
+
+# Digital Twin Endpoints
+/digital-twin:
+  $ref: './digitalTwin/create-twin.yaml'
+/digital-twin/{userId}:
+  $ref: './digitalTwin/digital-twin-item.yaml'
+/digital-twin/{userId}/state:
+  $ref: './digitalTwin/get-current-state.yaml'
+/digital-twin/{userId}/history:
+  $ref: './digitalTwin/get-health-history.yaml'
+/digital-twin/{userId}/trends:
+  $ref: './digitalTwin/get-trend-analysis.yaml'
+
+# Stress Analysis Endpoints
+/stress/assess:
+  $ref: './stress/assess-stress.yaml'
+/stress/current:
+  $ref: './stress/get-current-stress.yaml'
+/stress/history:
+  $ref: './stress/get-stress-history.yaml'
+
+# Cardiovascular Risk Assessment Endpoints
+/cardiovascular/assess:
+  $ref: './cardiovascular/assess-cardiovascular-risk.yaml'
+/cardiovascular/current:
+  $ref: './cardiovascular/get-current-risk.yaml'
+/cardiovascular/history:
+  $ref: './cardiovascular/get-risk-history.yaml'
+
+# Recommendation Engine Endpoints
+/recommendations/generate:
+  $ref: './recommendations/generate-recommendations.yaml'
+/recommendations/active:
+  $ref: './recommendations/get-active-recommendations.yaml'
+/recommendations/{id}/acknowledge:
+  $ref: './recommendations/acknowledge-recommendation.yaml'
+
+# Reports Endpoints
+/reports/generate:
+  $ref: './reports/generate-report.yaml'
+/reports:
+  $ref: './reports/get-reports.yaml'
+/reports/{id}:
+  $ref: './reports/get-report-by-id.yaml'
+/reports/{id}/download:
+  $ref: './reports/download-report.yaml'
+
+# Emotion AI Chatbot Endpoints
+/chatbot/message:
+  $ref: './chatbot/send-message.yaml'
+/chatbot/history:
+  $ref: './chatbot/chat-history.yaml'
+
+# Notifications Endpoints
+/notifications/send:
+  $ref: './notifications/send-notification.yaml'
+/notifications:
+  $ref: './notifications/get-notifications.yaml'
+/notifications/{id}/read:
+  $ref: './notifications/mark-notification-read.yaml'
+/notifications/read-all:
+  $ref: './notifications/mark-all-read.yaml'
+
+# Health & System Ops Endpoints
+/health:
+  $ref: './health/get-health-status.yaml'
+/health/liveness:
+  $ref: './health/get-liveness.yaml'
+/health/readiness:
+  $ref: './health/get-readiness.yaml'
+/system/info:
+  $ref: './system/get-system-info.yaml'
+/system/metrics:
+  $ref: './system/get-system-metrics.yaml'

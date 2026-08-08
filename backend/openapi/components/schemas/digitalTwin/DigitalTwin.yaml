@@ -1,0 +1,52 @@
+type: object
+required:
+  - id
+  - userId
+  - overallHealthScore
+  - healthState
+  - lastSyncTimestamp
+  - createdAt
+  - updatedAt
+properties:
+  id:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d5"
+  userId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d1"
+  overallHealthScore:
+    type: number
+    minimum: 0
+    maximum: 100
+    example: 85.5
+  healthState:
+    $ref: './TwinHealthStateEnum.yaml'
+  baselineHeartRate:
+    type: number
+    example: 70.0
+  baselineTemperature:
+    type: number
+    example: 36.5
+  baselineSpO2:
+    type: number
+    example: 98.0
+  dominantEmotion:
+    $ref: '../emotion/EmotionEnum.yaml'
+  currentStressScore:
+    type: number
+    example: 22.4
+  currentCardioRiskScore:
+    type: number
+    example: 12.1
+  lastSyncTimestamp:
+    type: string
+    format: date-time
+    example: "2026-08-07T09:00:00.000Z"
+  createdAt:
+    type: string
+    format: date-time
+    example: "2026-08-07T09:00:00.000Z"
+  updatedAt:
+    type: string
+    format: date-time
+    example: "2026-08-07T09:00:00.000Z"

@@ -1,0 +1,7 @@
+name: userId
+in: path
+required: true
+description: Unique 24-character MongoDB ObjectId identifier of the user
+schema:
+  type: string
+  example: "64f1a2b3c4d5e6f7a8b9c0d1"

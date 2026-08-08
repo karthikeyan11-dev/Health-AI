@@ -1,0 +1,27 @@
+get:
+  tags:
+    - Stress Analysis
+  summary: Get stress assessment history
+  description: Returns time-series log of historical stress assessments for long-term health tracking.
+  operationId: getStressHistory
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: query
+      required: true
+      schema:
+        type: string
+    - name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 50
+  responses:
+    '200':
+      description: Stress history retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/stress/StressHistoryResponse.yaml'

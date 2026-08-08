@@ -1,0 +1,31 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "System health check evaluated"
+  data:
+    type: object
+    required:
+      - status
+      - uptimeSeconds
+      - services
+    properties:
+      status:
+        $ref: './HealthStatusEnum.yaml'
+      uptimeSeconds:
+        type: number
+        example: 3600.5
+      services:
+        type: array
+        items:
+          $ref: './ServiceHealthStatus.yaml'
+  meta:
+    $ref: '../common/Metadata.yaml'

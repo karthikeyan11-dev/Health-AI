@@ -1,0 +1,27 @@
+get:
+  tags:
+    - Health & System Ops
+  summary: Kubernetes readiness probe
+  description: Endpoint used by load balancers to confirm service is ready to process web traffic.
+  operationId: getReadiness
+  responses:
+    '200':
+      description: Service ready to handle traffic
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "READY"
+    '503':
+      description: Service not ready
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "NOT_READY"

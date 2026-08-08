@@ -1,0 +1,17 @@
+get:
+  tags:
+    - Health & System Ops
+  summary: Kubernetes liveness probe
+  description: Endpoint used by orchestrators to confirm HTTP service container is running.
+  operationId: getLiveness
+  responses:
+    '200':
+      description: Service container is live
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "UP"

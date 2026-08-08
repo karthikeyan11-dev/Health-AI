@@ -1,0 +1,21 @@
+type: object
+required:
+  - celsius
+  - fahrenheit
+  - status
+  - timestamp
+properties:
+  celsius:
+    type: number
+    example: 36.6
+  fahrenheit:
+    type: number
+    example: 97.88
+  status:
+    type: string
+    enum: [NORMAL, HYPOTHERMIA, FEVER, HIGH_FEVER]
+    example: "NORMAL"
+  timestamp:
+    type: string
+    format: date-time
+    example: "2026-08-07T09:00:00.000Z"

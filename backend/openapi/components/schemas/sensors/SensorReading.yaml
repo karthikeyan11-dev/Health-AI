@@ -1,0 +1,31 @@
+type: object
+required:
+  - id
+  - deviceId
+  - userId
+  - sensorType
+  - value
+  - unit
+  - timestamp
+properties:
+  id:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d3"
+  deviceId:
+    type: string
+    example: "ESP32-HEALTH-001"
+  userId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d1"
+  sensorType:
+    $ref: './SensorTypeEnum.yaml'
+  value:
+    type: number
+    example: 75.5
+  unit:
+    type: string
+    example: "bpm"
+  timestamp:
+    type: string
+    format: date-time
+    example: "2026-08-07T09:00:00.000Z"

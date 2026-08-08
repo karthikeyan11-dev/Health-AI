@@ -1,0 +1,44 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Reports list retrieved successfully"
+  data:
+    type: array
+    items:
+      type: object
+      required:
+        - id
+        - userId
+        - reportType
+        - format
+        - downloadUrl
+        - generatedAt
+      properties:
+        id:
+          type: string
+          example: "64f1a2b3c4d5e6f7a8b9c0d7"
+        userId:
+          type: string
+          example: "64f1a2b3c4d5e6f7a8b9c0d1"
+        reportType:
+          $ref: './ReportTypeEnum.yaml'
+        format:
+          $ref: './ReportFormatEnum.yaml'
+        downloadUrl:
+          type: string
+          example: "/reports/64f1a2b3c4d5e6f7a8b9c0d7/download"
+        generatedAt:
+          type: string
+          format: date-time
+          example: "2026-08-07T09:00:00.000Z"
+  meta:
+    $ref: '../common/Metadata.yaml'

@@ -1,0 +1,15 @@
+get:
+  tags:
+    - Health & System Ops
+  summary: Get runtime performance metrics
+  description: Returns memory, CPU utilization, request throughput, and connection metrics.
+  operationId: getSystemMetrics
+  security:
+    - BearerAuth: []
+  responses:
+    '200':
+      description: System metrics retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/system/SystemMetricsResponse.yaml'

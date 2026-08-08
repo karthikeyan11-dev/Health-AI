@@ -1,0 +1,7 @@
+type: string
+enum:
+  - HEART_RATE
+  - TEMPERATURE
+  - SPO2
+  - EMOTION
+example: "HEART_RATE"

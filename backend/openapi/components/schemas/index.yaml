@@ -1,0 +1,193 @@
+# Common Schemas
+ErrorResponse:
+  $ref: './common/ErrorResponse.yaml'
+SuccessResponse:
+  $ref: './common/SuccessResponse.yaml'
+Pagination:
+  $ref: './common/Pagination.yaml'
+Timestamp:
+  $ref: './common/Timestamp.yaml'
+Metadata:
+  $ref: './common/Metadata.yaml'
+BaseEntity:
+  $ref: './common/BaseEntity.yaml'
+ValidationError:
+  $ref: './common/ValidationError.yaml'
+ApiResponse:
+  $ref: './common/ApiResponse.yaml'
+
+# Auth Schemas
+RegisterRequest:
+  $ref: './auth/RegisterRequest.yaml'
+LoginRequest:
+  $ref: './auth/LoginRequest.yaml'
+AuthTokensResponse:
+  $ref: './auth/AuthTokensResponse.yaml'
+RefreshTokenRequest:
+  $ref: './auth/RefreshTokenRequest.yaml'
+ForgotPasswordRequest:
+  $ref: './auth/ForgotPasswordRequest.yaml'
+ResetPasswordRequest:
+  $ref: './auth/ResetPasswordRequest.yaml'
+ChangePasswordRequest:
+  $ref: './auth/ChangePasswordRequest.yaml'
+
+# User Schemas
+User:
+  $ref: './users/User.yaml'
+UserRoleEnum:
+  $ref: './users/UserRoleEnum.yaml'
+CreateUserRequest:
+  $ref: './users/CreateUserRequest.yaml'
+UpdateUserRequest:
+  $ref: './users/UpdateUserRequest.yaml'
+UserResponse:
+  $ref: './users/UserResponse.yaml'
+UserListResponse:
+  $ref: './users/UserListResponse.yaml'
+
+# Device Schemas
+Device:
+  $ref: './devices/Device.yaml'
+DeviceStatusEnum:
+  $ref: './devices/DeviceStatusEnum.yaml'
+RegisterDeviceRequest:
+  $ref: './devices/RegisterDeviceRequest.yaml'
+UpdateDeviceRequest:
+  $ref: './devices/UpdateDeviceRequest.yaml'
+DeviceResponse:
+  $ref: './devices/DeviceResponse.yaml'
+DeviceListResponse:
+  $ref: './devices/DeviceListResponse.yaml'
+DeviceStatusResponse:
+  $ref: './devices/DeviceStatusResponse.yaml'
+
+# Sensor Schemas
+SensorTypeEnum:
+  $ref: './sensors/SensorTypeEnum.yaml'
+SensorReading:
+  $ref: './sensors/SensorReading.yaml'
+IngestReadingsRequest:
+  $ref: './sensors/IngestReadingsRequest.yaml'
+LatestReadingsResponse:
+  $ref: './sensors/LatestReadingsResponse.yaml'
+HistoricalReadingsResponse:
+  $ref: './sensors/HistoricalReadingsResponse.yaml'
+HeartRateData:
+  $ref: './sensors/HeartRateData.yaml'
+TemperatureData:
+  $ref: './sensors/TemperatureData.yaml'
+SpO2Data:
+  $ref: './sensors/SpO2Data.yaml'
+
+# Emotion Schemas
+EmotionEnum:
+  $ref: './emotion/EmotionEnum.yaml'
+PredictEmotionRequest:
+  $ref: './emotion/PredictEmotionRequest.yaml'
+PredictEmotionResponse:
+  $ref: './emotion/PredictEmotionResponse.yaml'
+EmotionLogResponse:
+  $ref: './emotion/EmotionLogResponse.yaml'
+LatestEmotionResponse:
+  $ref: './emotion/LatestEmotionResponse.yaml'
+
+# Digital Twin Schemas
+DigitalTwin:
+  $ref: './digitalTwin/DigitalTwin.yaml'
+TwinHealthStateEnum:
+  $ref: './digitalTwin/TwinHealthStateEnum.yaml'
+CreateTwinRequest:
+  $ref: './digitalTwin/CreateTwinRequest.yaml'
+UpdateTwinRequest:
+  $ref: './digitalTwin/UpdateTwinRequest.yaml'
+DigitalTwinResponse:
+  $ref: './digitalTwin/DigitalTwinResponse.yaml'
+HealthHistoryResponse:
+  $ref: './digitalTwin/HealthHistoryResponse.yaml'
+HealthTrendAnalysisResponse:
+  $ref: './digitalTwin/HealthTrendAnalysisResponse.yaml'
+
+# Stress Schemas
+StressLevelEnum:
+  $ref: './stress/StressLevelEnum.yaml'
+StressAssessmentRequest:
+  $ref: './stress/StressAssessmentRequest.yaml'
+StressAssessmentResponse:
+  $ref: './stress/StressAssessmentResponse.yaml'
+StressHistoryResponse:
+  $ref: './stress/StressHistoryResponse.yaml'
+
+# Cardiovascular Schemas
+CardiovascularRiskEnum:
+  $ref: './cardiovascular/CardiovascularRiskEnum.yaml'
+RiskAssessmentRequest:
+  $ref: './cardiovascular/RiskAssessmentRequest.yaml'
+RiskAssessmentResponse:
+  $ref: './cardiovascular/RiskAssessmentResponse.yaml'
+RiskHistoryResponse:
+  $ref: './cardiovascular/RiskHistoryResponse.yaml'
+
+# Recommendation Schemas
+RecommendationCategoryEnum:
+  $ref: './recommendations/RecommendationCategoryEnum.yaml'
+RecommendationPriorityEnum:
+  $ref: './recommendations/RecommendationPriorityEnum.yaml'
+Recommendation:
+  $ref: './recommendations/Recommendation.yaml'
+GenerateRecommendationRequest:
+  $ref: './recommendations/GenerateRecommendationRequest.yaml'
+RecommendationResponse:
+  $ref: './recommendations/RecommendationResponse.yaml'
+AcknowledgeRecommendationRequest:
+  $ref: './recommendations/AcknowledgeRecommendationRequest.yaml'
+
+# Report Schemas
+ReportTypeEnum:
+  $ref: './reports/ReportTypeEnum.yaml'
+ReportFormatEnum:
+  $ref: './reports/ReportFormatEnum.yaml'
+GenerateReportRequest:
+  $ref: './reports/GenerateReportRequest.yaml'
+ReportResponse:
+  $ref: './reports/ReportResponse.yaml'
+ReportListResponse:
+  $ref: './reports/ReportListResponse.yaml'
+
+# Chatbot Schemas
+ChatSenderEnum:
+  $ref: './chatbot/ChatSenderEnum.yaml'
+ChatMessage:
+  $ref: './chatbot/ChatMessage.yaml'
+SendMessageRequest:
+  $ref: './chatbot/SendMessageRequest.yaml'
+ChatMessageResponse:
+  $ref: './chatbot/ChatMessageResponse.yaml'
+ChatHistoryResponse:
+  $ref: './chatbot/ChatHistoryResponse.yaml'
+
+# Notification Schemas
+NotificationTypeEnum:
+  $ref: './notifications/NotificationTypeEnum.yaml'
+NotificationPriorityEnum:
+  $ref: './notifications/NotificationPriorityEnum.yaml'
+Notification:
+  $ref: './notifications/Notification.yaml'
+SendNotificationRequest:
+  $ref: './notifications/SendNotificationRequest.yaml'
+NotificationListResponse:
+  $ref: './notifications/NotificationListResponse.yaml'
+
+# Health Schemas
+HealthStatusEnum:
+  $ref: './health/HealthStatusEnum.yaml'
+ServiceHealthStatus:
+  $ref: './health/ServiceHealthStatus.yaml'
+HealthCheckResponse:
+  $ref: './health/HealthCheckResponse.yaml'
+
+# System Schemas
+SystemInfoResponse:
+  $ref: './system/SystemInfoResponse.yaml'
+SystemMetricsResponse:
+  $ref: './system/SystemMetricsResponse.yaml'

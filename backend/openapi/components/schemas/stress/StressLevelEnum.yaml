@@ -1,0 +1,7 @@
+type: string
+enum:
+  - LOW
+  - MODERATE
+  - HIGH
+  - SEVERE
+example: "MODERATE"

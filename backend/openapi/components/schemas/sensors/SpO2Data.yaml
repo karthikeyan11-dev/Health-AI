@@ -1,0 +1,17 @@
+type: object
+required:
+  - percentage
+  - status
+  - timestamp
+properties:
+  percentage:
+    type: number
+    example: 98.5
+  status:
+    type: string
+    enum: [NORMAL, HYPOXIA, SEVERE_HYPOXIA]
+    example: "NORMAL"
+  timestamp:
+    type: string
+    format: date-time
+    example: "2026-08-07T09:00:00.000Z"

@@ -1,0 +1,27 @@
+put:
+  tags:
+    - Notifications
+  summary: Mark notification as read
+  description: Updates notification read status by notification ID.
+  operationId: markNotificationAsRead
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Notification marked as read
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/SuccessResponse.yaml'
+    '404':
+      description: Notification not found
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

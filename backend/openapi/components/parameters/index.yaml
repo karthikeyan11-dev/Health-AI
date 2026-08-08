@@ -1,0 +1,4 @@
+UserIdParam:
+  $ref: './UserIdParam.yaml'
+DeviceIdParam:
+  $ref: './DeviceIdParam.yaml'

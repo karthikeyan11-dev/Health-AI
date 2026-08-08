@@ -1,0 +1,27 @@
+get:
+  tags:
+    - Health Reports
+  summary: Get report metadata by ID
+  description: Returns metadata and download URLs for a generated report.
+  operationId: getReportById
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Report metadata retrieved
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/reports/ReportResponse.yaml'
+    '404':
+      description: Report not found
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
