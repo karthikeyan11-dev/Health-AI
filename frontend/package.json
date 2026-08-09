@@ -11,8 +11,11 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "openapi:types": "openapi-typescript ../backend/openapi/openapi.yaml -o src/sdk/index.ts",
-    "openapi:gen": "pnpm openapi:types",
+    "generate:types": "openapi-typescript ./openapi.bundle.yaml -o src/types/api.types.ts",
+    "generate:sdk": "openapi-generator-cli generate -i ./openapi.bundle.yaml -g typescript-axios -o src/sdk",
+    "generate": "pnpm generate:types && pnpm generate:sdk",
+    "openapi:gen": "pnpm generate",
+    "precommit": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -20,6 +23,7 @@
     "axios": "^1.8.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "form-data": "^4.0.6",
     "lucide-react": "^0.475.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -29,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
+    "@openapitools/openapi-generator-cli": "^2.40.1",
     "@types/node": "^22.13.1",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",

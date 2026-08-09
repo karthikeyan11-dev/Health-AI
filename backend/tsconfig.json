@@ -13,9 +13,12 @@
       "@services/*": ["services/*"],
       "@repositories/*": ["repositories/*"],
       "@models/*": ["models/*"],
+      "@modules/*": ["modules/*"],
       "@middlewares/*": ["middlewares/*"],
       "@utils/*": ["utils/*"],
-      "@types/*": ["types/*"]
+      "@shared/*": ["shared/*"],
+      "@errors/*": ["shared/errors/*"],
+      "@types/*": ["shared/types/*"]
     },
     "strict": true,
     "noImplicitAny": true,

@@ -6,3 +6,6 @@ coverage
 *.local
 public
 src/sdk
+src/types/api.types.ts
+openapi.bundle.yaml
+openapitools.json

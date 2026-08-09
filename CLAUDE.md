@@ -31,6 +31,7 @@
 | **Performance** | ❌ Synchronous/blocking code (`readFileSync`, `sleep`) on the main event loop | Causes event loop blocking, high latency, and application freezes. |
 | **Database** | ❌ Un-indexed query filters, manual ObjectId strings, or raw unescaped queries | Causes database CPU spikes, full collection scans, and injection vulnerabilities. |
 | **Architecture** | ❌ Circular dependencies between modules, controllers, or service layers | Causes `undefined` import bindings, runtime panics, and tight coupling. |
+| **Generated Files** | ❌ Manually editing or modifying auto-generated files (`src/sdk/**`, `api.types.ts`, `backend/src/types/generated/**`) | Manual edits get overwritten upon regeneration and cause spec desynchronization. Always update the OpenAPI YAML spec and run the generation commands. |
 
 ---
 
@@ -117,7 +118,46 @@ All models MUST use Mongoose + strict TypeScript with `{ timestamps: true }`:
 - **Base Server URL**: `http://localhost:5000/api/v1` (Local Dev) / `https://api.healthai.org/api/v1` (Production).
 - **Paths Index**: `backend/openapi/paths/index.yaml` maps all relative endpoints (e.g. `/auth/login`, `/sensors/readings`, `/digital-twin/{userId}`) without `/api/v1` prefix.
 - **Schemas Index**: `backend/openapi/components/schemas/index.yaml` maps all DTO definitions.
-- **Type Generation**: Run `pnpm openapi:types` to generate strict TypeScript interfaces into `backend/src/types/generated/api-types.ts`.
+
+### 6.2 Backend OpenAPI Commands
+- `pnpm openapi:lint`: Validate OpenAPI spec with Redocly CLI (`redocly lint openapi/openapi.yaml`).
+- `pnpm openapi:bundle`: Bundle multi-file OpenAPI spec into `openapi/dist/openapi.bundle.yaml` and sync to frontend.
+- `pnpm openapi:build`: Run lint and bundle consecutively.
+- `pnpm openapi:generate`: Generate strict TypeScript DTO types into `src/shared/types/generated/api-types.ts`.
+- `pnpm openapi:gen`: Full pipeline: lint → bundle → TypeScript type generation.
+
+### 6.3 Backend Controller Type Safety (`TypedRequest` & `TypedResponse`)
+All Express controller methods MUST use `TypedRequest<Op>` and `TypedResponse<Op>` mapped directly to the OpenAPI `operationId`:
+```typescript
+import type { TypedRequest, TypedResponse } from '@shared/types';
+import { HttpErrors } from '@shared/errors';
+import { Logger } from '@config/logger';
+
+export class AuthController {
+  async loginUser(
+    req: TypedRequest<'loginUser'>,
+    res: TypedResponse<'loginUser'>,
+  ): Promise<TypedResponse<'loginUser'>> {
+    try {
+      const result = await this.authService.login(req.body);
+      return res.status(200).json(result);
+    } catch (error) {
+      Logger.error(error, 'AuthController.loginUser - Exception occurred');
+      if (error instanceof HttpErrors) {
+        return res.status(error.statusCode).json({ message: error.message });
+      }
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+}
+```
+
+### 6.4 Frontend SDK & Types Commands
+- `pnpm generate:types`: Generate TypeScript interfaces into `src/types/api.types.ts` from `openapi.bundle.yaml`.
+- `pnpm generate:sdk`: Generate production TypeScript Axios SDK client into `src/sdk/` using `openapi-generator-cli`.
+- `pnpm generate`: Execute both `generate:types` and `generate:sdk`.
+- **Strict Rule**: NEVER modify files inside `src/sdk/` or `src/types/api.types.ts` manually. Any contract change MUST be made in `backend/openapi/` and regenerated.
+- **Type Usage**: Strictly use generated SDK and OpenAPI types throughout application code. Never invent manual types for existing OpenAPI models.
 
 ---
 
@@ -162,19 +202,36 @@ All API endpoints MUST return responses adhering strictly to the standardized en
 - **Classes, Interfaces, Enums, Models**: `PascalCase` (e.g. `UserModel`, `SensorType`, `IUserDocument`).
 - **Methods, Functions, Variables**: `camelCase` (e.g. `connectDatabase()`, `calculateStressIndex()`).
 - **Constants & Envs**: `UPPER_SNAKE_CASE` (e.g. `MONGODB_URI`, `DEFAULT_PAGE_LIMIT`).
-- **Path Aliases** (defined in `tsconfig.json`):
+- **Path Aliases** (defined in `backend/tsconfig.json`):
   - `@config/*` -> `config/*`
   - `@controllers/*` -> `controllers/*`
   - `@services/*` -> `services/*`
   - `@repositories/*` -> `repositories/*`
   - `@models/*` -> `models/*`
+  - `@modules/*` -> `modules/*`
   - `@middlewares/*` -> `middlewares/*`
   - `@utils/*` -> `utils/*`
-  - `@types/*` -> `types/*`
+  - `@shared/*` -> `shared/*`
+  - `@errors/*` -> `shared/errors/*`
+  - `@types/*` -> `shared/types/*`
 
 ---
 
-## 9. 🤖 AGENT OPERATIONAL WORKFLOW
+## 9. 🧪 TESTING CONVENTIONS & COVERAGE GATES
+
+- **Test Location**: All test files MUST be placed in `backend/tests/<feature>/` mirroring `backend/src/modules/<feature>/`.
+- **Target Files**: Unit test suites are written separately ONLY for business logic layers:
+  - `<feature>.controller.spec.ts`
+  - `<feature>.service.spec.ts`
+  - `<feature>.repository.spec.ts`
+  - `<feature>.transformer.spec.ts` (if applicable)
+- **Exclusions**: Never write unit test files for DTO files (`*.dto.ts`), types, or index files.
+- **Coverage**: Maintain **100% coverage** (branches, functions, lines, statements) for all business logic files in `src/modules/`.
+- **Frontend**: Frontend does not require unit tests.
+
+---
+
+## 10. 🤖 AGENT OPERATIONAL WORKFLOW & PRE-COMMIT HOOKS
 
 When receiving any coding task, follow this 4-step execution lifecycle:
 
@@ -183,17 +240,28 @@ flowchart TD
     A[Step 1: Inspect & Analyze] --> B[Step 2: Plan Architecture]
     B --> C[Step 3: Implement Code]
     C --> D[Step 4: Verify & Self-Test]
-    D -->|Build/Lint Fails| C
-    D -->|Build/Lint Passes| E[Task Complete]
+    D -->|Build/Lint/Test Fails| C
+    D -->|All Gates Pass| E[Task Complete]
 ```
 
 1. **Inspect**: Search the workspace using grep/view tools to inspect existing models, config, and routes.
 2. **Plan**: Align with `ProjectPlan.md` and `CLAUDE.md`. Ask questions if anything is ambiguous.
-3. **Implement**: Write modular, clean TypeScript adhering to 3-tier layering and strict type safety.
-4. **Verify**: Always run the complete verification routine:
-   ```bash
-   pnpm type-check    # Verifies strict TypeScript (tsc --noEmit)
-   pnpm lint          # Verifies ESLint rules
-   pnpm format:check  # Verifies Prettier formatting
-   pnpm build         # Verifies production JavaScript compilation
-   ```
+3. **Implement**: Write modular, clean TypeScript adhering to 3-tier layering, OpenAPI contracts, and strict type safety.
+4. **Verify**:
+   - **Backend**:
+     ```bash
+     pnpm --dir backend lint          # ESLint
+     pnpm --dir backend format:check  # Prettier check
+     pnpm --dir backend type-check    # Strict TypeScript (tsc --noEmit)
+     pnpm --dir backend test:coverage # 100% Jest unit test coverage
+     pnpm --dir backend build         # Production JavaScript compilation
+     ```
+   - **Frontend** (no tests):
+     ```bash
+     pnpm --dir frontend lint          # ESLint
+     pnpm --dir frontend format:check  # Prettier check
+     pnpm --dir frontend typecheck     # Strict TypeScript (tsc --noEmit)
+     pnpm --dir frontend build         # Vite production build
+     ```
+
+*Note: All these gates are strictly enforced automatically on every commit via the Git Husky pre-commit hook (`.husky/pre-commit`).*

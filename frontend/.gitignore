@@ -91,3 +91,11 @@ dist-ssr/
 *.njsproj
 *.sln
 *.sw?
+
+# OpenAPI Generator temporary & documentation artifacts
+src/sdk/.openapi-generator/
+src/sdk/docs/
+src/sdk/git_push.sh
+src/sdk/.npmignore
+src/sdk/.openapi-generator-ignore
+openapitools.json

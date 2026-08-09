@@ -34,6 +34,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['dist/**', 'node_modules/**', 'openapi/**', 'src/types/generated/**'],
+    ignores: ['dist/**', 'node_modules/**', 'openapi/**', 'src/shared/types/generated/**'],
   },
 );

@@ -2,7 +2,33 @@
  * Safe typed LocalStorage wrapper with defensive fallback handling.
  */
 
+const TOKEN_KEY = 'health_ai_access_token';
+
 export const storage = {
+  getToken(): string | null {
+    try {
+      return window.localStorage.getItem(TOKEN_KEY);
+    } catch {
+      return null;
+    }
+  },
+
+  setToken(token: string): void {
+    try {
+      window.localStorage.setItem(TOKEN_KEY, token);
+    } catch {
+      // Storage set error ignored defensively
+    }
+  },
+
+  removeToken(): void {
+    try {
+      window.localStorage.removeItem(TOKEN_KEY);
+    } catch {
+      // Storage remove error ignored defensively
+    }
+  },
+
   get<T>(key: string, defaultValue: T): T {
     try {
       const item = window.localStorage.getItem(key);
