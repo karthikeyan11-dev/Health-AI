@@ -22,9 +22,36 @@ services:
     networks:
       - health-ai-network
 
+  redis:
+    image: redis:7.2-alpine
+    container_name: health-ai-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: >
+      sh -c 'if [ -n "$$REDIS_PASSWORD" ]; then
+        redis-server --requirepass "$$REDIS_PASSWORD" --appendonly yes;
+      else
+        redis-server --appendonly yes;
+      fi'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "if [ -n \"$$REDIS_PASSWORD\" ]; then redis-cli -a \"$$REDIS_PASSWORD\" ping | grep PONG; else redis-cli ping | grep PONG; fi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 3s
+    networks:
+      - health-ai-network
+
 volumes:
   mongodb_data:
     name: health_ai_mongodb_data
+  redis_data:
+    name: health_ai_redis_data
 
 networks:
   health-ai-network:
