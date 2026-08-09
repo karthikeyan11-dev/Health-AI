@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@layer base {
+  :root {
+    /* Global Primary Font Token */
+    --font-sans:
+      'Andika', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+      Arial, sans-serif;
+
+    /* Pure Light Theme - Clean White & Neutral Surfaces */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Primary Accent - Vibrant Blue/Indigo from reference gradient */
+    --primary: 238.7 83.5% 58.6%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 238.7 83.5% 96%;
+    --accent-foreground: 238.7 83.5% 45%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 238.7 83.5% 58.6%;
+
+    --radius: 0.75rem;
+
+    /* Reusable Brand Gradient Design Tokens */
+    --gradient-primary: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #7c3aed 100%);
+    --gradient-primary-hover: linear-gradient(135deg, #1d4ed8 0%, #4338ca 50%, #6d28d9 100%);
+    --gradient-subtle: linear-gradient(
+      135deg,
+      rgba(37, 99, 235, 0.08) 0%,
+      rgba(79, 70, 229, 0.08) 50%,
+      rgba(124, 58, 237, 0.08) 100%
+    );
+    --gradient-glow: linear-gradient(
+      135deg,
+      rgba(37, 99, 235, 0.15) 0%,
+      rgba(124, 58, 237, 0.15) 100%
+    );
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  html {
+    font-family: var(--font-sans);
+  }
+  body {
+    font-family: var(--font-sans);
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+  }
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
+    font-family: inherit;
+  }
+}
+
+@layer utilities {
+  /* Reusable Gradient Utilities */
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .bg-gradient-primary-hover {
+    background: var(--gradient-primary-hover);
+  }
+
+  .bg-gradient-subtle {
+    background: var(--gradient-subtle);
+  }
+
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .shadow-primary {
+    box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.25);
+  }
+
+  .shadow-primary-hover {
+    box-shadow: 0 6px 20px 0 rgba(79, 70, 229, 0.35);
+  }
+
+  .shadow-card {
+    box-shadow:
+      0 1px 3px 0 rgba(0, 0, 0, 0.04),
+      0 10px 25px -5px rgba(0, 0, 0, 0.05),
+      0 0 0 1px rgba(0, 0, 0, 0.03);
+  }
+
+  .shadow-card-hover {
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.05),
+      0 20px 30px -10px rgba(0, 0, 0, 0.08),
+      0 0 0 1px rgba(0, 0, 0, 0.04);
+  }
+}

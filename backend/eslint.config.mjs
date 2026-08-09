@@ -12,7 +12,17 @@ export default tseslint.config(
       prettier: prettierPlugin,
     },
     rules: {
-      'prettier/prettier': 'error',
+      'prettier/prettier': [
+        'error',
+        {
+          singleQuote: true,
+          jsxSingleQuote: false,
+          semi: true,
+          trailingComma: 'all',
+          printWidth: 100,
+          endOfLine: 'lf',
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/explicit-function-return-type': 'warn',
       '@typescript-eslint/no-unused-vars': [
@@ -24,6 +34,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['dist/**', 'node_modules/**', 'openapi/**', 'src/types/generated/**'],
+    ignores: ['dist/**', 'node_modules/**', 'openapi/**', 'src/shared/types/generated/**'],
   },
 );

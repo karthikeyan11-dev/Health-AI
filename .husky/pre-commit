@@ -1,4 +1,40 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
-cd backend && npx lint-staged
+echo "=================================================="
+echo "🔍 Running Health AI Pre-Commit Quality Gates"
+echo "=================================================="
+
+echo "\n📦 [1/2] Checking Backend Quality Gates..."
+cd backend || exit 1
+
+echo "  ➡️ 1. Backend ESLint..."
+pnpm lint || exit 1
+
+echo "  ➡️ 2. Backend Prettier..."
+pnpm format:check || exit 1
+
+echo "  ➡️ 3. Backend TypeScript Type-Check..."
+pnpm type-check || exit 1
+
+echo "  ➡️ 4. Backend Jest 100% Test Coverage..."
+pnpm test:coverage || exit 1
+
+echo "  ➡️ 5. Backend Build..."
+pnpm build || exit 1
+
+echo "\n📦 [2/2] Checking Frontend Quality Gates (without tests)..."
+cd ../frontend || exit 1
+
+echo "  ➡️ 1. Frontend ESLint..."
+pnpm lint || exit 1
+
+echo "  ➡️ 2. Frontend Prettier..."
+pnpm format:check || exit 1
+
+echo "  ➡️ 3. Frontend TypeScript Type-Check..."
+pnpm typecheck || exit 1
+
+echo "  ➡️ 4. Frontend Build..."
+pnpm build || exit 1
+
+echo "\n✅ All Backend & Frontend pre-commit verification gates passed successfully!"

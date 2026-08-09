@@ -50,11 +50,13 @@ venv.bak/
 .ipynb_checkpoints/
 **/.ipynb_checkpoints/
 
-# Python Testing & Profiling
-.pytest_cache/
-**/.pytest_cache/
+# Testing & Coverage
+coverage/
+**/coverage/
 .coverage
 htmlcov/
+.pytest_cache/
+**/.pytest_cache/
 .mypy_cache/
 
 # Databases & Runtime State
