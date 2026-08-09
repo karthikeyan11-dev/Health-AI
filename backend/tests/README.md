@@ -3,6 +3,7 @@
 This directory mirrors the feature hierarchy of `src/modules/`.
 
 ## Structure Rules:
+
 - For each feature module in `src/modules/<feature>/`, create a corresponding test directory: `tests/<feature>/`.
 - Write dedicated unit test files for each business logic layer:
   - `<feature>.controller.spec.ts`

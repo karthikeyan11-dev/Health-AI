@@ -1,30 +1,20 @@
-import eslint from '@eslint/js';
+import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
+import prettierConfig from 'eslint-config-prettier';
 
 export default tseslint.config(
-  eslint.configs.recommended,
+  js.configs.recommended,
   ...tseslint.configs.recommended,
-  prettierConfig,
   {
+    files: ['src/**/*.ts', 'tests/**/*.ts'],
     plugins: {
       prettier: prettierPlugin,
     },
     rules: {
-      'prettier/prettier': [
-        'error',
-        {
-          singleQuote: true,
-          jsxSingleQuote: false,
-          semi: true,
-          trailingComma: 'all',
-          printWidth: 100,
-          endOfLine: 'lf',
-        },
-      ],
+      'prettier/prettier': 'error',
+      '@typescript-eslint/explicit-function-return-type': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/explicit-function-return-type': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
@@ -33,7 +23,14 @@ export default tseslint.config(
       'no-empty': ['error', { allowEmptyCatch: false }],
     },
   },
+  prettierConfig,
   {
-    ignores: ['dist/**', 'node_modules/**', 'openapi/**', 'src/shared/types/generated/**'],
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'openapi/**',
+      'src/shared/types/generated/**',
+      'jest.config.js',
+    ],
   },
 );

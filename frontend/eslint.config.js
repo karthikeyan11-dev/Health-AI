@@ -11,7 +11,7 @@ export default tseslint.config(
     ignores: ['dist/**', 'node_modules/**', 'public/**', 'src/sdk/**', 'src/types/api.types.ts'],
   },
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended, prettierConfig],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx,js,jsx}'],
     languageOptions: {
       ecmaVersion: 2020,
@@ -31,17 +31,7 @@ export default tseslint.config(
           allowExportNames: ['useTheme', 'buttonVariants', 'badgeVariants'],
         },
       ],
-      'prettier/prettier': [
-        'error',
-        {
-          singleQuote: true,
-          jsxSingleQuote: false,
-          semi: true,
-          trailingComma: 'all',
-          printWidth: 100,
-          endOfLine: 'lf',
-        },
-      ],
+      'prettier/prettier': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -49,4 +39,5 @@ export default tseslint.config(
       ],
     },
   },
+  prettierConfig,
 );

@@ -24,8 +24,37 @@ export const Config = cleanEnv(process.env, {
     default: 'http://localhost:5001',
     desc: 'Python emotion detection AI microservice URL',
   }),
+
+  // Redis Configuration
   REDIS_HOST: str({ default: 'localhost', desc: 'Redis hostname' }),
   REDIS_PORT: port({ default: 6379, desc: 'Redis port' }),
+  REDIS_PASSWORD: str({ default: '', desc: 'Redis authentication password' }),
+
+  // Email Provider Configuration
+  EMAIL_PROVIDER: str({
+    choices: ['brevo', 'mock'],
+    default: 'brevo',
+    desc: 'Email provider implementation',
+  }),
+  EMAIL_SENDER_EMAIL: str({
+    default: 'noreply@healthai.local',
+    desc: 'Default system email sender address',
+  }),
+  EMAIL_SENDER_NAME: str({
+    default: 'Health AI Platform',
+    desc: 'Default system email sender display name',
+  }),
+  BREVO_API_KEY: str({
+    default: '',
+    desc: 'Brevo transactional email API key',
+  }),
+
+  // Registration & OTP Configuration
+  REGISTRATION_OTP_EXPIRY_SECONDS: num({
+    default: 300,
+    desc: 'Registration OTP expiry TTL in seconds (default 5 minutes)',
+  }),
+
   LOG_LEVEL: str({
     choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace'],
     default: 'debug',

@@ -1,6 +1,5 @@
-import type { Config } from 'jest';
-
-const config: Config = {
+/** @type {import('jest').Config} */
+const config = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src', '<rootDir>/tests'],
@@ -8,16 +7,25 @@ const config: Config = {
   moduleFileExtensions: ['ts', 'js', 'json'],
   moduleNameMapper: {
     '^@config/(.*)$': '<rootDir>/src/config/$1',
+    '^@config$': '<rootDir>/src/config/index',
     '^@controllers/(.*)$': '<rootDir>/src/controllers/$1',
     '^@services/(.*)$': '<rootDir>/src/services/$1',
     '^@repositories/(.*)$': '<rootDir>/src/repositories/$1',
     '^@models/(.*)$': '<rootDir>/src/models/$1',
     '^@modules/(.*)$': '<rootDir>/src/modules/$1',
     '^@middlewares/(.*)$': '<rootDir>/src/middlewares/$1',
-    '^@utils/(.*)$': '<rootDir>/src/utils/$1',
+    '^@utils/(.*)$': '<rootDir>/src/shared/utils/$1',
+    '^@utils$': '<rootDir>/src/shared/utils/index',
     '^@shared/(.*)$': '<rootDir>/src/shared/$1',
+    '^@shared$': '<rootDir>/src/shared/index',
+    '^@providers/(.*)$': '<rootDir>/src/shared/providers/$1',
+    '^@providers$': '<rootDir>/src/shared/providers/index',
+    '^@templates/(.*)$': '<rootDir>/src/shared/templates/$1',
+    '^@templates$': '<rootDir>/src/shared/templates/index',
     '^@errors/(.*)$': '<rootDir>/src/shared/errors/$1',
+    '^@errors$': '<rootDir>/src/shared/errors/index',
     '^@types/(.*)$': '<rootDir>/src/shared/types/$1',
+    '^@types$': '<rootDir>/src/shared/types/index',
   },
   collectCoverage: true,
   coverageDirectory: 'coverage',
@@ -44,4 +52,4 @@ const config: Config = {
   restoreMocks: true,
 };
 
-export default config;
+module.exports = config;
