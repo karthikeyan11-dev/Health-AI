@@ -38,9 +38,47 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/RegisterResponse'
         '400':
           description: Validation error or duplicate email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/verify-otp:
+    post:
+      tags:
+        - Authentication
+      summary: Verify email OTP and complete user registration
+      description: Verifies the 6-digit email OTP for pending registration and creates the permanent user account.
+      operationId: verifyOtp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyOtpRequest'
+      responses:
+        '200':
+          description: OTP verified successfully and user account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid OTP, expired OTP, or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Maximum OTP verification attempts exceeded
           content:
             application/json:
               schema:
@@ -1653,6 +1691,14 @@ paths:
                 $ref: '#/components/schemas/SystemMetricsResponse'
 components:
   schemas:
+    UserRoleEnum:
+      type: string
+      enum:
+        - PATIENT
+        - CLINICIAN
+        - ADMIN
+        - SYSTEM
+      example: PATIENT
     RegisterRequest:
       type: object
       required:
@@ -1660,6 +1706,8 @@ components:
         - password
         - firstName
         - lastName
+        - age
+        - gender
       properties:
         email:
           type: string
@@ -1679,58 +1727,11 @@ components:
         phoneNumber:
           type: string
           example: '+1234567890'
-        role:
-          type: string
-          enum:
-            - PATIENT
-            - CLINICIAN
-            - ADMIN
-          default: PATIENT
-    UserRoleEnum:
-      type: string
-      enum:
-        - PATIENT
-        - CLINICIAN
-        - ADMIN
-        - SYSTEM
-      example: PATIENT
-    User:
-      type: object
-      required:
-        - id
-        - email
-        - firstName
-        - lastName
-        - role
-        - isActive
-        - createdAt
-        - updatedAt
-      properties:
-        id:
-          type: string
-          example: 64f1a2b3c4d5e6f7a8b9c0d1
-        email:
-          type: string
-          format: email
-          example: john.doe@healthai.org
-        firstName:
-          type: string
-          example: John
-        lastName:
-          type: string
-          example: Doe
-        phoneNumber:
-          type: string
-          example: '+1234567890'
-        role:
-          $ref: '#/components/schemas/UserRoleEnum'
-        isActive:
-          type: boolean
-          example: true
-        dateOfBirth:
-          type: string
-          format: date
-          example: '1990-05-15'
+        age:
+          type: integer
+          minimum: 0
+          maximum: 120
+          example: 34
         gender:
           type: string
           enum:
@@ -1739,14 +1740,8 @@ components:
             - OTHER
             - PREFER_NOT_TO_SAY
           example: MALE
-        createdAt:
-          type: string
-          format: date-time
-          example: '2026-08-07T09:00:00.000Z'
-        updatedAt:
-          type: string
-          format: date-time
-          example: '2026-08-07T09:00:00.000Z'
+        role:
+          $ref: '#/components/schemas/UserRoleEnum'
     Pagination:
       type: object
       required:
@@ -1803,7 +1798,7 @@ components:
           description: Unique correlation ID for tracking request lifecycle
         pagination:
           $ref: '#/components/schemas/Pagination'
-    UserResponse:
+    RegisterResponse:
       type: object
       required:
         - success
@@ -1814,11 +1809,24 @@ components:
         success:
           type: boolean
           example: true
+          description: Indicates that the registration request succeeded
         message:
           type: string
-          example: User details retrieved successfully
+          example: OTP verification code sent to your email
+          description: Human-readable status message
         data:
-          $ref: '#/components/schemas/User'
+          type: object
+          required:
+            - email
+          properties:
+            email:
+              type: string
+              format: email
+              example: user@healthai.org
+            expiresInSeconds:
+              type: integer
+              example: 300
+              description: Time-to-live for the OTP code in seconds
         meta:
           $ref: '#/components/schemas/Metadata'
     ValidationError:
@@ -1872,6 +1880,41 @@ components:
               description: Field-level validation error details, if applicable
         meta:
           $ref: '#/components/schemas/Metadata'
+    VerifyOtpRequest:
+      type: object
+      required:
+        - email
+        - otp
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@healthai.org
+          description: Email address used during registration
+        otp:
+          type: string
+          minLength: 6
+          maxLength: 6
+          example: '123456'
+          description: 6-digit numeric verification code
+    SuccessResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+          description: Indicates that the request succeeded
+        message:
+          type: string
+          example: Operation completed successfully
+          description: Human-readable success message
+        meta:
+          $ref: '#/components/schemas/Metadata'
     LoginRequest:
       type: object
       required:
@@ -1915,27 +1958,6 @@ components:
         refreshToken:
           type: string
           example: d98f7e2a-4b3c-4d5e-8f9a-0b1c2d3e4f5a
-    SuccessResponse:
-      type: object
-      required:
-        - success
-        - message
-        - data
-        - meta
-      properties:
-        success:
-          type: boolean
-          example: true
-          description: Indicates that the request succeeded
-        message:
-          type: string
-          example: Operation completed successfully
-          description: Human-readable success message
-        data:
-          type: object
-          description: The payload data returned by the operation
-        meta:
-          $ref: '#/components/schemas/Metadata'
     ForgotPasswordRequest:
       type: object
       required:
@@ -1959,6 +1981,94 @@ components:
           format: password
           minLength: 8
           example: NewP@ssw0rd123!
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+        - age
+        - gender
+        - role
+        - isActive
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        email:
+          type: string
+          format: email
+          example: john.doe@healthai.org
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        phoneNumber:
+          type: string
+          example: '+1234567890'
+        age:
+          type: integer
+          minimum: 0
+          maximum: 120
+          example: 34
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+            - PREFER_NOT_TO_SAY
+          example: MALE
+        role:
+          $ref: '#/components/schemas/UserRoleEnum'
+        isEmailVerified:
+          type: boolean
+          example: true
+        isPhoneVerified:
+          type: boolean
+          example: false
+        isActive:
+          type: boolean
+          example: true
+        dateOfBirth:
+          type: string
+          format: date
+          example: '1990-05-15'
+        lastLoginAt:
+          type: string
+          format: date-time
+          example: '2026-08-09T10:00:00.000Z'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+    UserResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: User details retrieved successfully
+        data:
+          $ref: '#/components/schemas/User'
+        meta:
+          $ref: '#/components/schemas/Metadata'
     ChangePasswordRequest:
       type: object
       required:
@@ -2079,6 +2189,7 @@ components:
         - deviceType
         - status
         - userId
+        - isActive
         - createdAt
         - updatedAt
       properties:
@@ -2088,6 +2199,9 @@ components:
         deviceId:
           type: string
           example: ESP32-HEALTH-001
+        name:
+          type: string
+          example: Patient Bedside Sensor Monitor
         macAddress:
           type: string
           example: A4:CF:12:89:56:AB
@@ -2102,6 +2216,9 @@ components:
         userId:
           type: string
           example: 64f1a2b3c4d5e6f7a8b9c0d1
+        isActive:
+          type: boolean
+          example: true
         lastSeenAt:
           type: string
           format: date-time
@@ -2640,6 +2757,11 @@ components:
         currentCardioRiskScore:
           type: number
           example: 12.1
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 95
         lastSyncTimestamp:
           type: string
           format: date-time
@@ -2853,6 +2975,11 @@ components:
               example:
                 - Elevated heart rate (+15% baseline)
                 - 'Detected emotion: Sad'
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 100
+              example: 92.5
             timestamp:
               type: string
               format: date-time
@@ -2975,6 +3102,21 @@ components:
               example: 18.5
             riskLevel:
               $ref: '#/components/schemas/CardiovascularRiskEnum'
+            contributingFactors:
+              type: array
+              items:
+                type: string
+              example:
+                - Elevated heart rate
+                - Subtle SpO2 drop
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 100
+              example: 94
+            explanation:
+              type: string
+              example: Risk assessment calculated from continuous heart rate, SpO2, body temperature, and emotional indicators.
             recommendations:
               type: array
               items:
@@ -3080,6 +3222,15 @@ components:
           $ref: '#/components/schemas/RecommendationCategoryEnum'
         priority:
           $ref: '#/components/schemas/RecommendationPriorityEnum'
+        source:
+          type: string
+          example: STRESS_ENGINE
+        relatedAssessmentId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d9
+        relatedAssessmentType:
+          type: string
+          example: STRESS
         isAcknowledged:
           type: boolean
           example: false
@@ -3088,6 +3239,10 @@ components:
           format: date-time
           nullable: true
           example: null
+        expiresAt:
+          type: string
+          format: date-time
+          example: '2026-08-08T09:00:00.000Z'
         createdAt:
           type: string
           format: date-time
@@ -3199,6 +3354,24 @@ components:
             downloadUrl:
               type: string
               example: /reports/64f1a2b3c4d5e6f7a8b9c0d7/download
+            startDate:
+              type: string
+              format: date-time
+              example: '2026-08-01T00:00:00.000Z'
+            endDate:
+              type: string
+              format: date-time
+              example: '2026-08-07T23:59:59.000Z'
+            summary:
+              type: string
+              example: Patient exhibited stable baseline vitals throughout reporting period.
+            qrCodeToken:
+              type: string
+              example: qr_token_88a99c01
+            expiresAt:
+              type: string
+              format: date-time
+              example: '2026-08-14T23:59:59.000Z'
             generatedAt:
               type: string
               format: date-time
@@ -3292,6 +3465,9 @@ components:
           example: stress_relief_query
         detectedEmotion:
           $ref: '#/components/schemas/EmotionEnum'
+        healthContextUsed:
+          type: string
+          example: 'Vitals snapshot: HR 92 bpm, SpO2 97%, Emotion: Sad'
         timestamp:
           type: string
           format: date-time
@@ -3631,6 +3807,83 @@ components:
           nullable: true
         meta:
           $ref: '#/components/schemas/Metadata'
+    PendingRegistrationData:
+      type: object
+      required:
+        - email
+        - passwordHash
+        - firstName
+        - lastName
+        - age
+        - gender
+        - role
+        - hashedOtp
+        - remainingTries
+        - createdAt
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@healthai.org
+        passwordHash:
+          type: string
+          example: $2a$10$abcdef1234567890
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        phoneNumber:
+          type: string
+          example: '+1234567890'
+        age:
+          type: integer
+          minimum: 0
+          maximum: 120
+          example: 34
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+            - PREFER_NOT_TO_SAY
+          example: MALE
+        role:
+          $ref: '#/components/schemas/UserRoleEnum'
+        hashedOtp:
+          type: string
+          example: $2a$10$hashedotpcode
+        remainingTries:
+          type: integer
+          example: 5
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-09T10:00:00.000Z'
+    StoredOtpRecord:
+      type: object
+      required:
+        - hashedOtp
+        - email
+        - remainingTries
+        - createdAt
+      properties:
+        hashedOtp:
+          type: string
+          example: $2a$10$hashedotpcode
+        email:
+          type: string
+          format: email
+          example: user@healthai.org
+        remainingTries:
+          type: integer
+          example: 5
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-09T10:00:00.000Z'
   parameters:
     UserIdParam:
       name: userId

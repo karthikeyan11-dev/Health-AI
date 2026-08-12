@@ -23,8 +23,8 @@ export enum ReportStatus {
 export interface IReportMetadata {
   startDate?: Date;
   endDate?: Date;
-  summaryMetrics?: Record<string, unknown>;
-  [key: string]: unknown;
+  summaryMetrics?: Record<string, string | number | boolean | null | undefined>;
+  [key: string]: string | number | boolean | object | Date | null | undefined;
 }
 
 export interface IReport {
@@ -34,6 +34,11 @@ export interface IReport {
   format: ReportFormat;
   downloadUrl: string;
   status: ReportStatus;
+  startDate?: Date;
+  endDate?: Date;
+  summary?: string;
+  qrCodeToken?: string;
+  expiresAt?: Date;
   generatedAt: Date;
   metadata?: IReportMetadata;
   createdAt?: Date;
@@ -82,6 +87,28 @@ const reportSchema = new Schema<IReportDocument>(
       required: true,
       index: true,
     },
+    startDate: {
+      type: Date,
+      default: undefined,
+    },
+    endDate: {
+      type: Date,
+      default: undefined,
+    },
+    summary: {
+      type: String,
+      trim: true,
+      default: undefined,
+    },
+    qrCodeToken: {
+      type: String,
+      trim: true,
+      default: undefined,
+    },
+    expiresAt: {
+      type: Date,
+      default: undefined,
+    },
     generatedAt: {
       type: Date,
       required: true,
@@ -97,7 +124,10 @@ const reportSchema = new Schema<IReportDocument>(
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: (_doc, ret: Record<string, unknown>): Record<string, unknown> => {
+      transform: (
+        _doc,
+        ret: Record<string, string | number | boolean | object | Date | null | undefined>,
+      ): Record<string, string | number | boolean | object | Date | null | undefined> => {
         delete ret.__v;
         return ret;
       },

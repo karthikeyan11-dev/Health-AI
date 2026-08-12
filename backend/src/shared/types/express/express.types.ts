@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import type { operations } from '../generated/api-types';
+import type { operations, components } from '../generated/api-types';
 
 type ExtractBody<Op extends keyof operations> = operations[Op] extends {
   requestBody: { content: { 'application/json': infer B } };
@@ -9,7 +9,7 @@ type ExtractBody<Op extends keyof operations> = operations[Op] extends {
         requestBody?: { content: { 'application/json': infer B } };
       }
     ? B
-    : unknown;
+    : Record<string, string | number | boolean | null | undefined>;
 
 type ExtractPath<Op extends keyof operations> = operations[Op] extends {
   parameters: { path: infer P };
@@ -30,7 +30,7 @@ type ExtractQuery<Op extends keyof operations> = operations[Op] extends {
   : operations[Op] extends {
         parameters?: { query?: infer Q };
       }
-    ? Q extends Record<string, unknown>
+    ? Q extends Record<string, string | number | boolean | undefined>
       ? Q
       : Record<string, string | undefined>
     : Record<string, string | undefined>;
@@ -43,7 +43,7 @@ type ExtractResponse<Op extends keyof operations> = operations[Op] extends {
     ? R
     : operations[Op] extends { responses: { 202: { content: { 'application/json': infer R } } } }
       ? R
-      : unknown;
+      : Record<string, string | number | boolean | object | null | undefined>;
 
 export type AuthenticatedUser = {
   id: string;
@@ -65,7 +65,10 @@ export type TypedRequest<Op extends keyof operations> = Omit<
 
 export type TypedResponse<Op extends keyof operations> = Omit<Response, 'json' | 'status'> & {
   json: (
-    data: ExtractResponse<Op> | { message: string; errors?: { row: number; reason: string }[] },
+    data:
+      | ExtractResponse<Op>
+      | components['schemas']['ErrorResponse']
+      | { message: string; errors?: { row: number; reason: string }[] },
   ) => TypedResponse<Op>;
   status: (code: number) => TypedResponse<Op>;
 };

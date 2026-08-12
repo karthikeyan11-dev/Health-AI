@@ -15,7 +15,7 @@ export class RedisProvider {
       password: Config.REDIS_PASSWORD || undefined,
       maxRetriesPerRequest: null,
       enableReadyCheck: true,
-      lazyConnect: false,
+      lazyConnect: true,
     };
 
     this.client = new Redis(redisOptions);

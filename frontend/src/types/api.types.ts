@@ -24,6 +24,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/verify-otp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verify email OTP and complete user registration
+         * @description Verifies the 6-digit email OTP for pending registration and creates the permanent user account.
+         */
+        post: operations["verifyOtp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/login": {
         parameters: {
             query?: never;
@@ -1060,6 +1080,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * @example PATIENT
+         * @enum {string}
+         */
+        UserRoleEnum: "PATIENT" | "CLINICIAN" | "ADMIN" | "SYSTEM";
         RegisterRequest: {
             /**
              * Format: email
@@ -1077,54 +1102,14 @@ export interface components {
             lastName: string;
             /** @example +1234567890 */
             phoneNumber?: string;
-            /**
-             * @default PATIENT
-             * @enum {string}
-             */
-            role: "PATIENT" | "CLINICIAN" | "ADMIN";
-        };
-        /**
-         * @example PATIENT
-         * @enum {string}
-         */
-        UserRoleEnum: "PATIENT" | "CLINICIAN" | "ADMIN" | "SYSTEM";
-        User: {
-            /** @example 64f1a2b3c4d5e6f7a8b9c0d1 */
-            id: string;
-            /**
-             * Format: email
-             * @example john.doe@healthai.org
-             */
-            email: string;
-            /** @example John */
-            firstName: string;
-            /** @example Doe */
-            lastName: string;
-            /** @example +1234567890 */
-            phoneNumber?: string;
-            role: components["schemas"]["UserRoleEnum"];
-            /** @example true */
-            isActive: boolean;
-            /**
-             * Format: date
-             * @example 1990-05-15
-             */
-            dateOfBirth?: string;
+            /** @example 34 */
+            age: number;
             /**
              * @example MALE
              * @enum {string}
              */
-            gender?: "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY";
-            /**
-             * Format: date-time
-             * @example 2026-08-07T09:00:00.000Z
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @example 2026-08-07T09:00:00.000Z
-             */
-            updatedAt: string;
+            gender: "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY";
+            role?: components["schemas"]["UserRoleEnum"];
         };
         Pagination: {
             /**
@@ -1172,12 +1157,29 @@ export interface components {
             requestId: string;
             pagination?: components["schemas"]["Pagination"];
         };
-        UserResponse: {
-            /** @example true */
+        RegisterResponse: {
+            /**
+             * @description Indicates that the registration request succeeded
+             * @example true
+             */
             success: boolean;
-            /** @example User details retrieved successfully */
+            /**
+             * @description Human-readable status message
+             * @example OTP verification code sent to your email
+             */
             message: string;
-            data: components["schemas"]["User"];
+            data: {
+                /**
+                 * Format: email
+                 * @example user@healthai.org
+                 */
+                email: string;
+                /**
+                 * @description Time-to-live for the OTP code in seconds
+                 * @example 300
+                 */
+                expiresInSeconds?: number;
+            };
             meta: components["schemas"]["Metadata"];
         };
         ValidationError: {
@@ -1219,6 +1221,32 @@ export interface components {
             };
             meta: components["schemas"]["Metadata"];
         };
+        VerifyOtpRequest: {
+            /**
+             * Format: email
+             * @description Email address used during registration
+             * @example user@healthai.org
+             */
+            email: string;
+            /**
+             * @description 6-digit numeric verification code
+             * @example 123456
+             */
+            otp: string;
+        };
+        SuccessResponse: {
+            /**
+             * @description Indicates that the request succeeded
+             * @example true
+             */
+            success: boolean;
+            /**
+             * @description Human-readable success message
+             * @example Operation completed successfully
+             */
+            message: string;
+            meta: components["schemas"]["Metadata"];
+        };
         LoginRequest: {
             /**
              * Format: email
@@ -1248,21 +1276,6 @@ export interface components {
             /** @example d98f7e2a-4b3c-4d5e-8f9a-0b1c2d3e4f5a */
             refreshToken: string;
         };
-        SuccessResponse: {
-            /**
-             * @description Indicates that the request succeeded
-             * @example true
-             */
-            success: boolean;
-            /**
-             * @description Human-readable success message
-             * @example Operation completed successfully
-             */
-            message: string;
-            /** @description The payload data returned by the operation */
-            data: Record<string, never>;
-            meta: components["schemas"]["Metadata"];
-        };
         ForgotPasswordRequest: {
             /**
              * Format: email
@@ -1278,6 +1291,63 @@ export interface components {
              * @example NewP@ssw0rd123!
              */
             newPassword: string;
+        };
+        User: {
+            /** @example 64f1a2b3c4d5e6f7a8b9c0d1 */
+            id: string;
+            /**
+             * Format: email
+             * @example john.doe@healthai.org
+             */
+            email: string;
+            /** @example John */
+            firstName: string;
+            /** @example Doe */
+            lastName: string;
+            /** @example +1234567890 */
+            phoneNumber?: string;
+            /** @example 34 */
+            age: number;
+            /**
+             * @example MALE
+             * @enum {string}
+             */
+            gender: "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY";
+            role: components["schemas"]["UserRoleEnum"];
+            /** @example true */
+            isEmailVerified?: boolean;
+            /** @example false */
+            isPhoneVerified?: boolean;
+            /** @example true */
+            isActive: boolean;
+            /**
+             * Format: date
+             * @example 1990-05-15
+             */
+            dateOfBirth?: string;
+            /**
+             * Format: date-time
+             * @example 2026-08-09T10:00:00.000Z
+             */
+            lastLoginAt?: string;
+            /**
+             * Format: date-time
+             * @example 2026-08-07T09:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-08-07T09:00:00.000Z
+             */
+            updatedAt: string;
+        };
+        UserResponse: {
+            /** @example true */
+            success: boolean;
+            /** @example User details retrieved successfully */
+            message: string;
+            data: components["schemas"]["User"];
+            meta: components["schemas"]["Metadata"];
         };
         ChangePasswordRequest: {
             /**
@@ -1358,6 +1428,8 @@ export interface components {
             id: string;
             /** @example ESP32-HEALTH-001 */
             deviceId: string;
+            /** @example Patient Bedside Sensor Monitor */
+            name?: string;
             /** @example A4:CF:12:89:56:AB */
             macAddress: string;
             /** @example ESP32-MULTI-SENSOR */
@@ -1367,6 +1439,8 @@ export interface components {
             status: components["schemas"]["DeviceStatusEnum"];
             /** @example 64f1a2b3c4d5e6f7a8b9c0d1 */
             userId: string;
+            /** @example true */
+            isActive: boolean;
             /**
              * Format: date-time
              * @example 2026-08-07T08:59:30.000Z
@@ -1670,6 +1744,8 @@ export interface components {
             currentStressScore?: number;
             /** @example 12.1 */
             currentCardioRiskScore?: number;
+            /** @example 95 */
+            confidence?: number;
             /**
              * Format: date-time
              * @example 2026-08-07T09:00:00.000Z
@@ -1793,6 +1869,8 @@ export interface components {
                  *     ]
                  */
                 contributingFactors?: string[];
+                /** @example 92.5 */
+                confidence?: number;
                 /**
                  * Format: date-time
                  * @example 2026-08-07T09:00:00.000Z
@@ -1877,6 +1955,17 @@ export interface components {
                 riskLevel: components["schemas"]["CardiovascularRiskEnum"];
                 /**
                  * @example [
+                 *       "Elevated heart rate",
+                 *       "Subtle SpO2 drop"
+                 *     ]
+                 */
+                contributingFactors?: string[];
+                /** @example 94 */
+                confidence?: number;
+                /** @example Risk assessment calculated from continuous heart rate, SpO2, body temperature, and emotional indicators. */
+                explanation?: string;
+                /**
+                 * @example [
                  *       "Maintain steady hydration",
                  *       "Engage in 30 mins moderate aerobic activity daily"
                  *     ]
@@ -1937,6 +2026,12 @@ export interface components {
             description: string;
             category: components["schemas"]["RecommendationCategoryEnum"];
             priority: components["schemas"]["RecommendationPriorityEnum"];
+            /** @example STRESS_ENGINE */
+            source?: string;
+            /** @example 64f1a2b3c4d5e6f7a8b9c0d9 */
+            relatedAssessmentId?: string;
+            /** @example STRESS */
+            relatedAssessmentType?: string;
             /** @example false */
             isAcknowledged: boolean;
             /**
@@ -1944,6 +2039,11 @@ export interface components {
              * @example null
              */
             acknowledgedAt?: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-08-08T09:00:00.000Z
+             */
+            expiresAt?: string;
             /**
              * Format: date-time
              * @example 2026-08-07T09:00:00.000Z
@@ -2010,6 +2110,25 @@ export interface components {
                 downloadUrl: string;
                 /**
                  * Format: date-time
+                 * @example 2026-08-01T00:00:00.000Z
+                 */
+                startDate?: string;
+                /**
+                 * Format: date-time
+                 * @example 2026-08-07T23:59:59.000Z
+                 */
+                endDate?: string;
+                /** @example Patient exhibited stable baseline vitals throughout reporting period. */
+                summary?: string;
+                /** @example qr_token_88a99c01 */
+                qrCodeToken?: string;
+                /**
+                 * Format: date-time
+                 * @example 2026-08-14T23:59:59.000Z
+                 */
+                expiresAt?: string;
+                /**
+                 * Format: date-time
                  * @example 2026-08-07T09:00:00.000Z
                  */
                 generatedAt: string;
@@ -2059,6 +2178,8 @@ export interface components {
             /** @example stress_relief_query */
             intent?: string;
             detectedEmotion?: components["schemas"]["EmotionEnum"];
+            /** @example Vitals snapshot: HR 92 bpm, SpO2 97%, Emotion: Sad */
+            healthContextUsed?: string;
             /**
              * Format: date-time
              * @example 2026-08-07T09:00:00.000Z
@@ -2244,6 +2365,54 @@ export interface components {
             data?: Record<string, never> | null;
             meta: components["schemas"]["Metadata"];
         };
+        PendingRegistrationData: {
+            /**
+             * Format: email
+             * @example user@healthai.org
+             */
+            email: string;
+            /** @example $2a$10$abcdef1234567890 */
+            passwordHash: string;
+            /** @example John */
+            firstName: string;
+            /** @example Doe */
+            lastName: string;
+            /** @example +1234567890 */
+            phoneNumber?: string;
+            /** @example 34 */
+            age: number;
+            /**
+             * @example MALE
+             * @enum {string}
+             */
+            gender: "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY";
+            role: components["schemas"]["UserRoleEnum"];
+            /** @example $2a$10$hashedotpcode */
+            hashedOtp: string;
+            /** @example 5 */
+            remainingTries: number;
+            /**
+             * Format: date-time
+             * @example 2026-08-09T10:00:00.000Z
+             */
+            createdAt: string;
+        };
+        StoredOtpRecord: {
+            /** @example $2a$10$hashedotpcode */
+            hashedOtp: string;
+            /**
+             * Format: email
+             * @example user@healthai.org
+             */
+            email: string;
+            /** @example 5 */
+            remainingTries: number;
+            /**
+             * Format: date-time
+             * @example 2026-08-09T10:00:00.000Z
+             */
+            createdAt: string;
+        };
     };
     responses: never;
     parameters: {
@@ -2277,11 +2446,62 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserResponse"];
+                    "application/json": components["schemas"]["RegisterResponse"];
                 };
             };
             /** @description Validation error or duplicate email */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    verifyOtp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyOtpRequest"];
+            };
+        };
+        responses: {
+            /** @description OTP verified successfully and user account created */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            /** @description Invalid OTP, expired OTP, or validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Maximum OTP verification attempts exceeded */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

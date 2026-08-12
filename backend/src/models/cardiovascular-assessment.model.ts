@@ -13,6 +13,9 @@ export interface ICardiovascularAssessment {
   patientId?: Types.ObjectId;
   riskScore: number;
   riskLevel: CardiovascularRiskLevel;
+  contributingFactors?: string[];
+  confidence?: number;
+  explanation?: string;
   recommendations: string[];
   heartRate: number;
   spo2: number;
@@ -56,6 +59,21 @@ const cardiovascularAssessmentSchema = new Schema<ICardiovascularAssessmentDocum
       enum: Object.values(CardiovascularRiskLevel),
       required: [true, 'Cardiovascular risk level category is required'],
       index: true,
+    },
+    contributingFactors: {
+      type: [String],
+      default: [],
+    },
+    confidence: {
+      type: Number,
+      min: [0, 'Confidence cannot be below 0'],
+      max: [100, 'Confidence cannot exceed 100'],
+      default: undefined,
+    },
+    explanation: {
+      type: String,
+      trim: true,
+      default: undefined,
     },
     recommendations: {
       type: [String],
@@ -106,7 +124,10 @@ const cardiovascularAssessmentSchema = new Schema<ICardiovascularAssessmentDocum
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: (_doc, ret: Record<string, unknown>): Record<string, unknown> => {
+      transform: (
+        _doc,
+        ret: Record<string, string | number | boolean | object | Date | null | undefined>,
+      ): Record<string, string | number | boolean | object | Date | null | undefined> => {
         delete ret.__v;
         return ret;
       },

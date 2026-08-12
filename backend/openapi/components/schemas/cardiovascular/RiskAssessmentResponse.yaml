@@ -30,6 +30,21 @@ properties:
         example: 18.5
       riskLevel:
         $ref: './CardiovascularRiskEnum.yaml'
+      contributingFactors:
+        type: array
+        items:
+          type: string
+        example:
+          - "Elevated heart rate"
+          - "Subtle SpO2 drop"
+      confidence:
+        type: number
+        minimum: 0
+        maximum: 100
+        example: 94.0
+      explanation:
+        type: string
+        example: "Risk assessment calculated from continuous heart rate, SpO2, body temperature, and emotional indicators."
       recommendations:
         type: array
         items:

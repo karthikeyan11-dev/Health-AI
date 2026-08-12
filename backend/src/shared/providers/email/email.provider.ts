@@ -17,6 +17,7 @@ export interface SendEmailOptions {
 export interface EmailProvider {
   /**
    * Dispatches an email using the underlying email delivery engine.
+   * Returns true if email was dispatched, or false if skipped (e.g. missing API key).
    */
-  sendEmail(options: SendEmailOptions): Promise<void>;
+  sendEmail(options: SendEmailOptions): Promise<boolean>;
 }

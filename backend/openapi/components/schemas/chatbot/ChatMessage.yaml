@@ -22,6 +22,9 @@ properties:
     example: "stress_relief_query"
   detectedEmotion:
     $ref: '../emotion/EmotionEnum.yaml'
+  healthContextUsed:
+    type: string
+    example: "Vitals snapshot: HR 92 bpm, SpO2 97%, Emotion: Sad"
   timestamp:
     type: string
     format: date-time

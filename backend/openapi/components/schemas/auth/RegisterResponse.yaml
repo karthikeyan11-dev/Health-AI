@@ -1,0 +1,30 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+    description: Indicates that the registration request succeeded
+  message:
+    type: string
+    example: OTP verification code sent to your email
+    description: Human-readable status message
+  data:
+    type: object
+    required:
+      - email
+    properties:
+      email:
+        type: string
+        format: email
+        example: user@healthai.org
+      expiresInSeconds:
+        type: integer
+        example: 300
+        description: Time-to-live for the OTP code in seconds
+  meta:
+    $ref: '../common/Metadata.yaml'

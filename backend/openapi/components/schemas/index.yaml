@@ -19,6 +19,16 @@ ApiResponse:
 # Auth Schemas
 RegisterRequest:
   $ref: './auth/RegisterRequest.yaml'
+RegisterResponse:
+  $ref: './auth/RegisterResponse.yaml'
+VerifyOtpRequest:
+  $ref: './auth/VerifyOtpRequest.yaml'
+VerifyOtpResponse:
+  $ref: './common/SuccessResponse.yaml'
+PendingRegistrationData:
+  $ref: './auth/PendingRegistrationData.yaml'
+StoredOtpRecord:
+  $ref: './auth/StoredOtpRecord.yaml'
 LoginRequest:
   $ref: './auth/LoginRequest.yaml'
 AuthTokensResponse:

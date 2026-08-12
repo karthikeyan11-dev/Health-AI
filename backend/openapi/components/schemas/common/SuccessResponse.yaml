@@ -13,8 +13,5 @@ properties:
     type: string
     example: Operation completed successfully
     description: Human-readable success message
-  data:
-    type: object
-    description: The payload data returned by the operation
   meta:
     $ref: './Metadata.yaml'

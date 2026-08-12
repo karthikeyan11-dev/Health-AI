@@ -34,6 +34,24 @@ properties:
       downloadUrl:
         type: string
         example: "/reports/64f1a2b3c4d5e6f7a8b9c0d7/download"
+      startDate:
+        type: string
+        format: date-time
+        example: "2026-08-01T00:00:00.000Z"
+      endDate:
+        type: string
+        format: date-time
+        example: "2026-08-07T23:59:59.000Z"
+      summary:
+        type: string
+        example: "Patient exhibited stable baseline vitals throughout reporting period."
+      qrCodeToken:
+        type: string
+        example: "qr_token_88a99c01"
+      expiresAt:
+        type: string
+        format: date-time
+        example: "2026-08-14T23:59:59.000Z"
       generatedAt:
         type: string
         format: date-time

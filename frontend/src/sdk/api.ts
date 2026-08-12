@@ -77,6 +77,7 @@ export interface ChatMessage {
     'message': string;
     'intent'?: string;
     'detectedEmotion'?: EmotionEnum;
+    'healthContextUsed'?: string;
     'timestamp': string;
 }
 
@@ -130,11 +131,13 @@ export type CreateUserRequestGenderEnum = typeof CreateUserRequestGenderEnum[key
 export interface Device {
     'id': string;
     'deviceId': string;
+    'name'?: string;
     'macAddress': string;
     'deviceType': string;
     'firmwareVersion'?: string;
     'status': DeviceStatusEnum;
     'userId': string;
+    'isActive': boolean;
     'lastSeenAt'?: string;
     'createdAt': string;
     'updatedAt': string;
@@ -190,6 +193,7 @@ export interface DigitalTwin {
     'dominantEmotion'?: EmotionEnum;
     'currentStressScore'?: number;
     'currentCardioRiskScore'?: number;
+    'confidence'?: number;
     'lastSyncTimestamp': string;
     'createdAt': string;
     'updatedAt': string;
@@ -512,6 +516,29 @@ export interface Pagination {
      */
     'hasPrevPage': boolean;
 }
+export interface PendingRegistrationData {
+    'email': string;
+    'passwordHash': string;
+    'firstName': string;
+    'lastName': string;
+    'phoneNumber'?: string;
+    'age': number;
+    'gender': PendingRegistrationDataGenderEnum;
+    'role': UserRoleEnum;
+    'hashedOtp': string;
+    'remainingTries': number;
+    'createdAt': string;
+}
+
+export const PendingRegistrationDataGenderEnum = {
+    Male: 'MALE',
+    Female: 'FEMALE',
+    Other: 'OTHER',
+    PreferNotToSay: 'PREFER_NOT_TO_SAY',
+} as const;
+
+export type PendingRegistrationDataGenderEnum = typeof PendingRegistrationDataGenderEnum[keyof typeof PendingRegistrationDataGenderEnum];
+
 export interface PredictEmotionRequest {
     /**
      * Base64 encoded image string or frame
@@ -539,8 +566,12 @@ export interface Recommendation {
     'description': string;
     'category': RecommendationCategoryEnum;
     'priority': RecommendationPriorityEnum;
+    'source'?: string;
+    'relatedAssessmentId'?: string;
+    'relatedAssessmentType'?: string;
     'isAcknowledged': boolean;
     'acknowledgedAt'?: string | null;
+    'expiresAt'?: string;
     'createdAt': string;
     'updatedAt': string;
 }
@@ -591,17 +622,39 @@ export interface RegisterRequest {
     'firstName': string;
     'lastName': string;
     'phoneNumber'?: string;
-    'role'?: RegisterRequestRoleEnum;
+    'age': number;
+    'gender': RegisterRequestGenderEnum;
+    'role'?: UserRoleEnum;
 }
 
-export const RegisterRequestRoleEnum = {
-    Patient: 'PATIENT',
-    Clinician: 'CLINICIAN',
-    Admin: 'ADMIN',
+export const RegisterRequestGenderEnum = {
+    Male: 'MALE',
+    Female: 'FEMALE',
+    Other: 'OTHER',
+    PreferNotToSay: 'PREFER_NOT_TO_SAY',
 } as const;
 
-export type RegisterRequestRoleEnum = typeof RegisterRequestRoleEnum[keyof typeof RegisterRequestRoleEnum];
+export type RegisterRequestGenderEnum = typeof RegisterRequestGenderEnum[keyof typeof RegisterRequestGenderEnum];
 
+export interface RegisterResponse {
+    /**
+     * Indicates that the registration request succeeded
+     */
+    'success': boolean;
+    /**
+     * Human-readable status message
+     */
+    'message': string;
+    'data': RegisterResponseData;
+    'meta': Metadata;
+}
+export interface RegisterResponseData {
+    'email': string;
+    /**
+     * Time-to-live for the OTP code in seconds
+     */
+    'expiresInSeconds'?: number;
+}
 
 export const ReportFormatEnum = {
     Pdf: 'PDF',
@@ -615,9 +668,19 @@ export type ReportFormatEnum = typeof ReportFormatEnum[keyof typeof ReportFormat
 export interface ReportListResponse {
     'success': boolean;
     'message': string;
-    'data': Array<ReportResponseData>;
+    'data': Array<ReportListResponseDataInner>;
     'meta': Metadata;
 }
+export interface ReportListResponseDataInner {
+    'id': string;
+    'userId': string;
+    'reportType': ReportTypeEnum;
+    'format': ReportFormatEnum;
+    'downloadUrl': string;
+    'generatedAt': string;
+}
+
+
 export interface ReportResponse {
     'success': boolean;
     'message': string;
@@ -630,6 +693,11 @@ export interface ReportResponseData {
     'reportType': ReportTypeEnum;
     'format': ReportFormatEnum;
     'downloadUrl': string;
+    'startDate'?: string;
+    'endDate'?: string;
+    'summary'?: string;
+    'qrCodeToken'?: string;
+    'expiresAt'?: string;
     'generatedAt': string;
 }
 
@@ -694,6 +762,9 @@ export interface RiskAssessmentResponseData {
     'userId': string;
     'riskScore': number;
     'riskLevel': CardiovascularRiskEnum;
+    'contributingFactors'?: Array<string>;
+    'confidence'?: number;
+    'explanation'?: string;
     'recommendations': Array<string>;
     'timestamp': string;
 }
@@ -771,6 +842,12 @@ export const SpO2DataStatusEnum = {
 
 export type SpO2DataStatusEnum = typeof SpO2DataStatusEnum[keyof typeof SpO2DataStatusEnum];
 
+export interface StoredOtpRecord {
+    'hashedOtp': string;
+    'email': string;
+    'remainingTries': number;
+    'createdAt': string;
+}
 export interface StressAssessmentRequest {
     'userId': string;
     'heartRate'?: number;
@@ -791,6 +868,7 @@ export interface StressAssessmentResponseData {
     'stressScore': number;
     'stressLevel': StressLevelEnum;
     'contributingFactors'?: Array<string>;
+    'confidence'?: number;
     'timestamp': string;
 }
 
@@ -828,10 +906,6 @@ export interface SuccessResponse {
      * Human-readable success message
      */
     'message': string;
-    /**
-     * The payload data returned by the operation
-     */
-    'data': object;
     'meta': Metadata;
 }
 export interface SystemInfoResponse {
@@ -936,10 +1010,14 @@ export interface User {
     'firstName': string;
     'lastName': string;
     'phoneNumber'?: string;
+    'age': number;
+    'gender': UserGenderEnum;
     'role': UserRoleEnum;
+    'isEmailVerified'?: boolean;
+    'isPhoneVerified'?: boolean;
     'isActive': boolean;
     'dateOfBirth'?: string;
-    'gender'?: UserGenderEnum;
+    'lastLoginAt'?: string;
     'createdAt': string;
     'updatedAt': string;
 }
@@ -989,6 +1067,16 @@ export interface ValidationError {
      * Invalid input value provided
      */
     'value'?: string | null;
+}
+export interface VerifyOtpRequest {
+    /**
+     * Email address used during registration
+     */
+    'email': string;
+    /**
+     * 6-digit numeric verification code
+     */
+    'otp': string;
 }
 
 /**
@@ -1313,6 +1401,48 @@ export const AuthenticationApiAxiosParamCreator = function (configuration?: Conf
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * Verifies the 6-digit email OTP for pending registration and creates the permanent user account.
+         * @summary Verify email OTP and complete user registration
+         * @param {VerifyOtpRequest} verifyOtpRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        verifyOtp: async (verifyOtpRequest: VerifyOtpRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'verifyOtpRequest' is not null or undefined
+            assertParamExists('verifyOtp', 'verifyOtpRequest', verifyOtpRequest)
+            const localVarPath = `/auth/verify-otp`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication ApiKeyAuth required
+            await setApiKeyToObject(localVarHeaderParameter, "X-API-KEY", configuration)
+
+            // authentication BearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(verifyOtpRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -1405,7 +1535,7 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async registerUser(registerRequest: RegisterRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserResponse>> {
+        async registerUser(registerRequest: RegisterRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RegisterResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.registerUser(registerRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.registerUser']?.[localVarOperationServerIndex]?.url;
@@ -1422,6 +1552,19 @@ export const AuthenticationApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.resetPassword(resetPasswordRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.resetPassword']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Verifies the 6-digit email OTP for pending registration and creates the permanent user account.
+         * @summary Verify email OTP and complete user registration
+         * @param {VerifyOtpRequest} verifyOtpRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async verifyOtp(verifyOtpRequest: VerifyOtpRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SuccessResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.verifyOtp(verifyOtpRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['AuthenticationApi.verifyOtp']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -1498,7 +1641,7 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        registerUser(registerRequest: RegisterRequest, options?: RawAxiosRequestConfig): AxiosPromise<UserResponse> {
+        registerUser(registerRequest: RegisterRequest, options?: RawAxiosRequestConfig): AxiosPromise<RegisterResponse> {
             return localVarFp.registerUser(registerRequest, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1510,6 +1653,16 @@ export const AuthenticationApiFactory = function (configuration?: Configuration,
          */
         resetPassword(resetPasswordRequest: ResetPasswordRequest, options?: RawAxiosRequestConfig): AxiosPromise<SuccessResponse> {
             return localVarFp.resetPassword(resetPasswordRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Verifies the 6-digit email OTP for pending registration and creates the permanent user account.
+         * @summary Verify email OTP and complete user registration
+         * @param {VerifyOtpRequest} verifyOtpRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        verifyOtp(verifyOtpRequest: VerifyOtpRequest, options?: RawAxiosRequestConfig): AxiosPromise<SuccessResponse> {
+            return localVarFp.verifyOtp(verifyOtpRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1602,6 +1755,17 @@ export class AuthenticationApi extends BaseAPI {
      */
     public resetPassword(resetPasswordRequest: ResetPasswordRequest, options?: RawAxiosRequestConfig) {
         return AuthenticationApiFp(this.configuration).resetPassword(resetPasswordRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Verifies the 6-digit email OTP for pending registration and creates the permanent user account.
+     * @summary Verify email OTP and complete user registration
+     * @param {VerifyOtpRequest} verifyOtpRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public verifyOtp(verifyOtpRequest: VerifyOtpRequest, options?: RawAxiosRequestConfig) {
+        return AuthenticationApiFp(this.configuration).verifyOtp(verifyOtpRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

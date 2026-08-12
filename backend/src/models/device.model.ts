@@ -9,12 +9,14 @@ export enum DeviceStatus {
 
 export interface IDevice {
   deviceId: string;
+  name?: string;
   macAddress: string;
   deviceType: string;
   firmwareVersion: string;
   status: DeviceStatus;
   userId?: Types.ObjectId;
   patientId?: Types.ObjectId;
+  isActive: boolean;
   lastSeenAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
@@ -32,6 +34,11 @@ const deviceSchema = new Schema<IDeviceDocument>(
       unique: true,
       trim: true,
       index: true,
+    },
+    name: {
+      type: String,
+      trim: true,
+      default: undefined,
     },
     macAddress: {
       type: String,
@@ -72,6 +79,12 @@ const deviceSchema = new Schema<IDeviceDocument>(
       index: true,
       default: undefined,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+      required: true,
+      index: true,
+    },
     lastSeenAt: {
       type: Date,
       default: undefined,
@@ -81,7 +94,10 @@ const deviceSchema = new Schema<IDeviceDocument>(
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: (_doc, ret: Record<string, unknown>): Record<string, unknown> => {
+      transform: (
+        _doc,
+        ret: Record<string, string | number | boolean | object | Date | null | undefined>,
+      ): Record<string, string | number | boolean | object | Date | null | undefined> => {
         delete ret.__v;
         return ret;
       },

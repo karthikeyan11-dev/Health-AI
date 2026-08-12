@@ -18,13 +18,13 @@ export class BrevoEmailProvider implements EmailProvider {
   /**
    * Dispatches transactional email via BrevoClient.
    */
-  public async sendEmail(options: SendEmailOptions): Promise<void> {
+  public async sendEmail(options: SendEmailOptions): Promise<boolean> {
     if (!emailConfig.apiKey) {
       logger.warn(
         { recipient: options.to, subject: options.subject },
         'BrevoEmailProvider.sendEmail - BREVO_API_KEY is missing. Email dispatch skipped in current environment.',
       );
-      return;
+      return false;
     }
 
     try {
@@ -54,6 +54,7 @@ export class BrevoEmailProvider implements EmailProvider {
         },
         'BrevoEmailProvider.sendEmail - Transactional email dispatched successfully via Brevo',
       );
+      return true;
     } catch (error) {
       logger.error(
         {

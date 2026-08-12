@@ -25,7 +25,7 @@ export class EmailService {
 
       const text = `Your Health AI verification code is: ${otp}. Valid for 5 minutes.`;
 
-      await this.emailProvider.sendEmail({
+      const dispatched = await this.emailProvider.sendEmail({
         to: email,
         toName: name,
         subject: EmailConstants.SUBJECTS.OTP_VERIFICATION,
@@ -33,7 +33,14 @@ export class EmailService {
         text,
       });
 
-      logger.info({ email }, 'EmailService.sendVerificationOtp - Email dispatched successfully');
+      if (dispatched) {
+        logger.info({ email }, 'EmailService.sendVerificationOtp - Email dispatched successfully');
+      } else {
+        logger.warn(
+          { email },
+          'EmailService.sendVerificationOtp - Verification email dispatch skipped in current environment',
+        );
+      }
     } catch (error) {
       logger.error(
         { err: error, email },
@@ -56,7 +63,7 @@ export class EmailService {
 
       const text = `Welcome to Health AI! Your account is now active.`;
 
-      await this.emailProvider.sendEmail({
+      const dispatched = await this.emailProvider.sendEmail({
         to: email,
         toName: name,
         subject: EmailConstants.SUBJECTS.WELCOME,
@@ -64,10 +71,17 @@ export class EmailService {
         text,
       });
 
-      logger.info(
-        { email },
-        'EmailService.sendWelcomeEmail - Welcome email dispatched successfully',
-      );
+      if (dispatched) {
+        logger.info(
+          { email },
+          'EmailService.sendWelcomeEmail - Welcome email dispatched successfully',
+        );
+      } else {
+        logger.warn(
+          { email },
+          'EmailService.sendWelcomeEmail - Welcome email dispatch skipped in current environment',
+        );
+      }
     } catch (error) {
       logger.error(
         { err: error, email },

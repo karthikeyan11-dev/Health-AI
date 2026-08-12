@@ -4,6 +4,8 @@ required:
   - email
   - firstName
   - lastName
+  - age
+  - gender
   - role
   - isActive
   - createdAt
@@ -25,8 +27,23 @@ properties:
   phoneNumber:
     type: string
     example: "+1234567890"
+  age:
+    type: integer
+    minimum: 0
+    maximum: 120
+    example: 34
+  gender:
+    type: string
+    enum: [MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY]
+    example: "MALE"
   role:
     $ref: './UserRoleEnum.yaml'
+  isEmailVerified:
+    type: boolean
+    example: true
+  isPhoneVerified:
+    type: boolean
+    example: false
   isActive:
     type: boolean
     example: true
@@ -34,10 +51,10 @@ properties:
     type: string
     format: date
     example: "1990-05-15"
-  gender:
+  lastLoginAt:
     type: string
-    enum: [MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY]
-    example: "MALE"
+    format: date-time
+    example: "2026-08-09T10:00:00.000Z"
   createdAt:
     type: string
     format: date-time

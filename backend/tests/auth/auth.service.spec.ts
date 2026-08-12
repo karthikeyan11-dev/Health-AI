@@ -1,0 +1,405 @@
+import bcrypt from 'bcryptjs';
+import { AuthService } from '../../src/modules/auth/auth.service';
+import type { AuthRepository } from '../../src/modules/auth/auth.repository';
+import type { OtpService } from '../../src/shared/services/otp/otp.service';
+import type { EmailService } from '../../src/shared/services/email/email.service';
+import { ConflictError, BadRequestError } from '../../src/shared/errors/httpErrors';
+import { UserRole, type IUserDocument } from '../../src/models/user.model';
+import { AuthConstants } from '../../src/shared/constants/auth.constants';
+
+describe('AuthService Unit Tests', () => {
+  let authService: AuthService;
+  let mockRepo: jest.Mocked<AuthRepository>;
+  let mockOtpSvc: jest.Mocked<OtpService>;
+  let mockEmailSvc: jest.Mocked<EmailService>;
+
+  beforeEach(() => {
+    mockRepo = {
+      findByEmail: jest.fn(),
+      existsByEmail: jest.fn(),
+      createUser: jest.fn(),
+    } as unknown as jest.Mocked<AuthRepository>;
+
+    mockOtpSvc = {
+      generateOtp: jest.fn().mockReturnValue('123456'),
+      storePendingRegistration: jest.fn().mockResolvedValue(undefined),
+      getPendingRegistration: jest.fn(),
+      verifyRegistrationOtp: jest.fn(),
+      deletePendingRegistration: jest.fn().mockResolvedValue(true),
+    } as unknown as jest.Mocked<OtpService>;
+
+    mockEmailSvc = {
+      sendVerificationOtp: jest.fn().mockResolvedValue(undefined),
+      sendWelcomeEmail: jest.fn().mockResolvedValue(undefined),
+    } as unknown as jest.Mocked<EmailService>;
+
+    authService = new AuthService(mockRepo, mockOtpSvc, mockEmailSvc);
+    jest.clearAllMocks();
+  });
+
+  describe('register', () => {
+    it('should throw ConflictError if user email already exists', async () => {
+      mockRepo.existsByEmail.mockResolvedValue(true);
+
+      await expect(
+        authService.register({
+          email: 'existing@example.com',
+          password: 'password123',
+          firstName: 'John',
+          lastName: 'Doe',
+          age: 34,
+          gender: 'MALE',
+        }),
+      ).rejects.toThrow(ConflictError);
+
+      expect(mockRepo.existsByEmail).toHaveBeenCalledWith('existing@example.com');
+      expect(mockOtpSvc.storePendingRegistration).not.toHaveBeenCalled();
+    });
+
+    it('should register successfully with default PATIENT role', async () => {
+      mockRepo.existsByEmail.mockResolvedValue(false);
+      const hashSpy = jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashed_pw' as never);
+
+      const result = await authService.register({
+        email: ' Test@Example.com ',
+        password: 'password123',
+        firstName: 'John',
+        lastName: 'Doe',
+        age: 34,
+        gender: 'MALE',
+      });
+
+      expect(result).toEqual({
+        email: 'test@example.com',
+        expiresInSeconds: AuthConstants.OTP_EXPIRY_SECONDS,
+      });
+
+      expect(hashSpy).toHaveBeenCalledWith('password123', 10);
+      expect(mockOtpSvc.generateOtp).toHaveBeenCalled();
+      expect(mockOtpSvc.storePendingRegistration).toHaveBeenCalledWith(
+        'test@example.com',
+        {
+          email: 'test@example.com',
+          passwordHash: 'hashed_pw',
+          firstName: 'John',
+          lastName: 'Doe',
+          phoneNumber: undefined,
+          age: 34,
+          gender: 'MALE',
+          role: UserRole.PATIENT,
+        },
+        '123456',
+      );
+      expect(mockEmailSvc.sendVerificationOtp).toHaveBeenCalledWith(
+        'test@example.com',
+        '123456',
+        'John',
+      );
+    });
+
+    it('should register successfully with custom CLINICIAN role and phoneNumber', async () => {
+      mockRepo.existsByEmail.mockResolvedValue(false);
+      jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashed_pw' as never);
+
+      const result = await authService.register({
+        email: 'clinician@example.com',
+        password: 'password123',
+        firstName: 'Alice',
+        lastName: 'Smith',
+        phoneNumber: '+1234567890',
+        age: 40,
+        gender: 'FEMALE',
+        role: 'CLINICIAN',
+      });
+
+      expect(result.email).toBe('clinician@example.com');
+      expect(mockOtpSvc.storePendingRegistration).toHaveBeenCalledWith(
+        'clinician@example.com',
+        {
+          email: 'clinician@example.com',
+          passwordHash: 'hashed_pw',
+          firstName: 'Alice',
+          lastName: 'Smith',
+          phoneNumber: '+1234567890',
+          age: 40,
+          gender: 'FEMALE',
+          role: UserRole.CLINICIAN,
+        },
+        '123456',
+      );
+    });
+
+    it('should register successfully with custom ADMIN role', async () => {
+      mockRepo.existsByEmail.mockResolvedValue(false);
+      jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashed_pw' as never);
+
+      const result = await authService.register({
+        email: 'admin@example.com',
+        password: 'password123',
+        firstName: 'Super',
+        lastName: 'Admin',
+        age: 45,
+        gender: 'OTHER',
+        role: 'ADMIN',
+      });
+
+      expect(result.email).toBe('admin@example.com');
+      expect(mockOtpSvc.storePendingRegistration).toHaveBeenCalledWith(
+        'admin@example.com',
+        {
+          email: 'admin@example.com',
+          passwordHash: 'hashed_pw',
+          firstName: 'Super',
+          lastName: 'Admin',
+          phoneNumber: undefined,
+          age: 45,
+          gender: 'OTHER',
+          role: UserRole.ADMIN,
+        },
+        '123456',
+      );
+    });
+  });
+
+  describe('verifyOtp', () => {
+    it('should verify OTP and create permanent user in MongoDB with dates', async () => {
+      const pendingData = {
+        email: 'user@example.com',
+        passwordHash: 'hashed_pw',
+        firstName: 'John',
+        lastName: 'Doe',
+        phoneNumber: '+1234567890',
+        age: 34,
+        gender: 'MALE' as const,
+        role: UserRole.PATIENT,
+        hashedOtp: 'hashed_otp',
+        remainingTries: 5,
+        createdAt: new Date().toISOString(),
+      };
+
+      const createdUser = {
+        id: 'user_123',
+        ...pendingData,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastLoginAt: new Date(),
+      };
+
+      mockOtpSvc.verifyRegistrationOtp.mockResolvedValue(pendingData);
+      mockRepo.existsByEmail.mockResolvedValue(false);
+      mockRepo.createUser.mockResolvedValue(createdUser as unknown as IUserDocument);
+
+      await authService.verifyOtp({
+        email: ' User@Example.com ',
+        otp: '123456',
+      });
+
+      expect(mockOtpSvc.verifyRegistrationOtp).toHaveBeenCalledWith('user@example.com', '123456');
+      expect(mockRepo.createUser).toHaveBeenCalledWith({
+        email: 'user@example.com',
+        passwordHash: 'hashed_pw',
+        firstName: 'John',
+        lastName: 'Doe',
+        phoneNumber: '+1234567890',
+        age: 34,
+        gender: 'MALE',
+        role: UserRole.PATIENT,
+        isEmailVerified: true,
+        isPhoneVerified: false,
+        isActive: true,
+      });
+      expect(mockOtpSvc.deletePendingRegistration).toHaveBeenCalledWith('user@example.com');
+      expect(mockEmailSvc.sendWelcomeEmail).toHaveBeenCalledWith('user@example.com', 'John');
+    });
+
+    it('should verify OTP and create CLINICIAN, ADMIN or SYSTEM user', async () => {
+      const pendingClinician = {
+        email: 'doctor@example.com',
+        passwordHash: 'hashed_pw',
+        firstName: 'Doc',
+        lastName: 'House',
+        age: 40,
+        gender: 'MALE' as const,
+        role: UserRole.CLINICIAN,
+        hashedOtp: 'hashed_otp',
+        remainingTries: 5,
+        createdAt: new Date().toISOString(),
+      };
+
+      const createdClinician = {
+        id: 'doc_123',
+        ...pendingClinician,
+        role: UserRole.CLINICIAN,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockOtpSvc.verifyRegistrationOtp.mockResolvedValue(pendingClinician);
+      mockRepo.existsByEmail.mockResolvedValue(false);
+      mockRepo.createUser.mockResolvedValue(createdClinician as unknown as IUserDocument);
+
+      await expect(
+        authService.verifyOtp({
+          email: 'doctor@example.com',
+          otp: '123456',
+        }),
+      ).resolves.not.toThrow();
+
+      const pendingAdmin = {
+        ...pendingClinician,
+        email: 'admin@example.com',
+        role: UserRole.ADMIN,
+      };
+      const createdAdmin = {
+        ...createdClinician,
+        id: 'admin_123',
+        email: 'admin@example.com',
+        role: UserRole.ADMIN,
+      };
+
+      mockOtpSvc.verifyRegistrationOtp.mockResolvedValue(pendingAdmin);
+      mockRepo.createUser.mockResolvedValue(createdAdmin as unknown as IUserDocument);
+
+      await expect(
+        authService.verifyOtp({
+          email: 'admin@example.com',
+          otp: '123456',
+        }),
+      ).resolves.not.toThrow();
+
+      const pendingSystem = {
+        ...pendingClinician,
+        email: 'system@example.com',
+        role: UserRole.SYSTEM,
+      };
+      const createdSystem = {
+        ...createdClinician,
+        id: 'system_123',
+        email: 'system@example.com',
+        role: UserRole.SYSTEM,
+      };
+
+      mockOtpSvc.verifyRegistrationOtp.mockResolvedValue(pendingSystem);
+      mockRepo.createUser.mockResolvedValue(createdSystem as unknown as IUserDocument);
+
+      await expect(
+        authService.verifyOtp({
+          email: 'system@example.com',
+          otp: '123456',
+        }),
+      ).resolves.not.toThrow();
+    });
+
+    it('should verify OTP and create permanent user when dates are undefined', async () => {
+      const pendingData = {
+        email: 'user2@example.com',
+        passwordHash: 'hashed_pw',
+        firstName: 'Bob',
+        lastName: 'Jones',
+        age: 30,
+        gender: 'MALE' as const,
+        role: UserRole.PATIENT,
+        hashedOtp: 'hashed_otp',
+        remainingTries: 5,
+        createdAt: new Date().toISOString(),
+      };
+
+      const createdUser = {
+        id: 'user_456',
+        ...pendingData,
+        isActive: true,
+        createdAt: undefined,
+        updatedAt: undefined,
+      };
+
+      mockOtpSvc.verifyRegistrationOtp.mockResolvedValue(pendingData);
+      mockRepo.existsByEmail.mockResolvedValue(false);
+      mockRepo.createUser.mockResolvedValue(createdUser as unknown as IUserDocument);
+
+      await expect(
+        authService.verifyOtp({
+          email: 'user2@example.com',
+          otp: '123456',
+        }),
+      ).resolves.not.toThrow();
+    });
+
+    it('should throw BadRequestError if pending registration record is incomplete or corrupted', async () => {
+      const incompleteData = {
+        email: 'user@example.com',
+        passwordHash: '',
+        firstName: 'John',
+        lastName: 'Doe',
+        age: 34,
+        gender: 'MALE' as const,
+        role: UserRole.PATIENT,
+        hashedOtp: 'hashed_otp',
+        remainingTries: 5,
+        createdAt: new Date().toISOString(),
+      };
+
+      mockOtpSvc.verifyRegistrationOtp.mockResolvedValue(incompleteData);
+
+      await expect(
+        authService.verifyOtp({
+          email: 'user@example.com',
+          otp: '123456',
+        }),
+      ).rejects.toThrow(BadRequestError);
+    });
+
+    it('should throw BadRequestError if verification email mismatches pending registration email', async () => {
+      const mismatchedData = {
+        email: 'other@example.com',
+        passwordHash: 'hashed_pw',
+        firstName: 'John',
+        lastName: 'Doe',
+        age: 34,
+        gender: 'MALE' as const,
+        role: UserRole.PATIENT,
+        hashedOtp: 'hashed_otp',
+        remainingTries: 5,
+        createdAt: new Date().toISOString(),
+      };
+
+      mockOtpSvc.verifyRegistrationOtp.mockResolvedValue(mismatchedData);
+
+      await expect(
+        authService.verifyOtp({
+          email: 'user@example.com',
+          otp: '123456',
+        }),
+      ).rejects.toThrow(BadRequestError);
+    });
+
+    it('should throw ConflictError if user was created between registration and OTP verification', async () => {
+      const pendingData = {
+        email: 'user@example.com',
+        passwordHash: 'hashed_pw',
+        firstName: 'John',
+        lastName: 'Doe',
+        age: 34,
+        gender: 'MALE' as const,
+        role: UserRole.PATIENT,
+        hashedOtp: 'hashed_otp',
+        remainingTries: 5,
+        createdAt: new Date().toISOString(),
+      };
+
+      mockOtpSvc.verifyRegistrationOtp.mockResolvedValue(pendingData);
+      mockRepo.existsByEmail.mockResolvedValue(true);
+
+      await expect(
+        authService.verifyOtp({
+          email: 'user@example.com',
+          otp: '123456',
+        }),
+      ).rejects.toThrow(ConflictError);
+
+      expect(mockOtpSvc.deletePendingRegistration).toHaveBeenCalledWith('user@example.com');
+      expect(mockRepo.createUser).not.toHaveBeenCalled();
+    });
+  });
+});

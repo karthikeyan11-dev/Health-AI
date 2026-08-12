@@ -10,10 +10,12 @@ export enum ChatSender {
 export interface IChatMessage {
   sessionId: Types.ObjectId;
   userId: Types.ObjectId;
+  patientId?: Types.ObjectId;
   sender: ChatSender;
   message: string;
   intent?: string;
   detectedEmotion?: EmotionType;
+  healthContextUsed?: string;
   timestamp: Date;
   createdAt?: Date;
   updatedAt?: Date;
@@ -37,6 +39,12 @@ const chatMessageSchema = new Schema<IChatMessageDocument>(
       required: [true, 'User reference ID is required'],
       index: true,
     },
+    patientId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Patient',
+      index: true,
+      default: undefined,
+    },
     sender: {
       type: String,
       enum: Object.values(ChatSender),
@@ -57,6 +65,11 @@ const chatMessageSchema = new Schema<IChatMessageDocument>(
       enum: Object.values(EmotionType),
       default: undefined,
     },
+    healthContextUsed: {
+      type: String,
+      trim: true,
+      default: undefined,
+    },
     timestamp: {
       type: Date,
       required: true,
@@ -68,7 +81,10 @@ const chatMessageSchema = new Schema<IChatMessageDocument>(
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: (_doc, ret: Record<string, unknown>): Record<string, unknown> => {
+      transform: (
+        _doc,
+        ret: Record<string, string | number | boolean | object | Date | null | undefined>,
+      ): Record<string, string | number | boolean | object | Date | null | undefined> => {
         delete ret.__v;
         return ret;
       },

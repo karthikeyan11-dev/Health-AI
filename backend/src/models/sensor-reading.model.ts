@@ -69,7 +69,10 @@ const sensorReadingSchema = new Schema<ISensorReadingDocument>(
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: (_doc, ret: Record<string, unknown>): Record<string, unknown> => {
+      transform: (
+        _doc,
+        ret: Record<string, string | number | boolean | object | Date | null | undefined>,
+      ): Record<string, string | number | boolean | object | Date | null | undefined> => {
         delete ret.__v;
         return ret;
       },

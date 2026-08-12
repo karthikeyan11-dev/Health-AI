@@ -36,6 +36,11 @@ properties:
         example:
           - "Elevated heart rate (+15% baseline)"
           - "Detected emotion: Sad"
+      confidence:
+        type: number
+        minimum: 0
+        maximum: 100
+        example: 92.5
       timestamp:
         type: string
         format: date-time

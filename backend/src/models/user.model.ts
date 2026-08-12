@@ -1,4 +1,5 @@
 import { Schema, model, type Document, type Model } from 'mongoose';
+import { Gender } from './patient.model';
 
 export enum UserRole {
   PATIENT = 'PATIENT',
@@ -13,8 +14,13 @@ export interface IUser {
   firstName: string;
   lastName: string;
   phoneNumber?: string;
+  age: number;
+  gender: Gender;
   role: UserRole;
+  isEmailVerified: boolean;
+  isPhoneVerified: boolean;
   isActive: boolean;
+  lastLoginAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -53,6 +59,17 @@ const userSchema = new Schema<IUserDocument>(
       trim: true,
       default: undefined,
     },
+    age: {
+      type: Number,
+      required: [true, 'Age is required'],
+      min: [1, 'Age must be at least 1'],
+      max: [120, 'Age cannot exceed 120'],
+    },
+    gender: {
+      type: String,
+      required: [true, 'Gender is required'],
+      enum: Object.values(Gender),
+    },
     role: {
       type: String,
       enum: Object.values(UserRole),
@@ -60,18 +77,36 @@ const userSchema = new Schema<IUserDocument>(
       required: true,
       index: true,
     },
+    isEmailVerified: {
+      type: Boolean,
+      default: true,
+      required: true,
+      index: true,
+    },
+    isPhoneVerified: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
     isActive: {
       type: Boolean,
       default: true,
       required: true,
       index: true,
     },
+    lastLoginAt: {
+      type: Date,
+      default: undefined,
+    },
   },
   {
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: (_doc, ret: Record<string, unknown>): Record<string, unknown> => {
+      transform: (
+        _doc,
+        ret: Record<string, string | number | boolean | object | Date | null | undefined>,
+      ): Record<string, string | number | boolean | object | Date | null | undefined> => {
         delete ret.__v;
         delete ret.passwordHash;
         return ret;

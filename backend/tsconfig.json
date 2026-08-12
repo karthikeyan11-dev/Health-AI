@@ -19,6 +19,8 @@
       "@utils/*": ["src/shared/utils/*", "src/utils/*"],
       "@shared": ["src/shared"],
       "@shared/*": ["src/shared/*"],
+      "@verification": ["src/shared/verification"],
+      "@verification/*": ["src/shared/verification/*"],
       "@providers": ["src/shared/providers"],
       "@providers/*": ["src/shared/providers/*"],
       "@templates": ["src/shared/templates"],

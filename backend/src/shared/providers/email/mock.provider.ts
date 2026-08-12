@@ -7,7 +7,7 @@ import type { EmailProvider, SendEmailOptions } from './email.provider';
 export class MockEmailProvider implements EmailProvider {
   private sentEmails: SendEmailOptions[] = [];
 
-  public async sendEmail(options: SendEmailOptions): Promise<void> {
+  public async sendEmail(options: SendEmailOptions): Promise<boolean> {
     const messageId = `mock_msg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
     this.sentEmails.push(options);
@@ -20,6 +20,7 @@ export class MockEmailProvider implements EmailProvider {
       },
       'MockEmailProvider.sendEmail - Mock email recorded successfully',
     );
+    return true;
   }
 
   public getSentEmails(): readonly SendEmailOptions[] {

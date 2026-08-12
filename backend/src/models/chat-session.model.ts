@@ -10,6 +10,7 @@ export interface IChatSession {
   userId: Types.ObjectId;
   patientId?: Types.ObjectId;
   title: string;
+  context?: string;
   status: ChatSessionStatus;
   lastMessageAt: Date;
   createdAt?: Date;
@@ -40,6 +41,11 @@ const chatSessionSchema = new Schema<IChatSessionDocument>(
       default: 'Health Consultation Session',
       trim: true,
     },
+    context: {
+      type: String,
+      trim: true,
+      default: undefined,
+    },
     status: {
       type: String,
       enum: Object.values(ChatSessionStatus),
@@ -57,7 +63,10 @@ const chatSessionSchema = new Schema<IChatSessionDocument>(
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: (_doc, ret: Record<string, unknown>): Record<string, unknown> => {
+      transform: (
+        _doc,
+        ret: Record<string, string | number | boolean | object | Date | null | undefined>,
+      ): Record<string, string | number | boolean | object | Date | null | undefined> => {
         delete ret.__v;
         return ret;
       },

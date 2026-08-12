@@ -1,0 +1,21 @@
+type: object
+required:
+  - hashedOtp
+  - email
+  - remainingTries
+  - createdAt
+properties:
+  hashedOtp:
+    type: string
+    example: "$2a$10$hashedotpcode"
+  email:
+    type: string
+    format: email
+    example: "user@healthai.org"
+  remainingTries:
+    type: integer
+    example: 5
+  createdAt:
+    type: string
+    format: date-time
+    example: "2026-08-09T10:00:00.000Z"

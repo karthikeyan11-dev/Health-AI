@@ -26,6 +26,15 @@ properties:
     $ref: './RecommendationCategoryEnum.yaml'
   priority:
     $ref: './RecommendationPriorityEnum.yaml'
+  source:
+    type: string
+    example: "STRESS_ENGINE"
+  relatedAssessmentId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d9"
+  relatedAssessmentType:
+    type: string
+    example: "STRESS"
   isAcknowledged:
     type: boolean
     example: false
@@ -34,6 +43,10 @@ properties:
     format: date-time
     nullable: true
     example: null
+  expiresAt:
+    type: string
+    format: date-time
+    example: "2026-08-08T09:00:00.000Z"
   createdAt:
     type: string
     format: date-time

@@ -20,6 +20,7 @@ export interface IDigitalTwin {
   dominantEmotion: EmotionType;
   currentStressScore: number;
   currentCardioRiskScore: number;
+  confidence?: number;
   lastSyncTimestamp: Date;
   createdAt?: Date;
   updatedAt?: Date;
@@ -95,6 +96,12 @@ const digitalTwinSchema = new Schema<IDigitalTwinDocument>(
       min: [0, 'Cardiovascular risk score cannot be below 0'],
       max: [100, 'Cardiovascular risk score cannot exceed 100'],
     },
+    confidence: {
+      type: Number,
+      min: [0, 'Confidence cannot be below 0'],
+      max: [100, 'Confidence cannot exceed 100'],
+      default: undefined,
+    },
     lastSyncTimestamp: {
       type: Date,
       required: true,
@@ -105,7 +112,10 @@ const digitalTwinSchema = new Schema<IDigitalTwinDocument>(
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: (_doc, ret: Record<string, unknown>): Record<string, unknown> => {
+      transform: (
+        _doc,
+        ret: Record<string, string | number | boolean | object | Date | null | undefined>,
+      ): Record<string, string | number | boolean | object | Date | null | undefined> => {
         delete ret.__v;
         return ret;
       },

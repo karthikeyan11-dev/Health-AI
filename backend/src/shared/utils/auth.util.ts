@@ -1,7 +1,60 @@
 import type { RedisProvider } from '../providers/storage/redis.provider';
 import { AuthConstants } from '../constants/auth.constants';
 import { getRegistrationRedisKey } from './otp.util';
+import { UserRole } from '../../models/user.model';
+import { Gender } from '../../models/patient.model';
 import { logger } from '@config/logger';
+
+/**
+ * Converts string gender to Gender enum.
+ */
+export function toGender(gender?: string): Gender | undefined {
+  if (gender === 'MALE') {
+    return Gender.MALE;
+  }
+  if (gender === 'FEMALE') {
+    return Gender.FEMALE;
+  }
+  if (gender === 'OTHER') {
+    return Gender.OTHER;
+  }
+  if (gender === 'PREFER_NOT_TO_SAY') {
+    return Gender.PREFER_NOT_TO_SAY;
+  }
+  return undefined;
+}
+
+/**
+ * Converts string role (from OpenAPI schema or input) to UserRole enum.
+ */
+export function toUserRole(role?: string): UserRole {
+  if (role === 'CLINICIAN') {
+    return UserRole.CLINICIAN;
+  }
+  if (role === 'ADMIN') {
+    return UserRole.ADMIN;
+  }
+  if (role === 'SYSTEM') {
+    return UserRole.SYSTEM;
+  }
+  return UserRole.PATIENT;
+}
+
+/**
+ * Converts UserRole enum to OpenAPI schema role string.
+ */
+export function toSchemaRole(role: UserRole): 'PATIENT' | 'CLINICIAN' | 'ADMIN' | 'SYSTEM' {
+  if (role === UserRole.CLINICIAN) {
+    return 'CLINICIAN';
+  }
+  if (role === UserRole.ADMIN) {
+    return 'ADMIN';
+  }
+  if (role === UserRole.SYSTEM) {
+    return 'SYSTEM';
+  }
+  return 'PATIENT';
+}
 
 /**
  * Saves temporary registration payload to Redis with TTL.
@@ -36,7 +89,8 @@ export async function getRegistration<T>(
   }
 
   try {
-    return JSON.parse(rawData) as T;
+    const parsedData: T = JSON.parse(rawData);
+    return parsedData;
   } catch (error) {
     logger.error(
       { err: error, key },

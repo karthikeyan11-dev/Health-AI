@@ -16,7 +16,7 @@ post:
       content:
         application/json:
           schema:
-            $ref: '../../components/schemas/users/UserResponse.yaml'
+            $ref: '../../components/schemas/auth/RegisterResponse.yaml'
     '400':
       description: Validation error or duplicate email
       content:

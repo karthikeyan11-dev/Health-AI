@@ -22,8 +22,12 @@ export interface IRecommendation {
   description: string;
   category: RecommendationCategory;
   priority: RecommendationPriority;
+  source?: string;
+  relatedAssessmentId?: Types.ObjectId;
+  relatedAssessmentType?: string;
   isAcknowledged: boolean;
   acknowledgedAt?: Date | null;
+  expiresAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -69,6 +73,20 @@ const recommendationSchema = new Schema<IRecommendationDocument>(
       required: true,
       index: true,
     },
+    source: {
+      type: String,
+      trim: true,
+      default: undefined,
+    },
+    relatedAssessmentId: {
+      type: Schema.Types.ObjectId,
+      default: undefined,
+    },
+    relatedAssessmentType: {
+      type: String,
+      trim: true,
+      default: undefined,
+    },
     isAcknowledged: {
       type: Boolean,
       default: false,
@@ -79,12 +97,19 @@ const recommendationSchema = new Schema<IRecommendationDocument>(
       type: Date,
       default: null,
     },
+    expiresAt: {
+      type: Date,
+      default: undefined,
+    },
   },
   {
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: (_doc, ret: Record<string, unknown>): Record<string, unknown> => {
+      transform: (
+        _doc,
+        ret: Record<string, string | number | boolean | object | Date | null | undefined>,
+      ): Record<string, string | number | boolean | object | Date | null | undefined> => {
         delete ret.__v;
         return ret;
       },

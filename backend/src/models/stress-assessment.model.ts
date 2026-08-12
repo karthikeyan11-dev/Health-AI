@@ -23,6 +23,7 @@ export interface IStressAssessment {
   stressScore: number;
   stressLevel: StressLevel;
   contributingFactors: string[];
+  confidence?: number;
   heartRate?: number;
   temperature?: number;
   spo2?: number;
@@ -67,6 +68,12 @@ const stressAssessmentSchema = new Schema<IStressAssessmentDocument>(
       default: [],
       required: true,
     },
+    confidence: {
+      type: Number,
+      min: [0, 'Confidence cannot be below 0'],
+      max: [100, 'Confidence cannot exceed 100'],
+      default: undefined,
+    },
     heartRate: {
       type: Number,
       default: undefined,
@@ -95,7 +102,10 @@ const stressAssessmentSchema = new Schema<IStressAssessmentDocument>(
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: (_doc, ret: Record<string, unknown>): Record<string, unknown> => {
+      transform: (
+        _doc,
+        ret: Record<string, string | number | boolean | object | Date | null | undefined>,
+      ): Record<string, string | number | boolean | object | Date | null | undefined> => {
         delete ret.__v;
         return ret;
       },

@@ -4,6 +4,8 @@ required:
   - password
   - firstName
   - lastName
+  - age
+  - gender
 properties:
   email:
     type: string
@@ -23,7 +25,14 @@ properties:
   phoneNumber:
     type: string
     example: "+1234567890"
-  role:
+  age:
+    type: integer
+    minimum: 0
+    maximum: 120
+    example: 34
+  gender:
     type: string
-    enum: [PATIENT, CLINICIAN, ADMIN]
-    default: PATIENT
+    enum: [MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY]
+    example: "MALE"
+  role:
+    $ref: '../users/UserRoleEnum.yaml'

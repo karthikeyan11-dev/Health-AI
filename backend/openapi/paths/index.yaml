@@ -1,6 +1,8 @@
 # Authentication Endpoints
 /auth/register:
   $ref: './auth/register.yaml'
+/auth/verify-otp:
+  $ref: './auth/verify-otp.yaml'
 /auth/login:
   $ref: './auth/login.yaml'
 /auth/refresh-token:

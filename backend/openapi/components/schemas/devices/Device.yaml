@@ -6,6 +6,7 @@ required:
   - deviceType
   - status
   - userId
+  - isActive
   - createdAt
   - updatedAt
 properties:
@@ -15,6 +16,9 @@ properties:
   deviceId:
     type: string
     example: "ESP32-HEALTH-001"
+  name:
+    type: string
+    example: "Patient Bedside Sensor Monitor"
   macAddress:
     type: string
     example: "A4:CF:12:89:56:AB"
@@ -29,6 +33,9 @@ properties:
   userId:
     type: string
     example: "64f1a2b3c4d5e6f7a8b9c0d1"
+  isActive:
+    type: boolean
+    example: true
   lastSeenAt:
     type: string
     format: date-time
