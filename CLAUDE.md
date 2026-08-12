@@ -20,7 +20,7 @@
 
 | Category | Prohibited Action | Risk / Consequences |
 | :--- | :--- | :--- |
-| **Typing** | ❌ Strictly don't use `any`, `unknown` types and also don't use `ts-ignore` / `eslint-disable` | This destroys type safety; causes runtime `TypeError` crashes. Also if you are using type `infer`  then also you strictly check the type guard to prevent type errors. |
+| **Typing** | ❌ Using `any`, `unknown`, `ts-ignore` / `eslint-disable`, inventing manual types instead of using generated types, or declaring custom types outside feature `types/` folders | Destroys type safety; causes runtime `TypeError` crashes and API spec desynchronization. |
 | **Secrets & Env** | ❌ Hardcoding API keys, JWT secrets, DB strings, or calling `process.env` directly | This is a major security vulnerability; violates centralized configuration. |
 | **Error Handling** | ❌ Empty `catch` blocks or swallowing exceptions (`catch (err) {}`) | This Obscures critical bugs, resource leaks, and causes silent data corruption. |
 | **Microservice Boundary** | ❌ Merging Python AI code into Node.js or moving the `emotion_detection/` service | This breaks decoupled microservices architecture; corrupts native Python ML env. |
@@ -196,13 +196,14 @@ All API endpoints MUST return responses adhering strictly to the standardized en
 
 ---
 
-## 8. 💻 CODE STYLE & NAMING CONVENTIONS
+## 8. 💻 CODE STYLE, TYPES & UTILS STANDARDS
 
+### 8.1 Naming Conventions & Path Aliases
 - **Directories & Source Files**: `kebab-case` (e.g. `sensor-reading.model.ts`, `auth.controller.ts`).
 - **Classes, Interfaces, Enums, Models**: `PascalCase` (e.g. `UserModel`, `SensorType`, `IUserDocument`).
 - **Methods, Functions, Variables**: `camelCase` (e.g. `connectDatabase()`, `calculateStressIndex()`).
 - **Constants & Envs**: `UPPER_SNAKE_CASE` (e.g. `MONGODB_URI`, `DEFAULT_PAGE_LIMIT`).
-- **Path Aliases** (defined in `backend/tsconfig.json`):
+- **Path Aliases** (defined in `backend/tsconfig.json` and `frontend/tsconfig.json`):
   - `@config/*` -> `config/*`
   - `@controllers/*` -> `controllers/*`
   - `@services/*` -> `services/*`
@@ -214,6 +215,18 @@ All API endpoints MUST return responses adhering strictly to the standardized en
   - `@shared/*` -> `shared/*`
   - `@errors/*` -> `shared/errors/*`
   - `@types/*` -> `shared/types/*`
+
+### 8.2 Strict Type Management & Declaration Rules
+1. **Always Use Generated Types**: Whenever writing or modifying code, types MUST be used from the auto-generated OpenAPI/SDK types (e.g., `backend/src/shared/types/generated/api-types.ts`, `frontend/src/types/api.types.ts`, or `@sdk`). Do NOT create duplicate or manual type definitions for API request payloads, response schemas, or database models.
+2. **Feature-Specific Custom Types Folder**: If a scenario strictly requires declaring custom types (e.g., local UI component props, feature-specific view state, non-API internal structures), declare them inside a separate, dedicated `types/` folder within that feature directory (e.g., `frontend/src/features/<feature_name>/types/` or `backend/src/modules/<feature_name>/types/`). Do NOT declare standalone inline types across component or logic files.
+3. **`type` vs `interface` Directive**:
+   - Use `type` aliases (`type MyType = ...`) by default for all object declarations, function signatures, unions, intersections, and primitive type aliases.
+   - Declare as `interface` ONLY when explicit object interface inheritance (`interface Child extends Parent`) or declaration merging is required. Otherwise, declare as `type`.
+
+### 8.3 Utility Functions Organization (`utils/`)
+- **Proper Location**: All utility and helper functions MUST be declared inside dedicated `utils/` folders (e.g., global `src/utils/` or feature-scoped `features/<feature_name>/utils/`).
+- **No Inline Helpers**: Never write ad-hoc inline utility/helper functions inside components, controllers, or service files.
+- **Purity & Export**: Ensure utility functions are pure, modular, properly typed, unit-testable, and exported cleanly from their respective `utils/` folder.
 
 ---
 

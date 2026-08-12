@@ -2,16 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Input, Label, Select } from '@/components/ui';
 import { GENDER_OPTIONS, ROLE_OPTIONS } from '../constants/register.constants';
-import type { RegisterFormValues, RegisterFormErrors } from '../types/register.types';
+import type { RegisterFormValues, RegisterFormProps } from '../types/register.types';
 import { Loader2, ArrowRight } from 'lucide-react';
-
-export interface RegisterFormProps {
-  values: RegisterFormValues;
-  errors: RegisterFormErrors;
-  isSubmitting: boolean;
-  onChange: (field: keyof RegisterFormValues, value: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
-}
 
 export const RegisterForm: React.FC<RegisterFormProps> = ({
   values,
