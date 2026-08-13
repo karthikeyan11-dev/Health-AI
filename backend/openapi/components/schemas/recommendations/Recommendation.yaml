@@ -1,0 +1,57 @@
+type: object
+required:
+  - id
+  - userId
+  - title
+  - description
+  - category
+  - priority
+  - isAcknowledged
+  - createdAt
+  - updatedAt
+properties:
+  id:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d6"
+  userId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d1"
+  title:
+    type: string
+    example: "Take a 5-Minute Breathing Break"
+  description:
+    type: string
+    example: "Your stress score has risen above threshold. Try box breathing exercise for 5 minutes."
+  category:
+    $ref: './RecommendationCategoryEnum.yaml'
+  priority:
+    $ref: './RecommendationPriorityEnum.yaml'
+  source:
+    type: string
+    example: "STRESS_ENGINE"
+  relatedAssessmentId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d9"
+  relatedAssessmentType:
+    type: string
+    example: "STRESS"
+  isAcknowledged:
+    type: boolean
+    example: false
+  acknowledgedAt:
+    type: string
+    format: date-time
+    nullable: true
+    example: null
+  expiresAt:
+    type: string
+    format: date-time
+    example: "2026-08-08T09:00:00.000Z"
+  createdAt:
+    type: string
+    format: date-time
+    example: "2026-08-07T09:00:00.000Z"
+  updatedAt:
+    type: string
+    format: date-time
+    example: "2026-08-07T09:00:00.000Z"

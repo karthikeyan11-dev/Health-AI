@@ -1,0 +1,11 @@
+type: object
+required:
+  - userId
+properties:
+  userId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d1"
+  forceRefresh:
+    type: boolean
+    default: false
+    example: false

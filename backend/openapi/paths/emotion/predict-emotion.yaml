@@ -1,0 +1,33 @@
+post:
+  tags:
+    - Emotion AI Service
+  summary: Predict facial emotion from image frame
+  description: Proxy endpoint that routes image payload to the Python AI Microservice (`emotion_detection`) for CNN inference.
+  operationId: predictEmotion
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/emotion/PredictEmotionRequest.yaml'
+  responses:
+    '200':
+      description: Facial emotion predicted successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/emotion/PredictEmotionResponse.yaml'
+    '400':
+      description: Invalid image payload or unreadable image frame
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '503':
+      description: Emotion AI Microservice unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

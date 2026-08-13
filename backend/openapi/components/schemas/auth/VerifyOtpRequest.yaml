@@ -1,0 +1,16 @@
+type: object
+required:
+  - email
+  - otp
+properties:
+  email:
+    type: string
+    format: email
+    example: user@healthai.org
+    description: Email address used during registration
+  otp:
+    type: string
+    minLength: 6
+    maxLength: 6
+    example: "123456"
+    description: 6-digit numeric verification code

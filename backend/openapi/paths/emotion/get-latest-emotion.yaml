@@ -1,0 +1,21 @@
+get:
+  tags:
+    - Emotion AI Service
+  summary: Get latest emotion state
+  description: Returns current emotional state classification for a user.
+  operationId: getLatestEmotion
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: query
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Latest emotion retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/emotion/LatestEmotionResponse.yaml'

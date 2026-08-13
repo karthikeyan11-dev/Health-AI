@@ -1,0 +1,21 @@
+get:
+  tags:
+    - Digital Twin
+  summary: Get real-time health state of Digital Twin
+  description: Computes real-time snapshot of user's current health score, active stress score, and risk status.
+  operationId: getCurrentTwinState
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Current health state calculated
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/digitalTwin/DigitalTwinResponse.yaml'

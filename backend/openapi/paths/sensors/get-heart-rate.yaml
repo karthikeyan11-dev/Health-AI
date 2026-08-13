@@ -1,0 +1,27 @@
+get:
+  tags:
+    - Sensors
+  summary: Get current heart rate telemetry
+  description: Returns latest heart rate reading (BPM) and classification status.
+  operationId: getHeartRate
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: query
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Heart rate data retrieved successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              data:
+                $ref: '../../components/schemas/sensors/HeartRateData.yaml'

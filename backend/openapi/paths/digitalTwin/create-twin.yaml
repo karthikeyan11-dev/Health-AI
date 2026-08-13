@@ -1,0 +1,27 @@
+post:
+  tags:
+    - Digital Twin
+  summary: Initialize Digital Twin instance for user
+  description: Initializes a computational Digital Twin profile representing physiological and emotional state baselines.
+  operationId: createDigitalTwin
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/digitalTwin/CreateTwinRequest.yaml'
+  responses:
+    '201':
+      description: Digital Twin initialized successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/digitalTwin/DigitalTwinResponse.yaml'
+    '400':
+      description: Twin already exists or invalid configuration
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

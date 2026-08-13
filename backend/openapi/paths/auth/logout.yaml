@@ -1,0 +1,21 @@
+post:
+  tags:
+    - Authentication
+  summary: User logout
+  description: Invalidates active refresh token and revokes access session.
+  operationId: logoutUser
+  security:
+    - BearerAuth: []
+  responses:
+    '200':
+      description: Logged out successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/SuccessResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

@@ -1,0 +1,21 @@
+get:
+  tags:
+    - Stress Analysis
+  summary: Get current stress level
+  description: Returns active stress classification score and level for a user.
+  operationId: getCurrentStress
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: query
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Current stress level retrieved
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/stress/StressAssessmentResponse.yaml'

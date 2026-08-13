@@ -1,0 +1,21 @@
+post:
+  tags:
+    - Notifications
+  summary: Send system or alert notification
+  description: Dispatches critical health alert, medication reminder, or system alert notification to user.
+  operationId: sendNotification
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/notifications/SendNotificationRequest.yaml'
+  responses:
+    '201':
+      description: Notification dispatched successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/SuccessResponse.yaml'

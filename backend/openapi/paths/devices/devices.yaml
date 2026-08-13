@@ -1,0 +1,56 @@
+get:
+  tags:
+    - Devices
+  summary: List all registered devices
+  description: Fetches all registered ESP32 sensor hardware devices.
+  operationId: getDevices
+  security:
+    - BearerAuth: []
+  responses:
+    '200':
+      description: Device list retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/devices/DeviceListResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+
+post:
+  tags:
+    - Devices
+  summary: Register hardware device (ESP32)
+  description: Registers a physical ESP32 multi-sensor device and pairs it with a patient user.
+  operationId: registerDevice
+  security:
+    - BearerAuth: []
+    - ApiKeyAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/devices/RegisterDeviceRequest.yaml'
+  responses:
+    '201':
+      description: Device registered successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/devices/DeviceResponse.yaml'
+    '400':
+      description: Invalid MAC address or device payload
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

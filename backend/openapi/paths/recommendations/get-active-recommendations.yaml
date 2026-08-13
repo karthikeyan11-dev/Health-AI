@@ -1,0 +1,21 @@
+get:
+  tags:
+    - Recommendation Engine
+  summary: Get active user recommendations
+  description: Returns pending, non-acknowledged recommendations for a user.
+  operationId: getActiveRecommendations
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: query
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Active recommendations retrieved
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/recommendations/RecommendationResponse.yaml'

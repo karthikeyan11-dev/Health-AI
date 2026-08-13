@@ -1,0 +1,8 @@
+type: string
+enum:
+  - OPTIMAL
+  - STABLE
+  - ELEVATED_STRESS
+  - AT_RISK
+  - CRITICAL
+example: "STABLE"

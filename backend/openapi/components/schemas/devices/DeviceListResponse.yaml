@@ -1,0 +1,19 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Device list retrieved successfully"
+  data:
+    type: array
+    items:
+      $ref: './Device.yaml'
+  meta:
+    $ref: '../common/Metadata.yaml'

@@ -1,0 +1,39 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Digital Twin health history retrieved successfully"
+  data:
+    type: array
+    items:
+      type: object
+      required:
+        - timestamp
+        - healthScore
+        - healthState
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-08-07T09:00:00.000Z"
+        healthScore:
+          type: number
+          example: 84.0
+        healthState:
+          $ref: './TwinHealthStateEnum.yaml'
+        avgHeartRate:
+          type: number
+          example: 72.5
+        avgSpO2:
+          type: number
+          example: 98.2
+  meta:
+    $ref: '../common/Metadata.yaml'

@@ -1,0 +1,73 @@
+get:
+  tags:
+    - Digital Twin
+  summary: Get Digital Twin profile
+  description: Fetches full Digital Twin profile state including physiological baselines and health scores.
+  operationId: getDigitalTwin
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Digital Twin retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/digitalTwin/DigitalTwinResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '404':
+      description: Digital Twin not found for user
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+
+put:
+  tags:
+    - Digital Twin
+  summary: Update Digital Twin baselines
+  description: Updates baseline vital sign thresholds and baseline emotion models in the Digital Twin.
+  operationId: updateDigitalTwin
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/digitalTwin/UpdateTwinRequest.yaml'
+  responses:
+    '200':
+      description: Digital Twin updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/digitalTwin/DigitalTwinResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '404':
+      description: Digital Twin not found
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

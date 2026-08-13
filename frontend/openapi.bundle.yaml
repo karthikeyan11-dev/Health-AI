@@ -1,0 +1,3920 @@
+openapi: 3.0.3
+info:
+  title: Health AI - Smart Healthcare Monitoring Platform API
+  description: |
+    Production-grade OpenAPI 3.0.3 specification for the Health AI platform backend architecture. Provides RESTful endpoints for IoT sensor telemetry ingestion (ESP32), computer vision facial emotion recognition, Digital Twin physiological state modelling, real-time stress assessment, cardiovascular risk evaluation, AI chatbot interaction, automated clinical recommendations, and notification services.
+  version: 1.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  contact:
+    name: Health AI Engineering Team
+    email: dev@healthai.org
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Local Development Node.js Gateway Backend
+  - url: https://api.healthai.org/api/v1
+    description: Production Gateway Endpoint
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register new user account
+      description: Registers a new patient, clinician, or administrator account into the Health AI platform.
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '400':
+          description: Validation error or duplicate email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/verify-otp:
+    post:
+      tags:
+        - Authentication
+      summary: Verify email OTP and complete user registration
+      description: Verifies the 6-digit email OTP for pending registration and creates the permanent user account.
+      operationId: verifyOtp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyOtpRequest'
+      responses:
+        '200':
+          description: OTP verified successfully and user account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid OTP, expired OTP, or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Maximum OTP verification attempts exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate user and obtain tokens
+      description: Authenticates user credentials and returns JWT access and refresh token pair.
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokensResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/refresh-token:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Exchanges a valid refresh token for a new JWT access and refresh token pair.
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Tokens refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokensResponse'
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      description: Invalidates active refresh token and revokes access session.
+      operationId: logoutUser
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/forgot-password:
+    post:
+      tags:
+        - Authentication
+      summary: Request password reset link
+      description: Triggers a password reset token email to the user.
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '200':
+          description: Password reset link sent if account exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid email format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/reset-password:
+    post:
+      tags:
+        - Authentication
+      summary: Reset password using token
+      description: Resets user password using the provided reset token.
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid or expired reset token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/profile:
+    get:
+      tags:
+        - Authentication
+      summary: Get current authenticated user profile
+      description: Returns profile details for the currently authenticated JWT user.
+      operationId: getProfile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profile details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/change-password:
+    put:
+      tags:
+        - Authentication
+      summary: Change authenticated user password
+      description: Updates current user password after validating existing credentials.
+      operationId: changePassword
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid current password or weak new password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /users:
+    get:
+      tags:
+        - Users
+      summary: List all users
+      description: Fetches a paginated list of users filtered optionally by role or active status.
+      operationId: getUsers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: role
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/UserRoleEnum'
+      responses:
+        '200':
+          description: Users list retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Users
+      summary: Create user (Admin/Clinician)
+      description: Creates a new user record in the system with specified role and credentials.
+      operationId: createUser
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      description: Fetches detailed information for a specific user ID.
+      operationId: getUserById
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      responses:
+        '200':
+          description: User details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Users
+      summary: Update user details
+      description: Updates profile attributes for a specific user.
+      operationId: updateUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Users
+      summary: Soft delete user
+      description: Deactivates or soft-deletes a user profile in the platform.
+      operationId: deleteUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      responses:
+        '200':
+          description: User deleted/deactivated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /devices:
+    get:
+      tags:
+        - Devices
+      summary: List all registered devices
+      description: Fetches all registered ESP32 sensor hardware devices.
+      operationId: getDevices
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Device list retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Devices
+      summary: Register hardware device (ESP32)
+      description: Registers a physical ESP32 multi-sensor device and pairs it with a patient user.
+      operationId: registerDevice
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDeviceRequest'
+      responses:
+        '201':
+          description: Device registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceResponse'
+        '400':
+          description: Invalid MAC address or device payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /devices/{id}:
+    get:
+      tags:
+        - Devices
+      summary: Get device by ID
+      description: Fetches metadata for a specific registered device.
+      operationId: getDeviceById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Device details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Device not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Devices
+      summary: Update device metadata
+      description: Updates device status, assigned user, or firmware version.
+      operationId: updateDevice
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDeviceRequest'
+      responses:
+        '200':
+          description: Device updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Device not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Devices
+      summary: Unregister device
+      description: Removes device registration from system registry.
+      operationId: deleteDevice
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Device unregistered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Device not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /devices/{id}/status:
+    get:
+      tags:
+        - Devices
+      summary: Get device operational status
+      description: Returns real-time connectivity status, last seen timestamp, uptime, and battery telemetry for the device.
+      operationId: getDeviceStatus
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Device status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceStatusResponse'
+        '404':
+          description: Device not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /sensors/readings:
+    post:
+      tags:
+        - Sensors
+      summary: Ingest telemetry readings from ESP32 sensors
+      description: Receives batch vital sign telemetry (Heart Rate, SpO2, Temperature) from ESP32 microcontrollers.
+      operationId: ingestSensorReadings
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestReadingsRequest'
+      responses:
+        '202':
+          description: Sensor telemetry accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid sensor telemetry format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /sensors/readings/latest:
+    get:
+      tags:
+        - Sensors
+      summary: Get latest sensor readings
+      description: Fetches the most recent vital signs reading snapshot for a given user or device.
+      operationId: getLatestSensorReadings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Latest sensor readings retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LatestReadingsResponse'
+        '404':
+          description: No readings found for user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /sensors/readings/history:
+    get:
+      tags:
+        - Sensors
+      summary: Get historical sensor telemetry
+      description: Returns time-series sensor telemetry data for analytics and charts.
+      operationId: getHistoricalSensorReadings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: sensorType
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/SensorTypeEnum'
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: Historical sensor readings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalReadingsResponse'
+  /sensors/heart-rate:
+    get:
+      tags:
+        - Sensors
+      summary: Get current heart rate telemetry
+      description: Returns latest heart rate reading (BPM) and classification status.
+      operationId: getHeartRate
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Heart rate data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/HeartRateData'
+  /sensors/temperature:
+    get:
+      tags:
+        - Sensors
+      summary: Get current body temperature telemetry
+      description: Returns latest body temperature in Celsius and Fahrenheit with clinical threshold analysis.
+      operationId: getTemperature
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Temperature data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/TemperatureData'
+  /sensors/spo2:
+    get:
+      tags:
+        - Sensors
+      summary: Get current SpO2 blood oxygen telemetry
+      description: Returns latest SpO2 percentage reading and oxygenation status.
+      operationId: getSpO2
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: SpO2 data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/SpO2Data'
+  /emotion/predict:
+    post:
+      tags:
+        - Emotion AI Service
+      summary: Predict facial emotion from image frame
+      description: Proxy endpoint that routes image payload to the Python AI Microservice (`emotion_detection`) for CNN inference.
+      operationId: predictEmotion
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PredictEmotionRequest'
+      responses:
+        '200':
+          description: Facial emotion predicted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictEmotionResponse'
+        '400':
+          description: Invalid image payload or unreadable image frame
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Emotion AI Microservice unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /emotion/logs:
+    get:
+      tags:
+        - Emotion AI Service
+      summary: Get emotion detection history logs
+      description: Retrieves historical facial emotion logs for trend analysis.
+      operationId: getEmotionLogs
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Emotion logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmotionLogResponse'
+  /emotion/latest:
+    get:
+      tags:
+        - Emotion AI Service
+      summary: Get latest emotion state
+      description: Returns current emotional state classification for a user.
+      operationId: getLatestEmotion
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Latest emotion retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LatestEmotionResponse'
+  /digital-twin:
+    post:
+      tags:
+        - Digital Twin
+      summary: Initialize Digital Twin instance for user
+      description: Initializes a computational Digital Twin profile representing physiological and emotional state baselines.
+      operationId: createDigitalTwin
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTwinRequest'
+      responses:
+        '201':
+          description: Digital Twin initialized successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalTwinResponse'
+        '400':
+          description: Twin already exists or invalid configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /digital-twin/{userId}:
+    get:
+      tags:
+        - Digital Twin
+      summary: Get Digital Twin profile
+      description: Fetches full Digital Twin profile state including physiological baselines and health scores.
+      operationId: getDigitalTwin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Digital Twin retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalTwinResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Digital Twin not found for user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Digital Twin
+      summary: Update Digital Twin baselines
+      description: Updates baseline vital sign thresholds and baseline emotion models in the Digital Twin.
+      operationId: updateDigitalTwin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTwinRequest'
+      responses:
+        '200':
+          description: Digital Twin updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalTwinResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Digital Twin not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /digital-twin/{userId}/state:
+    get:
+      tags:
+        - Digital Twin
+      summary: Get real-time health state of Digital Twin
+      description: Computes real-time snapshot of user's current health score, active stress score, and risk status.
+      operationId: getCurrentTwinState
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current health state calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalTwinResponse'
+  /digital-twin/{userId}/history:
+    get:
+      tags:
+        - Digital Twin
+      summary: Get Digital Twin health history
+      description: Returns historical health score snapshots and vital trends computed by the Digital Twin core.
+      operationId: getHealthHistory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 30
+      responses:
+        '200':
+          description: Health history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthHistoryResponse'
+  /digital-twin/{userId}/trends:
+    get:
+      tags:
+        - Digital Twin
+      summary: Get health trend analysis insights
+      description: Evaluates predictive trends and anomaly patterns for heart rate, stress, and cardiovascular metrics.
+      operationId: getHealthTrendAnalysis
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - 7_DAYS
+              - 30_DAYS
+              - 90_DAYS
+            default: 7_DAYS
+      responses:
+        '200':
+          description: Health trend analysis computed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthTrendAnalysisResponse'
+  /stress/assess:
+    post:
+      tags:
+        - Stress Analysis
+      summary: Execute stress assessment algorithm
+      description: Calculates acute stress index combining Heart Rate spikes, SpO2 levels, Body Temperature, and Facial Emotion Detection results.
+      operationId: assessStress
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StressAssessmentRequest'
+      responses:
+        '200':
+          description: Stress assessment completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StressAssessmentResponse'
+  /stress/current:
+    get:
+      tags:
+        - Stress Analysis
+      summary: Get current stress level
+      description: Returns active stress classification score and level for a user.
+      operationId: getCurrentStress
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current stress level retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StressAssessmentResponse'
+  /stress/history:
+    get:
+      tags:
+        - Stress Analysis
+      summary: Get stress assessment history
+      description: Returns time-series log of historical stress assessments for long-term health tracking.
+      operationId: getStressHistory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Stress history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StressHistoryResponse'
+  /cardiovascular/assess:
+    post:
+      tags:
+        - Cardiovascular Risk Assessment
+      summary: Evaluate cardiovascular risk
+      description: Calculates cardiovascular risk rating using continuous vitals stream (Heart Rate, SpO2, Body Temperature), Facial Emotion Detection, Stress Score, and Digital Twin health trends.
+      operationId: assessCardiovascularRisk
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RiskAssessmentRequest'
+      responses:
+        '200':
+          description: Cardiovascular risk evaluated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskAssessmentResponse'
+        '400':
+          description: Invalid vitals or patient parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /cardiovascular/current:
+    get:
+      tags:
+        - Cardiovascular Risk Assessment
+      summary: Get current cardiovascular risk score
+      description: Returns current risk score classification (LOW, MODERATE, HIGH, CRITICAL) for a patient.
+      operationId: getCurrentCardiovascularRisk
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current risk score retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskAssessmentResponse'
+  /cardiovascular/history:
+    get:
+      tags:
+        - Cardiovascular Risk Assessment
+      summary: Get cardiovascular risk assessment history
+      description: Returns historical risk assessment records over time.
+      operationId: getCardiovascularRiskHistory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Cardiovascular risk history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskHistoryResponse'
+  /recommendations/generate:
+    post:
+      tags:
+        - Recommendation Engine
+      summary: Trigger automated health recommendation generation
+      description: Analyzes user's latest Digital Twin state, stress scores, and vitals to generate actionable personalized wellness & clinical recommendations.
+      operationId: generateRecommendations
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateRecommendationRequest'
+      responses:
+        '200':
+          description: Recommendations generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationResponse'
+  /recommendations/active:
+    get:
+      tags:
+        - Recommendation Engine
+      summary: Get active user recommendations
+      description: Returns pending, non-acknowledged recommendations for a user.
+      operationId: getActiveRecommendations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Active recommendations retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationResponse'
+  /recommendations/{id}/acknowledge:
+    put:
+      tags:
+        - Recommendation Engine
+      summary: Acknowledge or complete recommendation
+      description: Marks a health recommendation as acknowledged or completed by patient.
+      operationId: acknowledgeRecommendation
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcknowledgeRecommendationRequest'
+      responses:
+        '200':
+          description: Recommendation acknowledged successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Recommendation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /reports/generate:
+    post:
+      tags:
+        - Health Reports
+      summary: Asynchronously generate health summary report
+      description: Triggers background PDF/JSON generation of health summaries, cardiovascular risk trends, or emotion history.
+      operationId: generateReport
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateReportRequest'
+      responses:
+        '202':
+          description: Report generation queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+  /reports:
+    get:
+      tags:
+        - Health Reports
+      summary: List generated reports for user
+      description: Returns history of all generated clinical and personal health reports.
+      operationId: getReports
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reports list retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportListResponse'
+  /reports/{id}:
+    get:
+      tags:
+        - Health Reports
+      summary: Get report metadata by ID
+      description: Returns metadata and download URLs for a generated report.
+      operationId: getReportById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Report metadata retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+        '404':
+          description: Report not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /reports/{id}/download:
+    get:
+      tags:
+        - Health Reports
+      summary: Download report document
+      description: Downloads the generated PDF or JSON report artifact.
+      operationId: downloadReport
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Report document stream
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Report file not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /chatbot/message:
+    post:
+      tags:
+        - Emotion AI Chatbot
+      summary: Send query to Emotion AI Chatbot
+      description: Routes natural language user query and emotion context to Python AI Microservice (`MLChatbot`) for intelligent response generation.
+      operationId: sendChatMessage
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '200':
+          description: Chatbot message generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageResponse'
+        '503':
+          description: Chatbot AI Microservice unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /chatbot/history:
+    get:
+      tags:
+        - Emotion AI Chatbot
+      summary: Get conversation history
+      description: Fetches chronological history of messages exchanged between user and AI chatbot.
+      operationId: getChatHistory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Chat history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatHistoryResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Emotion AI Chatbot
+      summary: Clear user conversation history
+      description: Purges chat interaction history for authenticated user.
+      operationId: clearChatHistory
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Chat history cleared successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /notifications/send:
+    post:
+      tags:
+        - Notifications
+      summary: Send system or alert notification
+      description: Dispatches critical health alert, medication reminder, or system alert notification to user.
+      operationId: sendNotification
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendNotificationRequest'
+      responses:
+        '201':
+          description: Notification dispatched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: List user notifications
+      description: Fetches paginated list of unread or all notifications for authenticated user.
+      operationId: getNotifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: unreadOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Notifications list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationListResponse'
+  /notifications/{id}/read:
+    put:
+      tags:
+        - Notifications
+      summary: Mark notification as read
+      description: Updates notification read status by notification ID.
+      operationId: markNotificationAsRead
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /notifications/read-all:
+    put:
+      tags:
+        - Notifications
+      summary: Mark all notifications as read
+      description: Marks all unread notifications as read for current user.
+      operationId: markAllNotificationsAsRead
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All notifications marked as read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+  /health:
+    get:
+      tags:
+        - Health & System Ops
+      summary: Detailed health check
+      description: Evaluates status and connectivity of MongoDB, Redis cache, and Python AI microservices.
+      operationId: getHealthStatus
+      responses:
+        '200':
+          description: Overall system healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+        '503':
+          description: System degraded or unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+  /health/liveness:
+    get:
+      tags:
+        - Health & System Ops
+      summary: Kubernetes liveness probe
+      description: Endpoint used by orchestrators to confirm HTTP service container is running.
+      operationId: getLiveness
+      responses:
+        '200':
+          description: Service container is live
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: UP
+  /health/readiness:
+    get:
+      tags:
+        - Health & System Ops
+      summary: Kubernetes readiness probe
+      description: Endpoint used by load balancers to confirm service is ready to process web traffic.
+      operationId: getReadiness
+      responses:
+        '200':
+          description: Service ready to handle traffic
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: READY
+        '503':
+          description: Service not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: NOT_READY
+  /system/info:
+    get:
+      tags:
+        - Health & System Ops
+      summary: Get application build & environment metadata
+      description: Returns API platform version, runtime build details, and active environment mode.
+      operationId: getSystemInfo
+      responses:
+        '200':
+          description: System info retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemInfoResponse'
+  /system/metrics:
+    get:
+      tags:
+        - Health & System Ops
+      summary: Get runtime performance metrics
+      description: Returns memory, CPU utilization, request throughput, and connection metrics.
+      operationId: getSystemMetrics
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: System metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemMetricsResponse'
+components:
+  schemas:
+    UserRoleEnum:
+      type: string
+      enum:
+        - PATIENT
+        - CLINICIAN
+        - ADMIN
+        - SYSTEM
+      example: PATIENT
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - firstName
+        - lastName
+        - age
+        - gender
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@healthai.org
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: P@ssw0rd123!
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        phoneNumber:
+          type: string
+          example: '+1234567890'
+        age:
+          type: integer
+          minimum: 0
+          maximum: 120
+          example: 34
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+            - PREFER_NOT_TO_SAY
+          example: MALE
+        role:
+          $ref: '#/components/schemas/UserRoleEnum'
+    Pagination:
+      type: object
+      required:
+        - page
+        - limit
+        - totalItems
+        - totalPages
+        - hasNextPage
+        - hasPrevPage
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          example: 1
+          description: Current page number (1-indexed)
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 20
+          description: Number of items per page
+        totalItems:
+          type: integer
+          minimum: 0
+          example: 150
+          description: Total number of items available
+        totalPages:
+          type: integer
+          minimum: 0
+          example: 8
+          description: Total number of pages
+        hasNextPage:
+          type: boolean
+          example: true
+          description: Indicates whether a next page exists
+        hasPrevPage:
+          type: boolean
+          example: false
+          description: Indicates whether a previous page exists
+    Metadata:
+      type: object
+      required:
+        - timestamp
+        - requestId
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+          description: System timestamp when response was generated
+        requestId:
+          type: string
+          example: req_99b1a8f2
+          description: Unique correlation ID for tracking request lifecycle
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    RegisterResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+          description: Indicates that the registration request succeeded
+        message:
+          type: string
+          example: OTP verification code sent to your email
+          description: Human-readable status message
+        data:
+          type: object
+          required:
+            - email
+          properties:
+            email:
+              type: string
+              format: email
+              example: user@healthai.org
+            expiresInSeconds:
+              type: integer
+              example: 300
+              description: Time-to-live for the OTP code in seconds
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    ValidationError:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          example: email
+          description: Target field or path where validation failed
+        message:
+          type: string
+          example: Must be a valid email address
+          description: Human-readable validation failure reason
+        value:
+          type: string
+          nullable: true
+          example: invalid-email
+          description: Invalid input value provided
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: false
+          description: Indicates that the operation failed
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              example: INVALID_INPUT
+              description: Machine-readable error code
+            message:
+              type: string
+              example: The provided request payload contains invalid fields.
+              description: Human-readable error message
+            details:
+              type: array
+              items:
+                $ref: '#/components/schemas/ValidationError'
+              description: Field-level validation error details, if applicable
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    VerifyOtpRequest:
+      type: object
+      required:
+        - email
+        - otp
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@healthai.org
+          description: Email address used during registration
+        otp:
+          type: string
+          minLength: 6
+          maxLength: 6
+          example: '123456'
+          description: 6-digit numeric verification code
+    SuccessResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+          description: Indicates that the request succeeded
+        message:
+          type: string
+          example: Operation completed successfully
+          description: Human-readable success message
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@healthai.org
+        password:
+          type: string
+          format: password
+          example: P@ssw0rd123!
+    AuthTokensResponse:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+        - tokenType
+        - expiresIn
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refreshToken:
+          type: string
+          example: d98f7e2a-4b3c-4d5e-8f9a-0b1c2d3e4f5a
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          example: 3600
+          description: Access token expiration time in seconds
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          example: d98f7e2a-4b3c-4d5e-8f9a-0b1c2d3e4f5a
+    ForgotPasswordRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@healthai.org
+    ResetPasswordRequest:
+      type: object
+      required:
+        - resetToken
+        - newPassword
+      properties:
+        resetToken:
+          type: string
+          example: reset_token_88a99c01
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          example: NewP@ssw0rd123!
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+        - age
+        - gender
+        - role
+        - isActive
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        email:
+          type: string
+          format: email
+          example: john.doe@healthai.org
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        phoneNumber:
+          type: string
+          example: '+1234567890'
+        age:
+          type: integer
+          minimum: 0
+          maximum: 120
+          example: 34
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+            - PREFER_NOT_TO_SAY
+          example: MALE
+        role:
+          $ref: '#/components/schemas/UserRoleEnum'
+        isEmailVerified:
+          type: boolean
+          example: true
+        isPhoneVerified:
+          type: boolean
+          example: false
+        isActive:
+          type: boolean
+          example: true
+        dateOfBirth:
+          type: string
+          format: date
+          example: '1990-05-15'
+        lastLoginAt:
+          type: string
+          format: date-time
+          example: '2026-08-09T10:00:00.000Z'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+    UserResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: User details retrieved successfully
+        data:
+          $ref: '#/components/schemas/User'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    ChangePasswordRequest:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+          format: password
+          example: OldP@ssw0rd123!
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          example: NewP@ssw0rd123!
+    UserListResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Users list retrieved successfully
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    CreateUserRequest:
+      type: object
+      required:
+        - email
+        - password
+        - firstName
+        - lastName
+        - role
+      properties:
+        email:
+          type: string
+          format: email
+          example: john.doe@healthai.org
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: P@ssw0rd123!
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        phoneNumber:
+          type: string
+          example: '+1234567890'
+        role:
+          $ref: '#/components/schemas/UserRoleEnum'
+        dateOfBirth:
+          type: string
+          format: date
+          example: '1990-05-15'
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+            - PREFER_NOT_TO_SAY
+          example: MALE
+    UpdateUserRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        phoneNumber:
+          type: string
+          example: '+1234567890'
+        isActive:
+          type: boolean
+          example: true
+        dateOfBirth:
+          type: string
+          format: date
+          example: '1990-05-15'
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+            - PREFER_NOT_TO_SAY
+          example: MALE
+    DeviceStatusEnum:
+      type: string
+      enum:
+        - ONLINE
+        - OFFLINE
+        - ERROR
+        - UNREGISTERED
+      example: ONLINE
+    Device:
+      type: object
+      required:
+        - id
+        - deviceId
+        - macAddress
+        - deviceType
+        - status
+        - userId
+        - isActive
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d2
+        deviceId:
+          type: string
+          example: ESP32-HEALTH-001
+        name:
+          type: string
+          example: Patient Bedside Sensor Monitor
+        macAddress:
+          type: string
+          example: A4:CF:12:89:56:AB
+        deviceType:
+          type: string
+          example: ESP32-MULTI-SENSOR
+        firmwareVersion:
+          type: string
+          example: v1.2.4
+        status:
+          $ref: '#/components/schemas/DeviceStatusEnum'
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        isActive:
+          type: boolean
+          example: true
+        lastSeenAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T08:59:30.000Z'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+    DeviceListResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Device list retrieved successfully
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Device'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    RegisterDeviceRequest:
+      type: object
+      required:
+        - deviceId
+        - macAddress
+        - deviceType
+        - userId
+      properties:
+        deviceId:
+          type: string
+          example: ESP32-HEALTH-001
+        macAddress:
+          type: string
+          example: A4:CF:12:89:56:AB
+        deviceType:
+          type: string
+          example: ESP32-MULTI-SENSOR
+        firmwareVersion:
+          type: string
+          example: v1.2.4
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+    DeviceResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Device retrieved successfully
+        data:
+          $ref: '#/components/schemas/Device'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    UpdateDeviceRequest:
+      type: object
+      properties:
+        firmwareVersion:
+          type: string
+          example: v1.2.5
+        status:
+          $ref: '#/components/schemas/DeviceStatusEnum'
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+    DeviceStatusResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Device status retrieved successfully
+        data:
+          type: object
+          required:
+            - deviceId
+            - status
+            - lastSeenAt
+            - uptimeSeconds
+          properties:
+            deviceId:
+              type: string
+              example: ESP32-HEALTH-001
+            status:
+              $ref: '#/components/schemas/DeviceStatusEnum'
+            lastSeenAt:
+              type: string
+              format: date-time
+              example: '2026-08-07T08:59:30.000Z'
+            uptimeSeconds:
+              type: integer
+              example: 86400
+            batteryPercentage:
+              type: number
+              example: 95.5
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    SensorTypeEnum:
+      type: string
+      enum:
+        - HEART_RATE
+        - TEMPERATURE
+        - SPO2
+        - EMOTION
+      example: HEART_RATE
+    IngestReadingsRequest:
+      type: object
+      required:
+        - deviceId
+        - userId
+        - readings
+      properties:
+        deviceId:
+          type: string
+          example: ESP32-HEALTH-001
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        readings:
+          type: array
+          items:
+            type: object
+            required:
+              - sensorType
+              - value
+              - unit
+            properties:
+              sensorType:
+                $ref: '#/components/schemas/SensorTypeEnum'
+              value:
+                type: number
+                example: 72
+              unit:
+                type: string
+                example: bpm
+              timestamp:
+                type: string
+                format: date-time
+                example: '2026-08-07T09:00:00.000Z'
+    LatestReadingsResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Latest sensor readings fetched successfully
+        data:
+          type: object
+          required:
+            - userId
+            - deviceId
+            - heartRate
+            - temperature
+            - spo2
+            - timestamp
+          properties:
+            userId:
+              type: string
+              example: 64f1a2b3c4d5e6f7a8b9c0d1
+            deviceId:
+              type: string
+              example: ESP32-HEALTH-001
+            heartRate:
+              type: number
+              example: 72
+            temperature:
+              type: number
+              example: 36.6
+            spo2:
+              type: number
+              example: 98.5
+            timestamp:
+              type: string
+              format: date-time
+              example: '2026-08-07T09:00:00.000Z'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    SensorReading:
+      type: object
+      required:
+        - id
+        - deviceId
+        - userId
+        - sensorType
+        - value
+        - unit
+        - timestamp
+      properties:
+        id:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d3
+        deviceId:
+          type: string
+          example: ESP32-HEALTH-001
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        sensorType:
+          $ref: '#/components/schemas/SensorTypeEnum'
+        value:
+          type: number
+          example: 75.5
+        unit:
+          type: string
+          example: bpm
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+    HistoricalReadingsResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Historical sensor readings retrieved successfully
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorReading'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    HeartRateData:
+      type: object
+      required:
+        - bpm
+        - status
+        - timestamp
+      properties:
+        bpm:
+          type: number
+          example: 74
+        status:
+          type: string
+          enum:
+            - NORMAL
+            - BRADYCARDIA
+            - TACHYCARDIA
+          example: NORMAL
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+    TemperatureData:
+      type: object
+      required:
+        - celsius
+        - fahrenheit
+        - status
+        - timestamp
+      properties:
+        celsius:
+          type: number
+          example: 36.6
+        fahrenheit:
+          type: number
+          example: 97.88
+        status:
+          type: string
+          enum:
+            - NORMAL
+            - HYPOTHERMIA
+            - FEVER
+            - HIGH_FEVER
+          example: NORMAL
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+    SpO2Data:
+      type: object
+      required:
+        - percentage
+        - status
+        - timestamp
+      properties:
+        percentage:
+          type: number
+          example: 98.5
+        status:
+          type: string
+          enum:
+            - NORMAL
+            - HYPOXIA
+            - SEVERE_HYPOXIA
+          example: NORMAL
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+    PredictEmotionRequest:
+      type: object
+      required:
+        - imageBase64
+      properties:
+        imageBase64:
+          type: string
+          description: Base64 encoded image string or frame
+          example: data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+    EmotionEnum:
+      type: string
+      enum:
+        - Angry
+        - Disgust
+        - Fear
+        - Happy
+        - Neutral
+        - Sad
+        - Surprise
+      example: Happy
+    PredictEmotionResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Emotion prediction successful
+        data:
+          type: object
+          required:
+            - detectedEmotion
+            - confidence
+            - probabilities
+          properties:
+            detectedEmotion:
+              $ref: '#/components/schemas/EmotionEnum'
+            confidence:
+              type: number
+              example: 0.942
+            probabilities:
+              type: object
+              additionalProperties:
+                type: number
+              example:
+                Angry: 0.01
+                Disgust: 0
+                Fear: 0.02
+                Happy: 0.94
+                Neutral: 0.02
+                Sad: 0
+                Surprise: 0.01
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    EmotionLogResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Emotion logs retrieved successfully
+        data:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - userId
+              - emotion
+              - confidence
+              - timestamp
+            properties:
+              id:
+                type: string
+                example: 64f1a2b3c4d5e6f7a8b9c0d4
+              userId:
+                type: string
+                example: 64f1a2b3c4d5e6f7a8b9c0d1
+              emotion:
+                $ref: '#/components/schemas/EmotionEnum'
+              confidence:
+                type: number
+                example: 0.88
+              timestamp:
+                type: string
+                format: date-time
+                example: '2026-08-07T09:00:00.000Z'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    LatestEmotionResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Latest emotion state retrieved successfully
+        data:
+          type: object
+          required:
+            - userId
+            - emotion
+            - confidence
+            - timestamp
+          properties:
+            userId:
+              type: string
+              example: 64f1a2b3c4d5e6f7a8b9c0d1
+            emotion:
+              $ref: '#/components/schemas/EmotionEnum'
+            confidence:
+              type: number
+              example: 0.94
+            timestamp:
+              type: string
+              format: date-time
+              example: '2026-08-07T09:00:00.000Z'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    CreateTwinRequest:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        baselineHeartRate:
+          type: number
+          example: 70
+        baselineTemperature:
+          type: number
+          example: 36.5
+        baselineSpO2:
+          type: number
+          example: 98
+    TwinHealthStateEnum:
+      type: string
+      enum:
+        - OPTIMAL
+        - STABLE
+        - ELEVATED_STRESS
+        - AT_RISK
+        - CRITICAL
+      example: STABLE
+    DigitalTwin:
+      type: object
+      required:
+        - id
+        - userId
+        - overallHealthScore
+        - healthState
+        - lastSyncTimestamp
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d5
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        overallHealthScore:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 85.5
+        healthState:
+          $ref: '#/components/schemas/TwinHealthStateEnum'
+        baselineHeartRate:
+          type: number
+          example: 70
+        baselineTemperature:
+          type: number
+          example: 36.5
+        baselineSpO2:
+          type: number
+          example: 98
+        dominantEmotion:
+          $ref: '#/components/schemas/EmotionEnum'
+        currentStressScore:
+          type: number
+          example: 22.4
+        currentCardioRiskScore:
+          type: number
+          example: 12.1
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 95
+        lastSyncTimestamp:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+    DigitalTwinResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Digital Twin profile retrieved successfully
+        data:
+          $ref: '#/components/schemas/DigitalTwin'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    UpdateTwinRequest:
+      type: object
+      properties:
+        baselineHeartRate:
+          type: number
+          example: 72
+        baselineTemperature:
+          type: number
+          example: 36.6
+        baselineSpO2:
+          type: number
+          example: 98.5
+        healthState:
+          $ref: '#/components/schemas/TwinHealthStateEnum'
+    HealthHistoryResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Digital Twin health history retrieved successfully
+        data:
+          type: array
+          items:
+            type: object
+            required:
+              - timestamp
+              - healthScore
+              - healthState
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+                example: '2026-08-07T09:00:00.000Z'
+              healthScore:
+                type: number
+                example: 84
+              healthState:
+                $ref: '#/components/schemas/TwinHealthStateEnum'
+              avgHeartRate:
+                type: number
+                example: 72.5
+              avgSpO2:
+                type: number
+                example: 98.2
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    HealthTrendAnalysisResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Health trend analysis computed successfully
+        data:
+          type: object
+          required:
+            - userId
+            - period
+            - heartRateTrend
+            - stressTrend
+            - cardioRiskTrend
+            - insights
+          properties:
+            userId:
+              type: string
+              example: 64f1a2b3c4d5e6f7a8b9c0d1
+            period:
+              type: string
+              example: 7_DAYS
+            heartRateTrend:
+              type: string
+              enum:
+                - STABLE
+                - INCREASING
+                - DECREASING
+                - VOLATILE
+              example: STABLE
+            stressTrend:
+              type: string
+              enum:
+                - STABLE
+                - INCREASING
+                - DECREASING
+                - VOLATILE
+              example: DECREASING
+            cardioRiskTrend:
+              type: string
+              enum:
+                - STABLE
+                - INCREASING
+                - DECREASING
+                - VOLATILE
+              example: STABLE
+            insights:
+              type: array
+              items:
+                type: string
+              example:
+                - Heart rate baseline has remained consistent over the last 7 days.
+                - Stress levels decreased by 12% following improved sleep patterns.
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    StressAssessmentRequest:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        heartRate:
+          type: number
+          example: 88
+        temperature:
+          type: number
+          example: 36.6
+        spo2:
+          type: number
+          example: 98
+        currentEmotion:
+          $ref: '#/components/schemas/EmotionEnum'
+    StressLevelEnum:
+      type: string
+      enum:
+        - LOW
+        - MODERATE
+        - HIGH
+        - SEVERE
+      example: MODERATE
+    StressAssessmentResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Stress assessment computed successfully
+        data:
+          type: object
+          required:
+            - userId
+            - stressScore
+            - stressLevel
+            - timestamp
+          properties:
+            userId:
+              type: string
+              example: 64f1a2b3c4d5e6f7a8b9c0d1
+            stressScore:
+              type: number
+              minimum: 0
+              maximum: 100
+              example: 45.8
+            stressLevel:
+              $ref: '#/components/schemas/StressLevelEnum'
+            contributingFactors:
+              type: array
+              items:
+                type: string
+              example:
+                - Elevated heart rate (+15% baseline)
+                - 'Detected emotion: Sad'
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 100
+              example: 92.5
+            timestamp:
+              type: string
+              format: date-time
+              example: '2026-08-07T09:00:00.000Z'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    StressHistoryResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Stress assessment history retrieved successfully
+        data:
+          type: array
+          items:
+            type: object
+            required:
+              - stressScore
+              - stressLevel
+              - timestamp
+            properties:
+              stressScore:
+                type: number
+                example: 42
+              stressLevel:
+                $ref: '#/components/schemas/StressLevelEnum'
+              timestamp:
+                type: string
+                format: date-time
+                example: '2026-08-07T09:00:00.000Z'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    RiskAssessmentRequest:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        heartRate:
+          type: number
+          example: 85
+          description: Continuous PPG heart rate in BPM
+        spo2:
+          type: number
+          example: 98
+          description: Continuous blood oxygen saturation percentage
+        temperature:
+          type: number
+          example: 36.6
+          description: Continuous body temperature in Celsius
+        currentEmotion:
+          $ref: '#/components/schemas/EmotionEnum'
+          description: Facial emotion classified by Python AI Microservice
+        stressScore:
+          type: number
+          example: 35
+          description: Calculated real-time stress index score (0-100)
+        digitalTwinHealthScore:
+          type: number
+          example: 88.5
+          description: Historical health baseline score from Digital Twin
+        systolicBp:
+          type: number
+          nullable: true
+          example: null
+          description: Optional future enhancement parameter for systolic blood pressure (mmHg)
+        diastolicBp:
+          type: number
+          nullable: true
+          example: null
+          description: Optional future enhancement parameter for diastolic blood pressure (mmHg)
+    CardiovascularRiskEnum:
+      type: string
+      enum:
+        - LOW
+        - MODERATE
+        - HIGH
+        - CRITICAL
+      example: LOW
+    RiskAssessmentResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Cardiovascular risk assessment completed
+        data:
+          type: object
+          required:
+            - userId
+            - riskScore
+            - riskLevel
+            - recommendations
+            - timestamp
+          properties:
+            userId:
+              type: string
+              example: 64f1a2b3c4d5e6f7a8b9c0d1
+            riskScore:
+              type: number
+              minimum: 0
+              maximum: 100
+              example: 18.5
+            riskLevel:
+              $ref: '#/components/schemas/CardiovascularRiskEnum'
+            contributingFactors:
+              type: array
+              items:
+                type: string
+              example:
+                - Elevated heart rate
+                - Subtle SpO2 drop
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 100
+              example: 94
+            explanation:
+              type: string
+              example: Risk assessment calculated from continuous heart rate, SpO2, body temperature, and emotional indicators.
+            recommendations:
+              type: array
+              items:
+                type: string
+              example:
+                - Maintain steady hydration
+                - Engage in 30 mins moderate aerobic activity daily
+            timestamp:
+              type: string
+              format: date-time
+              example: '2026-08-07T09:00:00.000Z'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    RiskHistoryResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Cardiovascular risk history retrieved successfully
+        data:
+          type: array
+          items:
+            type: object
+            required:
+              - riskScore
+              - riskLevel
+              - timestamp
+            properties:
+              riskScore:
+                type: number
+                example: 18.5
+              riskLevel:
+                $ref: '#/components/schemas/CardiovascularRiskEnum'
+              timestamp:
+                type: string
+                format: date-time
+                example: '2026-08-07T09:00:00.000Z'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    GenerateRecommendationRequest:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        forceRefresh:
+          type: boolean
+          default: false
+          example: false
+    RecommendationCategoryEnum:
+      type: string
+      enum:
+        - LIFESTYLE
+        - EXERCISE
+        - MEDICATION_REMINDER
+        - STRESS_RELIEF
+        - CLINICAL_ALERT
+      example: LIFESTYLE
+    RecommendationPriorityEnum:
+      type: string
+      enum:
+        - LOW
+        - MEDIUM
+        - HIGH
+        - URGENT
+      example: MEDIUM
+    Recommendation:
+      type: object
+      required:
+        - id
+        - userId
+        - title
+        - description
+        - category
+        - priority
+        - isAcknowledged
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d6
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        title:
+          type: string
+          example: Take a 5-Minute Breathing Break
+        description:
+          type: string
+          example: Your stress score has risen above threshold. Try box breathing exercise for 5 minutes.
+        category:
+          $ref: '#/components/schemas/RecommendationCategoryEnum'
+        priority:
+          $ref: '#/components/schemas/RecommendationPriorityEnum'
+        source:
+          type: string
+          example: STRESS_ENGINE
+        relatedAssessmentId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d9
+        relatedAssessmentType:
+          type: string
+          example: STRESS
+        isAcknowledged:
+          type: boolean
+          example: false
+        acknowledgedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        expiresAt:
+          type: string
+          format: date-time
+          example: '2026-08-08T09:00:00.000Z'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+    RecommendationResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Recommendations retrieved successfully
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recommendation'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    AcknowledgeRecommendationRequest:
+      type: object
+      properties:
+        notes:
+          type: string
+          example: Completed box breathing exercise.
+    ReportTypeEnum:
+      type: string
+      enum:
+        - DAILY_SUMMARY
+        - WEEKLY_HEALTH_ANALYSIS
+        - CARDIOVASCULAR_RISK_REPORT
+        - STRESS_ANALYTICS
+        - COMPREHENSIVE_CLINICAL
+      example: WEEKLY_HEALTH_ANALYSIS
+    ReportFormatEnum:
+      type: string
+      enum:
+        - PDF
+        - JSON
+        - CSV
+      example: PDF
+    GenerateReportRequest:
+      type: object
+      required:
+        - userId
+        - reportType
+        - startDate
+        - endDate
+      properties:
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        reportType:
+          $ref: '#/components/schemas/ReportTypeEnum'
+        format:
+          $ref: '#/components/schemas/ReportFormatEnum'
+          default: PDF
+        startDate:
+          type: string
+          format: date
+          example: '2026-08-01'
+        endDate:
+          type: string
+          format: date
+          example: '2026-08-07'
+    ReportResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Report generated successfully
+        data:
+          type: object
+          required:
+            - id
+            - userId
+            - reportType
+            - format
+            - downloadUrl
+            - generatedAt
+          properties:
+            id:
+              type: string
+              example: 64f1a2b3c4d5e6f7a8b9c0d7
+            userId:
+              type: string
+              example: 64f1a2b3c4d5e6f7a8b9c0d1
+            reportType:
+              $ref: '#/components/schemas/ReportTypeEnum'
+            format:
+              $ref: '#/components/schemas/ReportFormatEnum'
+            downloadUrl:
+              type: string
+              example: /reports/64f1a2b3c4d5e6f7a8b9c0d7/download
+            startDate:
+              type: string
+              format: date-time
+              example: '2026-08-01T00:00:00.000Z'
+            endDate:
+              type: string
+              format: date-time
+              example: '2026-08-07T23:59:59.000Z'
+            summary:
+              type: string
+              example: Patient exhibited stable baseline vitals throughout reporting period.
+            qrCodeToken:
+              type: string
+              example: qr_token_88a99c01
+            expiresAt:
+              type: string
+              format: date-time
+              example: '2026-08-14T23:59:59.000Z'
+            generatedAt:
+              type: string
+              format: date-time
+              example: '2026-08-07T09:00:00.000Z'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    ReportListResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Reports list retrieved successfully
+        data:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - userId
+              - reportType
+              - format
+              - downloadUrl
+              - generatedAt
+            properties:
+              id:
+                type: string
+                example: 64f1a2b3c4d5e6f7a8b9c0d7
+              userId:
+                type: string
+                example: 64f1a2b3c4d5e6f7a8b9c0d1
+              reportType:
+                $ref: '#/components/schemas/ReportTypeEnum'
+              format:
+                $ref: '#/components/schemas/ReportFormatEnum'
+              downloadUrl:
+                type: string
+                example: /reports/64f1a2b3c4d5e6f7a8b9c0d7/download
+              generatedAt:
+                type: string
+                format: date-time
+                example: '2026-08-07T09:00:00.000Z'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    SendMessageRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: I am feeling anxious and my heart is beating fast. What should I do?
+        currentEmotion:
+          $ref: '#/components/schemas/EmotionEnum'
+    ChatSenderEnum:
+      type: string
+      enum:
+        - USER
+        - BOT
+        - SYSTEM
+      example: USER
+    ChatMessage:
+      type: object
+      required:
+        - id
+        - userId
+        - sender
+        - message
+        - timestamp
+      properties:
+        id:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d8
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        sender:
+          $ref: '#/components/schemas/ChatSenderEnum'
+        message:
+          type: string
+          example: How can I reduce my heart rate after feeling stressed?
+        intent:
+          type: string
+          example: stress_relief_query
+        detectedEmotion:
+          $ref: '#/components/schemas/EmotionEnum'
+        healthContextUsed:
+          type: string
+          example: 'Vitals snapshot: HR 92 bpm, SpO2 97%, Emotion: Sad'
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+    ChatMessageResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Chatbot response generated successfully
+        data:
+          type: object
+          required:
+            - userMessage
+            - botResponse
+          properties:
+            userMessage:
+              $ref: '#/components/schemas/ChatMessage'
+            botResponse:
+              $ref: '#/components/schemas/ChatMessage'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    ChatHistoryResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Chat history retrieved successfully
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    NotificationTypeEnum:
+      type: string
+      enum:
+        - CRITICAL_HEALTH_ALERT
+        - MEDICATION_REMINDER
+        - SYSTEM_ALERT
+        - RECOMMENDATION_NOTICE
+      example: CRITICAL_HEALTH_ALERT
+    NotificationPriorityEnum:
+      type: string
+      enum:
+        - LOW
+        - NORMAL
+        - HIGH
+        - EMERGENCY
+      example: HIGH
+    SendNotificationRequest:
+      type: object
+      required:
+        - userId
+        - title
+        - message
+        - type
+      properties:
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        title:
+          type: string
+          example: Medication Alert
+        message:
+          type: string
+          example: Time to take Aspirin 75mg.
+        type:
+          $ref: '#/components/schemas/NotificationTypeEnum'
+        priority:
+          $ref: '#/components/schemas/NotificationPriorityEnum'
+          default: NORMAL
+    Notification:
+      type: object
+      required:
+        - id
+        - userId
+        - title
+        - message
+        - type
+        - priority
+        - isRead
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d9
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        title:
+          type: string
+          example: Elevated Heart Rate Warning
+        message:
+          type: string
+          example: Heart rate exceeded 120 bpm for over 5 minutes.
+        type:
+          $ref: '#/components/schemas/NotificationTypeEnum'
+        priority:
+          $ref: '#/components/schemas/NotificationPriorityEnum'
+        isRead:
+          type: boolean
+          example: false
+        readAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+    NotificationListResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Notifications list retrieved successfully
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    HealthStatusEnum:
+      type: string
+      enum:
+        - HEALTHY
+        - DEGRADED
+        - UNHEALTHY
+      example: HEALTHY
+    ServiceHealthStatus:
+      type: object
+      required:
+        - serviceName
+        - status
+        - latencyMs
+      properties:
+        serviceName:
+          type: string
+          example: mongodb
+        status:
+          $ref: '#/components/schemas/HealthStatusEnum'
+        latencyMs:
+          type: number
+          example: 4.2
+        message:
+          type: string
+          example: Connection pool active
+    HealthCheckResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: System health check evaluated
+        data:
+          type: object
+          required:
+            - status
+            - uptimeSeconds
+            - services
+          properties:
+            status:
+              $ref: '#/components/schemas/HealthStatusEnum'
+            uptimeSeconds:
+              type: number
+              example: 3600.5
+            services:
+              type: array
+              items:
+                $ref: '#/components/schemas/ServiceHealthStatus'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    SystemInfoResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: System info retrieved successfully
+        data:
+          type: object
+          required:
+            - name
+            - version
+            - environment
+            - nodeVersion
+          properties:
+            name:
+              type: string
+              example: Health AI Backend
+            version:
+              type: string
+              example: 1.0.0
+            environment:
+              type: string
+              example: development
+            nodeVersion:
+              type: string
+              example: v20.11.0
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    SystemMetricsResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: System metrics retrieved successfully
+        data:
+          type: object
+          required:
+            - cpuUsagePercent
+            - memoryUsageMb
+            - totalMemoryMb
+            - activeConnections
+            - requestsPerMinute
+          properties:
+            cpuUsagePercent:
+              type: number
+              example: 12.4
+            memoryUsageMb:
+              type: number
+              example: 148.2
+            totalMemoryMb:
+              type: number
+              example: 16384
+            activeConnections:
+              type: integer
+              example: 24
+            requestsPerMinute:
+              type: number
+              example: 150
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    Timestamp:
+      type: object
+      required:
+        - createdAt
+        - updatedAt
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+          description: ISO 8601 creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+          description: ISO 8601 last update timestamp
+    BaseEntity:
+      type: object
+      required:
+        - id
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+          description: Unique 24-character hexadecimal MongoDB ObjectId identifier
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-08-07T09:00:00.000Z'
+    ApiResponse:
+      type: object
+      required:
+        - success
+        - message
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Action completed successfully
+        data:
+          type: object
+          nullable: true
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    PendingRegistrationData:
+      type: object
+      required:
+        - email
+        - passwordHash
+        - firstName
+        - lastName
+        - age
+        - gender
+        - role
+        - hashedOtp
+        - remainingTries
+        - createdAt
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@healthai.org
+        passwordHash:
+          type: string
+          example: $2a$10$abcdef1234567890
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        phoneNumber:
+          type: string
+          example: '+1234567890'
+        age:
+          type: integer
+          minimum: 0
+          maximum: 120
+          example: 34
+        gender:
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+            - OTHER
+            - PREFER_NOT_TO_SAY
+          example: MALE
+        role:
+          $ref: '#/components/schemas/UserRoleEnum'
+        hashedOtp:
+          type: string
+          example: $2a$10$hashedotpcode
+        remainingTries:
+          type: integer
+          example: 5
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-09T10:00:00.000Z'
+    StoredOtpRecord:
+      type: object
+      required:
+        - hashedOtp
+        - email
+        - remainingTries
+        - createdAt
+      properties:
+        hashedOtp:
+          type: string
+          example: $2a$10$hashedotpcode
+        email:
+          type: string
+          format: email
+          example: user@healthai.org
+        remainingTries:
+          type: integer
+          example: 5
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-09T10:00:00.000Z'
+  parameters:
+    UserIdParam:
+      name: userId
+      in: path
+      required: true
+      description: Unique 24-character MongoDB ObjectId identifier of the user
+      schema:
+        type: string
+        example: 64f1a2b3c4d5e6f7a8b9c0d1
+    DeviceIdParam:
+      name: id
+      in: path
+      required: true
+      description: Unique identifier of the device
+      schema:
+        type: string
+        example: 64f1a2b3c4d5e6f7a8b9c0d2
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter JWT Bearer token in format 'Bearer <token>'
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+      description: API Key authentication header for ESP32 hardware devices and AI microservices

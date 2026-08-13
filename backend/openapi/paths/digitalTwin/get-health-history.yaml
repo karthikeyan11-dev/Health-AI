@@ -1,0 +1,27 @@
+get:
+  tags:
+    - Digital Twin
+  summary: Get Digital Twin health history
+  description: Returns historical health score snapshots and vital trends computed by the Digital Twin core.
+  operationId: getHealthHistory
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: days
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 30
+  responses:
+    '200':
+      description: Health history retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/digitalTwin/HealthHistoryResponse.yaml'

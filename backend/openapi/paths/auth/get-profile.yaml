@@ -1,0 +1,21 @@
+get:
+  tags:
+    - Authentication
+  summary: Get current authenticated user profile
+  description: Returns profile details for the currently authenticated JWT user.
+  operationId: getProfile
+  security:
+    - BearerAuth: []
+  responses:
+    '200':
+      description: Profile details retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/users/UserResponse.yaml'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

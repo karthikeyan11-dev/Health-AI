@@ -1,0 +1,21 @@
+post:
+  tags:
+    - Stress Analysis
+  summary: Execute stress assessment algorithm
+  description: Calculates acute stress index combining Heart Rate spikes, SpO2 levels, Body Temperature, and Facial Emotion Detection results.
+  operationId: assessStress
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/stress/StressAssessmentRequest.yaml'
+  responses:
+    '200':
+      description: Stress assessment completed successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/stress/StressAssessmentResponse.yaml'

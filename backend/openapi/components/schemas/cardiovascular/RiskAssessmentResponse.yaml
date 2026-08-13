@@ -1,0 +1,60 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Cardiovascular risk assessment completed"
+  data:
+    type: object
+    required:
+      - userId
+      - riskScore
+      - riskLevel
+      - recommendations
+      - timestamp
+    properties:
+      userId:
+        type: string
+        example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      riskScore:
+        type: number
+        minimum: 0
+        maximum: 100
+        example: 18.5
+      riskLevel:
+        $ref: './CardiovascularRiskEnum.yaml'
+      contributingFactors:
+        type: array
+        items:
+          type: string
+        example:
+          - "Elevated heart rate"
+          - "Subtle SpO2 drop"
+      confidence:
+        type: number
+        minimum: 0
+        maximum: 100
+        example: 94.0
+      explanation:
+        type: string
+        example: "Risk assessment calculated from continuous heart rate, SpO2, body temperature, and emotional indicators."
+      recommendations:
+        type: array
+        items:
+          type: string
+        example:
+          - "Maintain steady hydration"
+          - "Engage in 30 mins moderate aerobic activity daily"
+      timestamp:
+        type: string
+        format: date-time
+        example: "2026-08-07T09:00:00.000Z"
+  meta:
+    $ref: '../common/Metadata.yaml'

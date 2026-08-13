@@ -1,0 +1,38 @@
+type: object
+required:
+  - email
+  - password
+  - firstName
+  - lastName
+  - age
+  - gender
+properties:
+  email:
+    type: string
+    format: email
+    example: "user@healthai.org"
+  password:
+    type: string
+    format: password
+    minLength: 8
+    example: "P@ssw0rd123!"
+  firstName:
+    type: string
+    example: "John"
+  lastName:
+    type: string
+    example: "Doe"
+  phoneNumber:
+    type: string
+    example: "+1234567890"
+  age:
+    type: integer
+    minimum: 0
+    maximum: 120
+    example: 34
+  gender:
+    type: string
+    enum: [MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY]
+    example: "MALE"
+  role:
+    $ref: '../users/UserRoleEnum.yaml'

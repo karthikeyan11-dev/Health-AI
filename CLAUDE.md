@@ -1,0 +1,304 @@
+# 📋 AGENT CODING GUIDELINES & SOFTWARE ENGINEERING STANDARDS
+
+> **Notice for AI Agents & Engineers**: This file defines the mandatory rules, regulations, coding standards, architectural constraints, and forbidden practices for building and maintaining the **Health AI** codebase. Every AI agent, engineer, and contributor MUST strictly follow these guidelines.
+
+---
+
+## 1. 🎯 CORE PHILOSOPHY & EXECUTION RULES
+
+### 1.1 First Principles
+1. **Inspect Before You Implement**: Never guess file paths, database schemas, function signatures, or API contracts. Inspect authoritative source files (`.ts`, schema definitions, types, `ProjectPlan.md`) first.
+2. **Fix Root Causes, Never Mask Symptoms**: Never wrap failing code in silent `try/catch` blocks, return dummy fallback data on errors, or disable failing tests. Always fix the underlying defect.
+3. **Verify Every Edit**: Editing code does NOT complete a task. You MUST execute `pnpm type-check`, `pnpm lint`, `pnpm format:check`, and `pnpm build` to verify runtime correctness and prevent regressions.
+4. **Preserve API Contracts**: Maintain backward compatibility for existing module interfaces and API endpoints. Follow the OpenAPI 3.0.3 specification as the single source of truth (SSOT).
+5. **Atomic & Incremental Edits**: Focus on minimal, high-quality, self-contained changes. Avoid mass refactoring or modifying unrelated code.
+6. **Zero Assumptions**: If any field, schema relation, business rule, or architectural constraint is unclear or contradictory, STOP and ask the user before writing code.
+
+---
+
+## 2. ⛔ STRICT PROHIBITIONS (STRICTLY FORBIDDEN)
+
+| Category | Prohibited Action | Risk / Consequences |
+| :--- | :--- | :--- |
+| **Typing** | ❌ Using `any`, `unknown`, `ts-ignore` / `eslint-disable`, inventing manual types instead of using generated types, or declaring custom types outside feature `types/` folders | Destroys type safety; causes runtime `TypeError` crashes and API spec desynchronization. |
+| **Secrets & Env** | ❌ Hardcoding API keys, JWT secrets, DB strings, or calling `process.env` directly | This is a major security vulnerability; violates centralized configuration. |
+| **Error Handling** | ❌ Empty `catch` blocks or swallowing exceptions (`catch (err) {}`) | This Obscures critical bugs, resource leaks, and causes silent data corruption. |
+| **Microservice Boundary** | ❌ Merging Python AI code into Node.js or moving the `emotion_detection/` service | This breaks decoupled microservices architecture; corrupts native Python ML env. |
+| **Inventing Features** | ❌ Adding undocumented medical fields, doctors/prescriptions, BP sensors, or ECG fields | This violates capstone project scope and pollutes core data models. |
+| **Package Manager** | ❌ Using `npm` or `yarn` instead of `pnpm` (v10+) | This corrupts dependency lockfiles (`pnpm-lock.yaml`) and workspace resolution. |
+| **OpenAPI Hierarchy** | ❌ Creating nested `index.yaml` files inside feature subfolders | This violates the unified root index architecture (`paths/index.yaml`, `schemas/index.yaml`). |
+| **State Mutation** | ❌ Mutating global state, shared variables, or external library internals | Introduces non-deterministic bugs, side-effects, and race conditions. |
+| **Performance** | ❌ Synchronous/blocking code (`readFileSync`, `sleep`) on the main event loop | Causes event loop blocking, high latency, and application freezes. |
+| **Database** | ❌ Un-indexed query filters, manual ObjectId strings, or raw unescaped queries | Causes database CPU spikes, full collection scans, and injection vulnerabilities. |
+| **Architecture** | ❌ Circular dependencies between modules, controllers, or service layers | Causes `undefined` import bindings, runtime panics, and tight coupling. |
+| **Generated Files** | ❌ Manually editing or modifying auto-generated files (`src/sdk/**`, `api.types.ts`, `backend/src/types/generated/**`) | Manual edits get overwritten upon regeneration and cause spec desynchronization. Always update the OpenAPI YAML spec and run the generation commands. |
+
+---
+
+## 3. 🏗️ SYSTEM ARCHITECTURE & MICROSERVICES BOUNDARIES
+
+### 3.1 Node.js Core Backend Gateway (`backend/`)
+- **Runtime**: Node.js (v20+) with TypeScript 5.7+ running Express.
+- **Port**: `5000` (Base URL: `http://localhost:5000/api/v1`).
+- **Clean 3-Tier Layering**:
+  - `controllers/`: HTTP request parsing, Zod DTO validation, status code formatting. *Zero business logic.*
+  - `services/`: Pure business logic, Digital Twin computations, stress/cardio algorithms. *Framework-agnostic.*
+  - `repositories/`: MongoDB Mongoose data access and ORM query abstractions. *No HTTP logic.*
+  - `models/`: Mongoose schemas, TypeScript document interfaces, and collection indexes.
+  - `config/`: Centralized `envalid` configuration, structured `pino` logger, and database connector.
+  - `middlewares/`: JWT authentication, RBAC authorization, error envelope handling.
+
+### 3.2 Python AI Microservice (`emotion_detection/`)
+- **Runtime**: Python 3.10+, Flask, OpenCV Haar-Cascades, TensorFlow/Keras (`model.h5`).
+- **Port**: `5001` (Base URL: `http://localhost:5001`).
+- **Isolation Directive**: Must remain a completely independent service. Node.js communicates with Python **strictly via REST HTTP using Axios** (`POST /emotion/predict`, `POST /chat`, `POST /health-analysis`).
+
+### 3.3 Hardware IoT Sensors (Active Ground Truth)
+The project utilizes ONLY the following confirmed hardware sensors and input streams:
+1. **Heart Rate**: MAX30102 PPG sensor (`bpm`).
+2. **Blood Oxygen (SpO₂)**: MAX30102 sensor (`%`).
+3. **Body Temperature**: MLX90614 / DS18B20 sensor (`°C`).
+4. **Emotion Detection**: Python AI Microservice webcam CNN inference (`Angry`, `Disgust`, `Fear`, `Happy`, `Neutral`, `Sad`, `Surprise`).
+
+> [!IMPORTANT]
+> **Blood Pressure & ECG Policy**: Do NOT include Blood Pressure (`systolicBp`, `diastolicBp`) or ECG as mandatory core parameters. The schema supports optional/nullable fields for future extensions without breaking contracts.
+
+---
+
+## 4. 🗄️ DATABASE & MONGOOSE MODEL STANDARDS
+
+### 4.1 Local Docker MongoDB Setup
+- **Directory**: `docker/` contains dedicated `docker-compose.yml` and `.env` files.
+- **Port**: Host `27017` mapped to container `27017` for MongoDB Compass.
+- **Persistence**: Host-persisted named volume `health_ai_mongodb_data` mounted to `/data/db`.
+- **Compass URI**: `mongodb://admin:healthai_secret_pass@localhost:27017/health_ai_db?authSource=admin`.
+
+### 4.2 The 11 Core Database Collections & Models (`backend/src/models/`)
+All models MUST use Mongoose + strict TypeScript with `{ timestamps: true }`:
+
+1. **`users`** (`UserModel`): System user credentials, email, passwordHash, role (`PATIENT`, `CLINICIAN`, `ADMIN`, `SYSTEM`), isActive.
+2. **`patients`** (`PatientModel`): Clinical patient profile linked 1-to-1 to `User` via `userId`, gender, bloodType, emergencyContact, assignedClinicianId.
+3. **`devices`** (`DeviceModel`): Hardware ESP32 registry, `deviceId`, `macAddress`, `deviceType`, `status` (`ONLINE`, `OFFLINE`, `ERROR`, `UNREGISTERED`), `userId`, `patientId`.
+4. **`sensor_readings`** (`SensorReadingModel`): Time-series biometric telemetry (`HEART_RATE`, `TEMPERATURE`, `SPO2`, `EMOTION`), `value`, `unit`, `timestamp`. Compound indexed on `{ userId: 1, timestamp: -1 }`.
+5. **`stress_assessments`** (`StressAssessmentModel`): Computed stress score (0-100), `stressLevel` (`LOW`, `MODERATE`, `HIGH`, `SEVERE`), `contributingFactors`, `heartRate`, `temperature`, `spo2`, `currentEmotion`.
+6. **`cardiovascular_assessments`** (`CardiovascularAssessmentModel`): Computed cardio risk score (0-100), `riskLevel` (`LOW`, `MODERATE`, `HIGH`, `CRITICAL`), `recommendations`, vitals snapshot, optional nullable `systolicBp`/`diastolicBp`.
+7. **`digital_twins`** (`DigitalTwinModel`): 1-to-1 physiological health mirror (`userId`), `overallHealthScore`, `healthState` (`OPTIMAL`, `STABLE`, `ELEVATED_STRESS`, `AT_RISK`, `CRITICAL`), baseline averages (`baselineHeartRate`, `baselineTemperature`, `baselineSpO2`), `dominantEmotion`.
+8. **`recommendations`** (`RecommendationModel`): Clinical and wellness recommendations (`userId`), `category` (`LIFESTYLE`, `EXERCISE`, `MEDICATION_REMINDER`, `STRESS_RELIEF`, `CLINICAL_ALERT`), `priority` (`LOW`, `MEDIUM`, `HIGH`, `URGENT`), `isAcknowledged`.
+9. **`chat_sessions`** (`ChatSessionModel`): AI conversational dialog sessions (`userId`, `title`, `status`: `ACTIVE`, `CLOSED`, `ARCHIVED`, `lastMessageAt`).
+10. **`chat_messages`** (`ChatMessageModel`): Dialogue turns (`sessionId`, `userId`, `sender`: `USER`, `BOT`, `SYSTEM`, `message`, `intent`, `detectedEmotion`, `timestamp`).
+11. **`reports`** (`ReportModel`): Generated clinical export metadata (`userId`, `reportType`, `format`: `PDF`, `JSON`, `CSV`, `downloadUrl`, `status`, `generatedAt`).
+
+---
+
+## 5. ⚙️ CONFIGURATION & LOGGING STANDARDS
+
+### 5.1 Centralized Environment (`backend/src/config/env.config.ts`)
+- **Rule**: NEVER use `process.env.VAR` directly in deep files.
+- **Implementation**: Use `Config` exported from `@config` validated via `envalid`:
+  ```typescript
+  import { Config } from '@config';
+  const port = Config.PORT;
+  const dbUri = Config.MONGODB_URI;
+  ```
+
+### 5.2 Structured Logging (`backend/src/config/logger.ts`)
+- **Rule**: Use the global `logger` (Pino) for all runtime events.
+- **Levels**:
+  - `logger.info()`: Standard operational events (server start, DB connected).
+  - `logger.warn()`: Non-critical anomalies or retryable failures.
+  - `logger.error()`: Caught application exceptions with `{ err: error }`.
+  - `logger.debug()`: Verbose telemetry or algorithm calculation details.
+- **PII Protection**: NEVER log raw passwords, JWT tokens, hashes, or encryption keys.
+
+---
+
+## 6. 🌐 OPENAPI-FIRST ARCHITECTURE (OPTION B)
+
+### 6.1 Server & Path Rules
+- **Base Server URL**: `http://localhost:5000/api/v1` (Local Dev) / `https://api.healthai.org/api/v1` (Production).
+- **Paths Index**: `backend/openapi/paths/index.yaml` maps all relative endpoints (e.g. `/auth/login`, `/sensors/readings`, `/digital-twin/{userId}`) without `/api/v1` prefix.
+- **Schemas Index**: `backend/openapi/components/schemas/index.yaml` maps all DTO definitions.
+
+### 6.2 Backend OpenAPI Commands
+- `pnpm openapi:lint`: Validate OpenAPI spec with Redocly CLI (`redocly lint openapi/openapi.yaml`).
+- `pnpm openapi:bundle`: Bundle multi-file OpenAPI spec into `openapi/dist/openapi.bundle.yaml` and sync to frontend.
+- `pnpm openapi:build`: Run lint and bundle consecutively.
+- `pnpm openapi:generate`: Generate strict TypeScript DTO types into `src/shared/types/generated/api-types.ts`.
+- `pnpm openapi:gen`: Full pipeline: lint → bundle → TypeScript type generation.
+
+### 6.3 Backend Controller Type Safety (`TypedRequest` & `TypedResponse`)
+All Express controller methods MUST use `TypedRequest<Op>` and `TypedResponse<Op>` mapped directly to the OpenAPI `operationId`:
+```typescript
+import type { TypedRequest, TypedResponse } from '@shared/types';
+import { HttpErrors } from '@shared/errors';
+import { Logger } from '@config/logger';
+
+export class AuthController {
+  async loginUser(
+    req: TypedRequest<'loginUser'>,
+    res: TypedResponse<'loginUser'>,
+  ): Promise<TypedResponse<'loginUser'>> {
+    try {
+      const result = await this.authService.login(req.body);
+      return res.status(200).json(result);
+    } catch (error) {
+      Logger.error(error, 'AuthController.loginUser - Exception occurred');
+      if (error instanceof HttpErrors) {
+        return res.status(error.statusCode).json({ message: error.message });
+      }
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+}
+```
+
+### 6.4 Frontend SDK & Types Commands
+- `pnpm generate:types`: Generate TypeScript interfaces into `src/types/api.types.ts` from `openapi.bundle.yaml`.
+- `pnpm generate:sdk`: Generate production TypeScript Axios SDK client into `src/sdk/` using `openapi-generator-cli`.
+- `pnpm generate`: Execute both `generate:types` and `generate:sdk`.
+- **Type Usage**: Strictly use generated SDK and OpenAPI types throughout application code. Never invent manual types for existing OpenAPI models.
+
+### 6.5 Frontend Feature API Module Conventions
+- **Unified Object Export**: All feature-level API communication modules (`src/features/<feature>/api/<feature>.api.ts`) MUST export a single unified `const <feature>Api` object containing async methods wrapping generated SDK calls (e.g., `loginApi`, `registerApi`, `dashboardApi`).
+- **No Standalone Functions**: Top-level `executeX()` standalone function exports are strictly prohibited; methods MUST be grouped inside the feature API object for system-wide architectural consistency.
+- **Example Pattern**:
+  ```typescript
+  import { authApi } from '@/api';
+  import type { LoginRequest, AuthTokensResponse } from '@/sdk';
+
+  export const loginApi = {
+    async loginUser(payload: LoginRequest): Promise<AuthTokensResponse> {
+      const response = await authApi.loginUser(payload);
+      return response.data;
+    },
+  };
+  ```
+
+---
+
+## 7. 🛡️ ERROR ENVELOPE & HTTP RESPONSE FORMAT
+
+All API endpoints MUST return responses adhering strictly to the standardized envelope:
+
+### 7.1 Success Envelope (`SuccessResponse.yaml`)
+```json
+{
+  "success": true,
+  "message": "Operation completed successfully",
+  "data": {},
+  "meta": {
+    "timestamp": "2026-08-08T11:00:00.000Z",
+    "requestId": "req_88a99c01"
+  }
+}
+```
+
+### 7.2 Error Envelope (`ErrorResponse.yaml`)
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid sensor reading payload",
+    "details": []
+  },
+  "meta": {
+    "timestamp": "2026-08-08T11:00:00.000Z",
+    "requestId": "req_88a99c01"
+  }
+}
+```
+
+---
+
+## 8. 💻 CODE STYLE, TYPES & UTILS STANDARDS
+
+### 8.1 Naming Conventions & Path Aliases
+- **Directories & Source Files**: `kebab-case` (e.g. `sensor-reading.model.ts`, `auth.controller.ts`).
+- **Classes, Interfaces, Enums, Models**: `PascalCase` (e.g. `UserModel`, `SensorType`, `IUserDocument`).
+- **Methods, Functions, Variables**: `camelCase` (e.g. `connectDatabase()`, `calculateStressIndex()`).
+- **Constants & Envs**: `UPPER_SNAKE_CASE` (e.g. `MONGODB_URI`, `DEFAULT_PAGE_LIMIT`).
+- **Path Aliases** (defined in `backend/tsconfig.json` and `frontend/tsconfig.json`):
+  - `@config/*` -> `config/*`
+  - `@controllers/*` -> `controllers/*`
+  - `@services/*` -> `services/*`
+  - `@repositories/*` -> `repositories/*`
+  - `@models/*` -> `models/*`
+  - `@modules/*` -> `modules/*`
+  - `@middlewares/*` -> `middlewares/*`
+  - `@utils/*` -> `utils/*`
+  - `@shared/*` -> `shared/*`
+  - `@errors/*` -> `shared/errors/*`
+  - `@types/*` -> `shared/types/*`
+
+### 8.2 Strict Type Management & Declaration Rules
+1. **Always Use Generated Types**: Whenever writing or modifying code, types MUST be used from the auto-generated OpenAPI/SDK types (e.g., `backend/src/shared/types/generated/api-types.ts`, `frontend/src/types/api.types.ts`, or `@sdk`). Do NOT create duplicate or manual type definitions for API request payloads, response schemas, or database models.
+2. **Feature-Specific Custom Types Folder**: If a scenario strictly requires declaring custom types (e.g., local UI component props, feature-specific view state, non-API internal structures), declare them inside a separate, dedicated `types/` folder within that feature directory (e.g., `frontend/src/features/<feature_name>/types/` or `backend/src/modules/<feature_name>/types/`). Do NOT declare standalone inline types across component or logic files.
+3. **`type` vs `interface` Directive**:
+   - Use `type` aliases (`type MyType = ...`) by default for all object declarations, function signatures, unions, intersections, and primitive type aliases.
+   - Declare as `interface` ONLY when explicit object interface inheritance (`interface Child extends Parent`) or declaration merging is required. Otherwise, declare as `type`.
+
+### 8.3 Utility Functions Organization (`utils/`)
+- **Proper Location**: All utility and helper functions MUST be declared inside dedicated `utils/` folders (e.g., global `src/utils/` or feature-scoped `features/<feature_name>/utils/`).
+- **No Inline Helpers**: Never write ad-hoc inline utility/helper functions inside components, controllers, or service files.
+- **Purity & Export**: Ensure utility functions are pure, modular, properly typed, unit-testable, and exported cleanly from their respective `utils/` folder.
+
+### 8.4 Reusable Modern UI Dropdown Standards
+- **Modern Dropdown Component (`@/components/ui/select.tsx`)**: All dropdowns across the application MUST use the project's modern Radix-UI glassmorphic `Select` component (`@/components/ui/select.tsx`).
+- **No Native HTML Select**: Native HTML `<select>` tags are strictly prohibited to prevent unstyled OS default dropdown popovers and maintain UI consistency.
+- **Styling**: Dropdowns must use the glassmorphic popover theme (`bg-white/95 backdrop-blur-xl border-white/80 shadow-card-hover rounded-xl`), brand gradient hover highlights (`hover:bg-gradient-subtle hover:text-primary`), checkmark indicators, and `onValueChange` / `options` prop signatures.
+
+### 8.5 Button Alignment & Brand Gradient Consistency
+- **Primary Brand Gradient Buttons**: All primary action buttons (including form submit buttons and switch panel navigation buttons such as "Register Here" and "Login Here") MUST consistently use the brand's blue-purple gradient styling (`bg-gradient-primary hover:bg-gradient-primary-hover text-white shadow-primary font-semibold`).
+- **Perfect Text Centering**: All buttons must center their text and optional icons perfectly (`inline-flex items-center justify-center text-center gap-2`). Standalone icon margin hacks (like `ml-2`) that push text off-center are prohibited.
+
+---
+
+## 9. 🧪 TESTING CONVENTIONS & COVERAGE GATES
+
+- **Test Location**: All test files MUST be placed in `backend/tests/<feature>/` mirroring `backend/src/modules/<feature>/`.
+- **Target Files**: Unit test suites are written separately ONLY for business logic layers:
+  - `<feature>.controller.spec.ts`
+  - `<feature>.service.spec.ts`
+  - `<feature>.repository.spec.ts`
+  - `<feature>.transformer.spec.ts` (if applicable)
+- **Exclusions**: Never write unit test files for DTO files (`*.dto.ts`), types, or index files.
+- **Coverage**: Maintain **100% coverage** (branches, functions, lines, statements) for all business logic files in `src/modules/`.
+- **Frontend**: Frontend does not require unit tests.
+
+---
+
+## 10. 🤖 AGENT OPERATIONAL WORKFLOW & PRE-COMMIT HOOKS
+
+When receiving any coding task, follow this 4-step execution lifecycle:
+
+```mermaid
+flowchart TD
+    A[Step 1: Inspect & Analyze] --> B[Step 2: Plan Architecture]
+    B --> C[Step 3: Implement Code]
+    C --> D[Step 4: Verify & Self-Test]
+    D -->|Build/Lint/Test Fails| C
+    D -->|All Gates Pass| E[Task Complete]
+```
+
+1. **Inspect**: Search the workspace using grep/view tools to inspect existing models, config, and routes.
+2. **Plan**: Align with `ProjectPlan.md` and `CLAUDE.md`. Ask questions if anything is ambiguous.
+3. **Implement**: Write modular, clean TypeScript adhering to 3-tier layering, OpenAPI contracts, and strict type safety.
+4. **Verify**:
+   - **Backend**:
+     ```bash
+     pnpm --dir backend lint          # ESLint
+     pnpm --dir backend format:check  # Prettier check
+     pnpm --dir backend type-check    # Strict TypeScript (tsc --noEmit)
+     pnpm --dir backend test:coverage # 100% Jest unit test coverage
+     pnpm --dir backend build         # Production JavaScript compilation
+     ```
+   - **Frontend** (no tests):
+     ```bash
+     pnpm --dir frontend lint          # ESLint
+     pnpm --dir frontend format:check  # Prettier check
+     pnpm --dir frontend typecheck     # Strict TypeScript (tsc --noEmit)
+     pnpm --dir frontend build         # Vite production build
+     ```
+
+*Note: All these gates are strictly enforced automatically on every commit via the Git Husky pre-commit hook (`.husky/pre-commit`).*

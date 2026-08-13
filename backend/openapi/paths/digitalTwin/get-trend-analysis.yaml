@@ -1,0 +1,28 @@
+get:
+  tags:
+    - Digital Twin
+  summary: Get health trend analysis insights
+  description: Evaluates predictive trends and anomaly patterns for heart rate, stress, and cardiovascular metrics.
+  operationId: getHealthTrendAnalysis
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: period
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [7_DAYS, 30_DAYS, 90_DAYS]
+        default: 7_DAYS
+  responses:
+    '200':
+      description: Health trend analysis computed
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/digitalTwin/HealthTrendAnalysisResponse.yaml'

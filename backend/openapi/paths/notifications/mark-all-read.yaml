@@ -1,0 +1,15 @@
+put:
+  tags:
+    - Notifications
+  summary: Mark all notifications as read
+  description: Marks all unread notifications as read for current user.
+  operationId: markAllNotificationsAsRead
+  security:
+    - BearerAuth: []
+  responses:
+    '200':
+      description: All notifications marked as read
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/SuccessResponse.yaml'

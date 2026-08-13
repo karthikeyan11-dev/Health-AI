@@ -1,0 +1,16 @@
+type: object
+required:
+  - timestamp
+  - requestId
+properties:
+  timestamp:
+    type: string
+    format: date-time
+    example: "2026-08-07T09:00:00.000Z"
+    description: System timestamp when response was generated
+  requestId:
+    type: string
+    example: "req_99b1a8f2"
+    description: Unique correlation ID for tracking request lifecycle
+  pagination:
+    $ref: './Pagination.yaml'

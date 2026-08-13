@@ -1,0 +1,17 @@
+type: object
+required:
+  - success
+  - message
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Action completed successfully"
+  data:
+    type: object
+    nullable: true
+  meta:
+    $ref: './Metadata.yaml'

@@ -1,0 +1,21 @@
+post:
+  tags:
+    - Health Reports
+  summary: Asynchronously generate health summary report
+  description: Triggers background PDF/JSON generation of health summaries, cardiovascular risk trends, or emotion history.
+  operationId: generateReport
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/reports/GenerateReportRequest.yaml'
+  responses:
+    '202':
+      description: Report generation queued
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/reports/ReportResponse.yaml'

@@ -1,0 +1,22 @@
+get:
+  tags:
+    - Notifications
+  summary: List user notifications
+  description: Fetches paginated list of unread or all notifications for authenticated user.
+  operationId: getNotifications
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: unreadOnly
+      in: query
+      required: false
+      schema:
+        type: boolean
+        default: false
+  responses:
+    '200':
+      description: Notifications list retrieved
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/notifications/NotificationListResponse.yaml'

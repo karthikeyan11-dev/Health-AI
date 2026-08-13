@@ -1,0 +1,28 @@
+get:
+  tags:
+    - Devices
+  summary: Get device operational status
+  description: Returns real-time connectivity status, last seen timestamp, uptime, and battery telemetry for the device.
+  operationId: getDeviceStatus
+  security:
+    - BearerAuth: []
+    - ApiKeyAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Device status retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/devices/DeviceStatusResponse.yaml'
+    '404':
+      description: Device not found
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

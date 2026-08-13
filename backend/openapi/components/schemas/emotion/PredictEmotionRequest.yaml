@@ -1,0 +1,11 @@
+type: object
+required:
+  - imageBase64
+properties:
+  imageBase64:
+    type: string
+    description: Base64 encoded image string or frame
+    example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD..."
+  userId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d1"

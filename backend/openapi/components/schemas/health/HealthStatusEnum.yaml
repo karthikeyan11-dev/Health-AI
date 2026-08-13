@@ -1,0 +1,6 @@
+type: string
+enum:
+  - HEALTHY
+  - DEGRADED
+  - UNHEALTHY
+example: "HEALTHY"

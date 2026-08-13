@@ -1,0 +1,4 @@
+BearerAuth:
+  $ref: './BearerAuth.yaml'
+ApiKeyAuth:
+  $ref: './ApiKeyAuth.yaml'

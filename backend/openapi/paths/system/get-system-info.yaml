@@ -1,0 +1,13 @@
+get:
+  tags:
+    - Health & System Ops
+  summary: Get application build & environment metadata
+  description: Returns API platform version, runtime build details, and active environment mode.
+  operationId: getSystemInfo
+  responses:
+    '200':
+      description: System info retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/system/SystemInfoResponse.yaml'

@@ -1,0 +1,65 @@
+type: object
+required:
+  - id
+  - email
+  - firstName
+  - lastName
+  - age
+  - gender
+  - role
+  - isActive
+  - createdAt
+  - updatedAt
+properties:
+  id:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d1"
+  email:
+    type: string
+    format: email
+    example: "john.doe@healthai.org"
+  firstName:
+    type: string
+    example: "John"
+  lastName:
+    type: string
+    example: "Doe"
+  phoneNumber:
+    type: string
+    example: "+1234567890"
+  age:
+    type: integer
+    minimum: 0
+    maximum: 120
+    example: 34
+  gender:
+    type: string
+    enum: [MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY]
+    example: "MALE"
+  role:
+    $ref: './UserRoleEnum.yaml'
+  isEmailVerified:
+    type: boolean
+    example: true
+  isPhoneVerified:
+    type: boolean
+    example: false
+  isActive:
+    type: boolean
+    example: true
+  dateOfBirth:
+    type: string
+    format: date
+    example: "1990-05-15"
+  lastLoginAt:
+    type: string
+    format: date-time
+    example: "2026-08-09T10:00:00.000Z"
+  createdAt:
+    type: string
+    format: date-time
+    example: "2026-08-07T09:00:00.000Z"
+  updatedAt:
+    type: string
+    format: date-time
+    example: "2026-08-07T09:00:00.000Z"

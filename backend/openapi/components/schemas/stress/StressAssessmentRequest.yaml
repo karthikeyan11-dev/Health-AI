@@ -1,0 +1,18 @@
+type: object
+required:
+  - userId
+properties:
+  userId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d1"
+  heartRate:
+    type: number
+    example: 88.0
+  temperature:
+    type: number
+    example: 36.6
+  spo2:
+    type: number
+    example: 98.0
+  currentEmotion:
+    $ref: '../emotion/EmotionEnum.yaml'

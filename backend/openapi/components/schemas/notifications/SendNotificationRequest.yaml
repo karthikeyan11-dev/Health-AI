@@ -1,0 +1,21 @@
+type: object
+required:
+  - userId
+  - title
+  - message
+  - type
+properties:
+  userId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d1"
+  title:
+    type: string
+    example: "Medication Alert"
+  message:
+    type: string
+    example: "Time to take Aspirin 75mg."
+  type:
+    $ref: './NotificationTypeEnum.yaml'
+  priority:
+    $ref: './NotificationPriorityEnum.yaml'
+    default: NORMAL

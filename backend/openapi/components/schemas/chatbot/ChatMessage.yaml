@@ -1,0 +1,31 @@
+type: object
+required:
+  - id
+  - userId
+  - sender
+  - message
+  - timestamp
+properties:
+  id:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d8"
+  userId:
+    type: string
+    example: "64f1a2b3c4d5e6f7a8b9c0d1"
+  sender:
+    $ref: './ChatSenderEnum.yaml'
+  message:
+    type: string
+    example: "How can I reduce my heart rate after feeling stressed?"
+  intent:
+    type: string
+    example: "stress_relief_query"
+  detectedEmotion:
+    $ref: '../emotion/EmotionEnum.yaml'
+  healthContextUsed:
+    type: string
+    example: "Vitals snapshot: HR 92 bpm, SpO2 97%, Emotion: Sad"
+  timestamp:
+    type: string
+    format: date-time
+    example: "2026-08-07T09:00:00.000Z"

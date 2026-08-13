@@ -1,0 +1,49 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Stress assessment computed successfully"
+  data:
+    type: object
+    required:
+      - userId
+      - stressScore
+      - stressLevel
+      - timestamp
+    properties:
+      userId:
+        type: string
+        example: "64f1a2b3c4d5e6f7a8b9c0d1"
+      stressScore:
+        type: number
+        minimum: 0
+        maximum: 100
+        example: 45.8
+      stressLevel:
+        $ref: './StressLevelEnum.yaml'
+      contributingFactors:
+        type: array
+        items:
+          type: string
+        example:
+          - "Elevated heart rate (+15% baseline)"
+          - "Detected emotion: Sad"
+      confidence:
+        type: number
+        minimum: 0
+        maximum: 100
+        example: 92.5
+      timestamp:
+        type: string
+        format: date-time
+        example: "2026-08-07T09:00:00.000Z"
+  meta:
+    $ref: '../common/Metadata.yaml'

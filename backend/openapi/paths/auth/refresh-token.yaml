@@ -1,0 +1,25 @@
+post:
+  tags:
+    - Authentication
+  summary: Refresh access token
+  description: Exchanges a valid refresh token for a new JWT access and refresh token pair.
+  operationId: refreshToken
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../../components/schemas/auth/RefreshTokenRequest.yaml'
+  responses:
+    '200':
+      description: Tokens refreshed successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/auth/AuthTokensResponse.yaml'
+    '401':
+      description: Invalid or expired refresh token
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
