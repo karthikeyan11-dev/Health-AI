@@ -1,11 +1,15 @@
 import type { TypedRequest, TypedResponse } from '@shared/types';
 import { HttpErrors, BadRequestError } from '@shared/errors';
-import { validateRegisterRequest, validateVerifyOtpRequest } from '@verification/auth.verification';
+import {
+  validateRegisterRequest,
+  validateVerifyOtpRequest,
+  validateLoginRequest,
+} from '@verification/auth.verification';
 import { authService, AuthService } from './auth.service';
 import { logger } from '@config/logger';
 
 /**
- * Controller handling HTTP requests for user registration and email OTP verification.
+ * Controller handling HTTP requests for user registration, email OTP verification, and authentication.
  */
 export class AuthController {
   constructor(private readonly service: AuthService = authService) {}
@@ -98,6 +102,57 @@ export class AuthController {
       });
     } catch (error) {
       logger.error({ err: error }, 'AuthController.verifyOtp - Exception occurred');
+
+      if (error instanceof HttpErrors) {
+        return res.status(error.statusCode).json({
+          success: false,
+          error: {
+            code: error.name.toUpperCase(),
+            message: error.message,
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: `req_${Math.random().toString(36).substring(2, 10)}`,
+          },
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        error: {
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Internal server error',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: `req_${Math.random().toString(36).substring(2, 10)}`,
+        },
+      });
+    }
+  };
+
+  /**
+   * POST /login and POST /auth/login
+   * Validates user credentials, authenticates password, and issues JWT access/refresh tokens.
+   */
+  public login = async (
+    req: TypedRequest<'loginUser'>,
+    res: TypedResponse<'loginUser'>,
+  ): Promise<TypedResponse<'loginUser'>> => {
+    try {
+      const parseResult = validateLoginRequest(req.body);
+      if (!parseResult.success) {
+        const issues = parseResult.error.issues;
+        const firstErrorMessage = issues[0]?.message;
+        logger.warn({ issues }, 'AuthController.login - Validation failed');
+        throw new BadRequestError(firstErrorMessage);
+      }
+
+      const result = await this.service.login(parseResult.data);
+
+      return res.status(200).json(result);
+    } catch (error) {
+      logger.error({ err: error }, 'AuthController.login - Exception occurred');
 
       if (error instanceof HttpErrors) {
         return res.status(error.statusCode).json({

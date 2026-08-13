@@ -156,8 +156,23 @@ export class AuthController {
 - `pnpm generate:types`: Generate TypeScript interfaces into `src/types/api.types.ts` from `openapi.bundle.yaml`.
 - `pnpm generate:sdk`: Generate production TypeScript Axios SDK client into `src/sdk/` using `openapi-generator-cli`.
 - `pnpm generate`: Execute both `generate:types` and `generate:sdk`.
-- **Strict Rule**: NEVER modify files inside `src/sdk/` or `src/types/api.types.ts` manually. Any contract change MUST be made in `backend/openapi/` and regenerated.
 - **Type Usage**: Strictly use generated SDK and OpenAPI types throughout application code. Never invent manual types for existing OpenAPI models.
+
+### 6.5 Frontend Feature API Module Conventions
+- **Unified Object Export**: All feature-level API communication modules (`src/features/<feature>/api/<feature>.api.ts`) MUST export a single unified `const <feature>Api` object containing async methods wrapping generated SDK calls (e.g., `loginApi`, `registerApi`, `dashboardApi`).
+- **No Standalone Functions**: Top-level `executeX()` standalone function exports are strictly prohibited; methods MUST be grouped inside the feature API object for system-wide architectural consistency.
+- **Example Pattern**:
+  ```typescript
+  import { authApi } from '@/api';
+  import type { LoginRequest, AuthTokensResponse } from '@/sdk';
+
+  export const loginApi = {
+    async loginUser(payload: LoginRequest): Promise<AuthTokensResponse> {
+      const response = await authApi.loginUser(payload);
+      return response.data;
+    },
+  };
+  ```
 
 ---
 
@@ -227,6 +242,15 @@ All API endpoints MUST return responses adhering strictly to the standardized en
 - **Proper Location**: All utility and helper functions MUST be declared inside dedicated `utils/` folders (e.g., global `src/utils/` or feature-scoped `features/<feature_name>/utils/`).
 - **No Inline Helpers**: Never write ad-hoc inline utility/helper functions inside components, controllers, or service files.
 - **Purity & Export**: Ensure utility functions are pure, modular, properly typed, unit-testable, and exported cleanly from their respective `utils/` folder.
+
+### 8.4 Reusable Modern UI Dropdown Standards
+- **Modern Dropdown Component (`@/components/ui/select.tsx`)**: All dropdowns across the application MUST use the project's modern Radix-UI glassmorphic `Select` component (`@/components/ui/select.tsx`).
+- **No Native HTML Select**: Native HTML `<select>` tags are strictly prohibited to prevent unstyled OS default dropdown popovers and maintain UI consistency.
+- **Styling**: Dropdowns must use the glassmorphic popover theme (`bg-white/95 backdrop-blur-xl border-white/80 shadow-card-hover rounded-xl`), brand gradient hover highlights (`hover:bg-gradient-subtle hover:text-primary`), checkmark indicators, and `onValueChange` / `options` prop signatures.
+
+### 8.5 Button Alignment & Brand Gradient Consistency
+- **Primary Brand Gradient Buttons**: All primary action buttons (including form submit buttons and switch panel navigation buttons such as "Register Here" and "Login Here") MUST consistently use the brand's blue-purple gradient styling (`bg-gradient-primary hover:bg-gradient-primary-hover text-white shadow-primary font-semibold`).
+- **Perfect Text Centering**: All buttons must center their text and optional icons perfectly (`inline-flex items-center justify-center text-center gap-2`). Standalone icon margin hacks (like `ml-2`) that push text off-center are prohibited.
 
 ---
 

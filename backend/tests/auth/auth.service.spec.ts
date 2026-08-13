@@ -3,7 +3,11 @@ import { AuthService } from '../../src/modules/auth/auth.service';
 import type { AuthRepository } from '../../src/modules/auth/auth.repository';
 import type { OtpService } from '../../src/shared/services/otp/otp.service';
 import type { EmailService } from '../../src/shared/services/email/email.service';
-import { ConflictError, BadRequestError } from '../../src/shared/errors/httpErrors';
+import {
+  ConflictError,
+  BadRequestError,
+  UnauthorizedError,
+} from '../../src/shared/errors/httpErrors';
 import { UserRole, type IUserDocument } from '../../src/models/user.model';
 import { AuthConstants } from '../../src/shared/constants/auth.constants';
 
@@ -16,8 +20,10 @@ describe('AuthService Unit Tests', () => {
   beforeEach(() => {
     mockRepo = {
       findByEmail: jest.fn(),
+      findByEmailWithPassword: jest.fn(),
       existsByEmail: jest.fn(),
       createUser: jest.fn(),
+      updateLastLogin: jest.fn().mockResolvedValue(undefined),
     } as unknown as jest.Mocked<AuthRepository>;
 
     mockOtpSvc = {
@@ -158,6 +164,21 @@ describe('AuthService Unit Tests', () => {
         },
         '123456',
       );
+    });
+
+    it('should rethrow error when repository fails during register', async () => {
+      mockRepo.existsByEmail.mockRejectedValue(new Error('Repository exists error'));
+
+      await expect(
+        authService.register({
+          email: 'user@example.com',
+          password: 'password123',
+          firstName: 'John',
+          lastName: 'Doe',
+          age: 34,
+          gender: 'MALE',
+        }),
+      ).rejects.toThrow('Repository exists error');
     });
   });
 
@@ -400,6 +421,111 @@ describe('AuthService Unit Tests', () => {
 
       expect(mockOtpSvc.deletePendingRegistration).toHaveBeenCalledWith('user@example.com');
       expect(mockRepo.createUser).not.toHaveBeenCalled();
+    });
+
+    it('should rethrow error when OTP service fails during verifyOtp', async () => {
+      mockOtpSvc.verifyRegistrationOtp.mockRejectedValue(new Error('Redis exception'));
+
+      await expect(
+        authService.verifyOtp({
+          email: 'user@example.com',
+          otp: '123456',
+        }),
+      ).rejects.toThrow('Redis exception');
+    });
+  });
+
+  describe('login', () => {
+    it('should authenticate user successfully and return tokens', async () => {
+      const user = {
+        id: 'user_123',
+        email: 'user@example.com',
+        passwordHash: 'hashed_password',
+        role: UserRole.PATIENT,
+        isActive: true,
+      };
+
+      mockRepo.findByEmailWithPassword.mockResolvedValue(user as unknown as IUserDocument);
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never);
+
+      const result = await authService.login({
+        email: ' User@Example.com ',
+        password: 'P@ssw0rd123!',
+      });
+
+      expect(mockRepo.findByEmailWithPassword).toHaveBeenCalledWith('user@example.com');
+      expect(bcrypt.compare).toHaveBeenCalledWith('P@ssw0rd123!', 'hashed_password');
+      expect(mockRepo.updateLastLogin).toHaveBeenCalledWith('user_123');
+      expect(result).toBeDefined();
+      expect(result.accessToken).toBeDefined();
+      expect(result.refreshToken).toBeDefined();
+      expect(result.tokenType).toBe('Bearer');
+      expect(result.expiresIn).toBe(3600);
+    });
+
+    it('should throw UnauthorizedError if user is not found', async () => {
+      mockRepo.findByEmailWithPassword.mockResolvedValue(null);
+
+      await expect(
+        authService.login({
+          email: 'nonexistent@example.com',
+          password: 'P@ssw0rd123!',
+        }),
+      ).rejects.toThrow(UnauthorizedError);
+
+      expect(mockRepo.findByEmailWithPassword).toHaveBeenCalledWith('nonexistent@example.com');
+    });
+
+    it('should throw UnauthorizedError if account is inactive', async () => {
+      const user = {
+        id: 'user_123',
+        email: 'disabled@example.com',
+        passwordHash: 'hashed_password',
+        role: UserRole.PATIENT,
+        isActive: false,
+      };
+
+      mockRepo.findByEmailWithPassword.mockResolvedValue(user as unknown as IUserDocument);
+
+      await expect(
+        authService.login({
+          email: 'disabled@example.com',
+          password: 'P@ssw0rd123!',
+        }),
+      ).rejects.toThrow(UnauthorizedError);
+    });
+
+    it('should throw UnauthorizedError if password comparison fails', async () => {
+      const user = {
+        id: 'user_123',
+        email: 'user@example.com',
+        passwordHash: 'hashed_password',
+        role: UserRole.PATIENT,
+        isActive: true,
+      };
+
+      mockRepo.findByEmailWithPassword.mockResolvedValue(user as unknown as IUserDocument);
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(false as never);
+
+      await expect(
+        authService.login({
+          email: 'user@example.com',
+          password: 'WrongPassword!',
+        }),
+      ).rejects.toThrow(UnauthorizedError);
+
+      expect(mockRepo.updateLastLogin).not.toHaveBeenCalled();
+    });
+
+    it('should rethrow error when repository fails during login', async () => {
+      mockRepo.findByEmailWithPassword.mockRejectedValue(new Error('DB failure'));
+
+      await expect(
+        authService.login({
+          email: 'user@example.com',
+          password: 'P@ssw0rd123!',
+        }),
+      ).rejects.toThrow('DB failure');
     });
   });
 });

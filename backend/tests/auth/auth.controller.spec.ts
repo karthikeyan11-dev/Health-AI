@@ -1,6 +1,10 @@
 import { AuthController } from '../../src/modules/auth/auth.controller';
 import type { AuthService } from '../../src/modules/auth/auth.service';
-import { ConflictError, BadRequestError } from '../../src/shared/errors/httpErrors';
+import {
+  ConflictError,
+  BadRequestError,
+  UnauthorizedError,
+} from '../../src/shared/errors/httpErrors';
 import { UserRole } from '../../src/models/user.model';
 import type { TypedRequest, TypedResponse } from '../../src/shared/types';
 
@@ -16,6 +20,7 @@ describe('AuthController Unit Tests', () => {
     mockService = {
       register: jest.fn(),
       verifyOtp: jest.fn(),
+      login: jest.fn(),
     } as unknown as jest.Mocked<AuthService>;
 
     controller = new AuthController(mockService);
@@ -247,6 +252,113 @@ describe('AuthController Unit Tests', () => {
       await controller.verifyOtp(
         verifyReq as TypedRequest<'verifyOtp'>,
         mockResponse as unknown as TypedResponse<'verifyOtp'>,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Internal server error',
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('login', () => {
+    it('should return 200 with tokens when authentication succeeds', async () => {
+      const loginReq = {
+        body: {
+          email: 'user@example.com',
+          password: 'P@ssw0rd123!',
+        },
+      };
+
+      const tokens = {
+        accessToken: 'access_token_sample',
+        refreshToken: 'refresh_token_sample',
+        tokenType: 'Bearer' as const,
+        expiresIn: 3600,
+      };
+
+      mockService.login.mockResolvedValue(tokens);
+
+      await controller.login(
+        loginReq as TypedRequest<'loginUser'>,
+        mockResponse as unknown as TypedResponse<'loginUser'>,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(200);
+      expect(jsonMock).toHaveBeenCalledWith(tokens);
+    });
+
+    it('should return 400 when login validation fails due to invalid email', async () => {
+      const loginReq = {
+        body: {
+          email: 'invalid-email',
+          password: 'P@ssw0rd123!',
+        },
+      };
+
+      await controller.login(
+        loginReq as TypedRequest<'loginUser'>,
+        mockResponse as unknown as TypedResponse<'loginUser'>,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(400);
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({
+            code: 'BADREQUESTERROR',
+            message: 'Invalid email address format',
+          }),
+        }),
+      );
+    });
+
+    it('should handle UnauthorizedError thrown by service with 401 response envelope', async () => {
+      const loginReq = {
+        body: {
+          email: 'user@example.com',
+          password: 'WrongPassword!',
+        },
+      };
+
+      mockService.login.mockRejectedValue(new UnauthorizedError('Invalid credentials'));
+
+      await controller.login(
+        loginReq as TypedRequest<'loginUser'>,
+        mockResponse as unknown as TypedResponse<'loginUser'>,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(401);
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({
+            code: 'UNAUTHORIZEDERROR',
+            message: 'Invalid credentials',
+          }),
+        }),
+      );
+    });
+
+    it('should handle unhandled service error with 500 response envelope', async () => {
+      const loginReq = {
+        body: {
+          email: 'user@example.com',
+          password: 'P@ssw0rd123!',
+        },
+      };
+
+      mockService.login.mockRejectedValue(new Error('Internal database exception'));
+
+      await controller.login(
+        loginReq as TypedRequest<'loginUser'>,
+        mockResponse as unknown as TypedResponse<'loginUser'>,
       );
 
       expect(statusMock).toHaveBeenCalledWith(500);

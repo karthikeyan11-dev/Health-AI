@@ -109,6 +109,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthTokensResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Invalid credentials
           content:

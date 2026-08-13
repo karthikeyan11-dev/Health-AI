@@ -2542,6 +2542,15 @@ export interface operations {
                     "application/json": components["schemas"]["AuthTokensResponse"];
                 };
             };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Invalid credentials */
             401: {
                 headers: {

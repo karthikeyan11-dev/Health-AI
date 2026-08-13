@@ -11,52 +11,63 @@
       'Andika', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
       Arial, sans-serif;
 
-    /* Pure Light Theme - Clean White & Neutral Surfaces */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* ─────────────────────────────────────────────────────────────────────────
+       EXACT COLORS EXTRACTED FROM REFERENCE SCREENSHOT (pixel-accurate):
+         Sidebar top:    #083032  (RGB 8, 48, 50)  — very dark teal-green
+         Sidebar mid:    #0A4144  (RGB 10, 65, 68) — mid dark teal
+         Sidebar bottom: #0A3234  (RGB 10, 50, 52) — dark teal-green
+         Page background:#D7FFE5  (RGB 215,255,229)— soft mint
+       Gradient is a very slight shift from #083032 (darker) → #0A4144 (slightly
+       lighter mid), replicating the natural top-to-mid lightening in the sidebar.
+    ───────────────────────────────────────────────────────────────────────── */
+
+    /* Page background — exact mint from screenshot */
+    --background: 145 100% 92%;
+    --foreground: 183 73% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 183 73% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 183 73% 11%;
 
-    /* Primary Accent - Vibrant Blue/Indigo from reference gradient */
-    --primary: 238.7 83.5% 58.6%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary — exact sidebar base: #083032 → HSL ≈ 183 73% 11% */
+    --primary: 183 73% 11%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14.3% 95.9%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 182 30% 90%;
+    --secondary-foreground: 183 73% 10%;
 
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 182 30% 90%;
+    --muted-foreground: 183 20% 44%;
 
-    --accent: 238.7 83.5% 96%;
-    --accent-foreground: 238.7 83.5% 45%;
+    --accent: 182 35% 86%;
+    --accent-foreground: 183 73% 11%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 238.7 83.5% 58.6%;
+    --border: 182 22% 83%;
+    --input: 182 22% 83%;
+    --ring: 183 73% 11%;
 
     --radius: 0.75rem;
 
-    /* Reusable Brand Gradient Design Tokens */
-    --gradient-primary: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #7c3aed 100%);
-    --gradient-primary-hover: linear-gradient(135deg, #1d4ed8 0%, #4338ca 50%, #6d28d9 100%);
+    /* ─── Brand Gradient Design Tokens ──────────────────────────────────────
+       Replicates the sidebar gradient EXACTLY:
+         Start (top/left):  #083032  — very dark teal-green
+         End (bottom/right):#0A4144  — slightly lighter dark teal
+       The shift is only ~17 lightness units — barely perceptible, exactly like
+       the screenshot sidebar.
+    ─────────────────────────────────────────────────────────────────────────  */
+    --gradient-primary: linear-gradient(135deg, #083032 0%, #0a4144 100%);
+    --gradient-primary-hover: linear-gradient(135deg, #051f21 0%, #083032 100%);
     --gradient-subtle: linear-gradient(
       135deg,
-      rgba(37, 99, 235, 0.08) 0%,
-      rgba(79, 70, 229, 0.08) 50%,
-      rgba(124, 58, 237, 0.08) 100%
+      rgba(8, 48, 50, 0.07) 0%,
+      rgba(10, 65, 68, 0.07) 100%
     );
-    --gradient-glow: linear-gradient(
-      135deg,
-      rgba(37, 99, 235, 0.15) 0%,
-      rgba(124, 58, 237, 0.15) 100%
-    );
+    --gradient-glow: linear-gradient(135deg, rgba(8, 48, 50, 0.12) 0%, rgba(10, 65, 68, 0.12) 100%);
   }
 }
 
@@ -85,7 +96,7 @@
 }
 
 @layer utilities {
-  /* Reusable Gradient Utilities */
+  /* ── Gradient Utilities ──────────────────────────────── */
   .bg-gradient-primary {
     background: var(--gradient-primary);
   }
@@ -105,12 +116,13 @@
     background-clip: text;
   }
 
+  /* ── Shadow Utilities ────────────────────────────────── */
   .shadow-primary {
-    box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.25);
+    box-shadow: 0 4px 14px 0 rgba(8, 48, 50, 0.32);
   }
 
   .shadow-primary-hover {
-    box-shadow: 0 6px 20px 0 rgba(79, 70, 229, 0.35);
+    box-shadow: 0 6px 20px 0 rgba(8, 48, 50, 0.44);
   }
 
   .shadow-card {
@@ -125,5 +137,150 @@
       0 4px 6px -1px rgba(0, 0, 0, 0.05),
       0 20px 30px -10px rgba(0, 0, 0, 0.08),
       0 0 0 1px rgba(0, 0, 0, 0.04);
+  }
+
+  /* ── Auth Card Border ────────────────────────────────── */
+  .auth-gradient-border-card {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.94)) padding-box,
+      linear-gradient(135deg, rgba(8, 48, 50, 0.3) 0%, rgba(10, 65, 68, 0.24) 100%) border-box;
+    box-shadow: 0 18px 40px -30px rgba(8, 48, 50, 0.26);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+  }
+
+  /* ── Auth Card Animated Glow Border ─────────────────── */
+  .animated-glow-border {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)) padding-box,
+      linear-gradient(135deg, rgba(8, 48, 50, 0.34) 0%, rgba(10, 65, 68, 0.28) 100%) border-box;
+    box-shadow:
+      0 0 0 1px rgba(8, 48, 50, 0.07),
+      0 20px 50px -20px rgba(8, 48, 50, 0.26),
+      0 0 80px -20px rgba(10, 65, 68, 0.1);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    animation: tealGlowPulse 4s ease-in-out infinite;
+  }
+
+  /* ── Animations ──────────────────────────────────────── */
+  .animate-fade-in {
+    animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .auth-decor-float {
+    animation: authDecorFloat 8s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .auth-decor-float-a {
+    animation-name: authDecorFloatA;
+  }
+
+  .auth-decor-float-b {
+    animation-name: authDecorFloatB;
+  }
+
+  .auth-decor-float-c {
+    animation-name: authDecorFloatC;
+  }
+
+  .auth-decor-float-d {
+    animation-name: authDecorFloatD;
+  }
+
+  .auth-decor-pulse {
+    animation: authDecorPulse 7s ease-in-out infinite;
+    will-change: opacity, transform;
+  }
+}
+
+/* ── Keyframes ────────────────────────────────────────── */
+@keyframes tealGlowPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(8, 48, 50, 0.07),
+      0 20px 50px -20px rgba(8, 48, 50, 0.26),
+      0 0 80px -20px rgba(10, 65, 68, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(8, 48, 50, 0.13),
+      0 20px 50px -20px rgba(8, 48, 50, 0.34),
+      0 0 80px -20px rgba(10, 65, 68, 0.18);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes authDecorFloatA {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(14px, -18px, 0) rotate(3deg);
+  }
+}
+
+@keyframes authDecorFloatB {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(-18px, 16px, 0) rotate(-4deg);
+  }
+}
+
+@keyframes authDecorFloatC {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(20px, 12px, 0) rotate(2deg);
+  }
+}
+
+@keyframes authDecorFloatD {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(-12px, -20px, 0) rotate(-3deg);
+  }
+}
+
+@keyframes authDecorPulse {
+  0%,
+  100% {
+    opacity: 0.74;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-decor-float,
+  .auth-decor-pulse,
+  .animated-glow-border {
+    animation: none;
   }
 }

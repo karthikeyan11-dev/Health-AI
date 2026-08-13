@@ -1,8 +1,10 @@
 import {
   validateRegisterRequest,
   validateVerifyOtpRequest,
+  validateLoginRequest,
   registerSchema,
   verifyOtpSchema,
+  loginSchema,
 } from '../../src/shared/verification/auth.verification';
 
 describe('Auth Verification Unit Tests', () => {
@@ -73,10 +75,43 @@ describe('Auth Verification Unit Tests', () => {
     });
   });
 
+  describe('validateLoginRequest', () => {
+    it('should pass validation for valid login request', () => {
+      const validPayload = {
+        email: 'user@example.com',
+        password: 'P@ssw0rd123!',
+      };
+
+      const result = validateLoginRequest(validPayload);
+      expect(result.success).toBe(true);
+    });
+
+    it('should fail validation for invalid email in login request', () => {
+      const invalidPayload = {
+        email: 'invalid-email',
+        password: 'P@ssw0rd123!',
+      };
+
+      const result = validateLoginRequest(invalidPayload);
+      expect(result.success).toBe(false);
+    });
+
+    it('should fail validation when password is empty in login request', () => {
+      const invalidPayload = {
+        email: 'user@example.com',
+        password: '',
+      };
+
+      const result = validateLoginRequest(invalidPayload);
+      expect(result.success).toBe(false);
+    });
+  });
+
   describe('schemas exports', () => {
-    it('should export registerSchema and verifyOtpSchema', () => {
+    it('should export registerSchema, verifyOtpSchema, and loginSchema', () => {
       expect(registerSchema).toBeDefined();
       expect(verifyOtpSchema).toBeDefined();
+      expect(loginSchema).toBeDefined();
     });
   });
 });

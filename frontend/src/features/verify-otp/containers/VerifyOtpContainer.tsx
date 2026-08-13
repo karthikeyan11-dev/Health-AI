@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { OtpHeader } from '../components/OtpHeader';
 import { OtpForm } from '../components/OtpForm';
 import { validateOtp } from '../utils/verifyOtp.utils';
-import { executeVerifyOtp } from '../api/verifyOtp.api';
+import { verifyOtpApi } from '../api/verifyOtp.api';
 import type { OtpFormErrors } from '../types/verifyOtp.types';
 
 export const VerifyOtpContainer: React.FC = () => {
@@ -47,7 +47,7 @@ export const VerifyOtpContainer: React.FC = () => {
     setErrors({});
 
     try {
-      await executeVerifyOtp({
+      await verifyOtpApi.verifyOtp({
         email: email.trim().toLowerCase(),
         otp: otp.trim(),
       });

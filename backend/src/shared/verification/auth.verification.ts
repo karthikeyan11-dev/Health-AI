@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { RegisterRequest, VerifyOtpRequest } from '@modules/auth/auth.dto';
+import type { RegisterRequest, VerifyOtpRequest, LoginRequest } from '@modules/auth/auth.dto';
 
 export const registerSchema = z.object({
   email: z.string().email('Invalid email address format'),
@@ -22,8 +22,14 @@ export const verifyOtpSchema = z.object({
   otp: z.string().length(6, 'OTP must be exactly 6 digits'),
 });
 
+export const loginSchema = z.object({
+  email: z.string().email('Invalid email address format'),
+  password: z.string().min(1, 'Password is required'),
+});
+
 export type RegisterSchemaType = z.infer<typeof registerSchema>;
 export type VerifyOtpSchemaType = z.infer<typeof verifyOtpSchema>;
+export type LoginSchemaType = z.infer<typeof loginSchema>;
 
 /**
  * Validates registration request payload against registerSchema.
@@ -41,4 +47,13 @@ export function validateVerifyOtpRequest(
   payload: VerifyOtpRequest | Record<string, string | number | boolean | null | undefined>,
 ): ReturnType<typeof verifyOtpSchema.safeParse> {
   return verifyOtpSchema.safeParse(payload);
+}
+
+/**
+ * Validates login request payload against loginSchema.
+ */
+export function validateLoginRequest(
+  payload: LoginRequest | Record<string, string | number | boolean | null | undefined>,
+): ReturnType<typeof loginSchema.safeParse> {
+  return loginSchema.safeParse(payload);
 }

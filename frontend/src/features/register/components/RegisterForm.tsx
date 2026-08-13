@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Button, Input, Label, Select } from '@/components/ui';
 import { GENDER_OPTIONS, ROLE_OPTIONS } from '../constants/register.constants';
 import type { RegisterFormValues, RegisterFormProps } from '../types/register.types';
@@ -135,16 +134,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             id="gender"
             name="gender"
             value={values.gender}
-            onChange={(e) => onChange('gender', e.target.value as RegisterFormValues['gender'])}
+            onValueChange={(val) => onChange('gender', val as RegisterFormValues['gender'])}
+            options={GENDER_OPTIONS}
             disabled={isSubmitting}
             error={!!errors.gender}
-          >
-            {GENDER_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </Select>
+            placeholder="Select gender"
+          />
           {errors.gender && (
             <p className="text-xs text-destructive font-medium mt-1">{errors.gender}</p>
           )}
@@ -178,16 +173,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             id="role"
             name="role"
             value={values.role}
-            onChange={(e) => onChange('role', e.target.value as RegisterFormValues['role'])}
+            onValueChange={(val) => onChange('role', val as RegisterFormValues['role'])}
+            options={ROLE_OPTIONS}
             disabled={isSubmitting}
             error={!!errors.role}
-          >
-            {ROLE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </Select>
+            placeholder="Select role"
+          />
         </div>
       </div>
 
@@ -196,7 +187,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         type="submit"
         variant="default"
         size="lg"
-        className="w-full mt-6 bg-gradient-primary hover:bg-gradient-primary-hover shadow-primary"
+        className="w-full mt-6 bg-gradient-primary hover:bg-gradient-primary-hover shadow-primary font-semibold text-white"
         disabled={isSubmitting}
       >
         {isSubmitting ? (
@@ -212,15 +203,18 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         )}
       </Button>
 
-      {/* Already have an account link */}
-      <div className="text-center pt-2">
-        <p className="text-sm text-muted-foreground">
-          Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-primary hover:underline">
-            Log in here
-          </Link>
-        </p>
-      </div>
+      {/* Terms & Privacy Footer Notice matching reference UI model */}
+      <p className="text-center text-[11px] text-muted-foreground pt-3 leading-relaxed">
+        By continuing, you agree to our{' '}
+        <span className="font-semibold text-foreground underline hover:text-primary cursor-pointer">
+          Terms of Service
+        </span>{' '}
+        and{' '}
+        <span className="font-semibold text-foreground underline hover:text-primary cursor-pointer">
+          Privacy Policy
+        </span>
+        .
+      </p>
     </form>
   );
 };

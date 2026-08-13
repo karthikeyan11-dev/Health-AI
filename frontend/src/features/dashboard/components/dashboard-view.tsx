@@ -15,11 +15,11 @@ export function DashboardView({
   onExplore,
 }: DashboardViewProps): React.JSX.Element {
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4 sm:p-6 bg-slate-50/80 antialiased selection:bg-indigo-500 selection:text-white">
+    <div className="relative flex min-h-screen items-center justify-center p-4 sm:p-6 bg-background antialiased selection:bg-[#083032] selection:text-white">
       {/* Subtle Ambient Background Accents */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-blue-100/60 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-purple-100/60 blur-3xl" />
+        <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-[#083032]/6 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-[#0a4144]/5 blur-3xl" />
       </div>
 
       <Card className="relative w-full max-w-lg border border-border/80 bg-white/95 backdrop-blur-md shadow-card transition-all duration-300">

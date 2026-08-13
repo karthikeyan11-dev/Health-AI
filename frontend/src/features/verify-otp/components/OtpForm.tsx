@@ -1,17 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Input, Label } from '@/components/ui';
-import type { OtpFormErrors } from '../types/verifyOtp.types';
+import type { OtpFormProps } from '../types/verifyOtp.types';
 import { Loader2, CheckCircle2 } from 'lucide-react';
-
-export interface OtpFormProps {
-  email: string;
-  otp: string;
-  errors: OtpFormErrors;
-  isSubmitting: boolean;
-  onOtpChange: (otp: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
-}
 
 export const OtpForm: React.FC<OtpFormProps> = ({
   otp,
@@ -24,7 +15,7 @@ export const OtpForm: React.FC<OtpFormProps> = ({
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       {/* General Error Alert (e.g. Tried so many times...) */}
       {errors.general && (
-        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium text-center">
+        <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium text-center">
           {errors.general}
         </div>
       )}
@@ -39,7 +30,7 @@ export const OtpForm: React.FC<OtpFormProps> = ({
           name="otp"
           type="text"
           maxLength={6}
-          placeholder="123456"
+          placeholder="••••••"
           value={otp}
           onChange={(e) => onOtpChange(e.target.value)}
           disabled={isSubmitting}
@@ -58,7 +49,7 @@ export const OtpForm: React.FC<OtpFormProps> = ({
         type="submit"
         variant="default"
         size="lg"
-        className="w-full mt-6 bg-gradient-primary hover:bg-gradient-primary-hover shadow-primary"
+        className="w-full mt-6 bg-gradient-primary hover:bg-gradient-primary-hover shadow-primary font-semibold"
         disabled={isSubmitting}
       >
         {isSubmitting ? (

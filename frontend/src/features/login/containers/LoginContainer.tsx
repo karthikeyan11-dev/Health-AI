@@ -1,31 +1,39 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui';
-import { RegisterHeader } from '../components/RegisterHeader';
-import { RegisterForm } from '../components/RegisterForm';
-import { INITIAL_REGISTER_VALUES } from '../constants/register.constants';
-import { validateRegisterForm } from '../utils/register.utils';
-import { registerApi } from '../api/register.api';
-import type { RegisterFormValues, RegisterFormErrors } from '../types/register.types';
-import { HeartPulse, LogIn, Activity } from 'lucide-react';
+import { LoginHeader } from '../components/LoginHeader';
+import { LoginForm } from '../components/LoginForm';
+import { INITIAL_LOGIN_VALUES } from '../constants/login.constants';
+import { validateLoginForm } from '../utils/login.utils';
+import { loginApi } from '../api/login.api';
+import type { LoginFormValues, LoginFormErrors } from '../types/login.types';
+import { storage } from '@/lib/storage';
+import { HeartPulse, UserPlus, Activity } from 'lucide-react';
 
-export const RegisterContainer: React.FC = () => {
+export const LoginContainer: React.FC = () => {
   const navigate = useNavigate();
-  const [values, setValues] = useState<RegisterFormValues>(INITIAL_REGISTER_VALUES);
-  const [errors, setErrors] = useState<RegisterFormErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const location = useLocation();
+  const state = location.state as { verified?: boolean; message?: string } | null;
 
-  const handleChange = (field: keyof RegisterFormValues, value: string) => {
-    setValues((prev: RegisterFormValues) => ({ ...prev, [field]: value }));
+  const [values, setValues] = useState<LoginFormValues>(INITIAL_LOGIN_VALUES);
+  const [errors, setErrors] = useState<LoginFormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  const verifiedMessage = state?.verified
+    ? state.message || 'User created successfully. Please log in.'
+    : null;
+
+  const handleChange = (field: keyof LoginFormValues, value: string) => {
+    setValues((prev: LoginFormValues) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev: RegisterFormErrors) => ({ ...prev, [field]: undefined }));
+      setErrors((prev: LoginFormErrors) => ({ ...prev, [field]: undefined }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { isValid, errors: validationErrors } = validateRegisterForm(values);
+    const { isValid, errors: validationErrors } = validateLoginForm(values);
     if (!isValid) {
       setErrors(validationErrors);
       return;
@@ -37,20 +45,19 @@ export const RegisterContainer: React.FC = () => {
     try {
       const normalizedEmail = values.email.trim().toLowerCase();
 
-      await registerApi.registerUser({
+      const response = await loginApi.loginUser({
         email: normalizedEmail,
         password: values.password,
-        firstName: values.firstName.trim(),
-        lastName: values.lastName.trim(),
-        phoneNumber: values.phoneNumber.trim() || undefined,
-        age: Number(values.age),
-        gender: values.gender,
-        role: values.role,
       });
 
-      navigate(`/verify-otp?email=${encodeURIComponent(normalizedEmail)}`, {
-        state: { email: normalizedEmail },
-      });
+      if (response.accessToken) {
+        storage.setToken(response.accessToken);
+      }
+      if (response.refreshToken) {
+        storage.set('health_ai_refresh_token', response.refreshToken);
+      }
+
+      navigate('/');
     } catch (err: unknown) {
       const errorObj = err as {
         response?: {
@@ -67,13 +74,13 @@ export const RegisterContainer: React.FC = () => {
         errorObj.response?.data?.error?.message ||
         errorObj.response?.data?.message ||
         errorObj.message ||
-        'Registration failed. Please check your details and try again.';
+        'Login failed. Please check your credentials and try again.';
 
       if (
-        backendMessage.toLowerCase().includes('already exists') ||
-        errorObj.response?.status === 409
+        errorObj.response?.status === 401 ||
+        backendMessage.toLowerCase().includes('invalid credentials')
       ) {
-        setErrors({ email: 'User with email already exists' });
+        setErrors({ general: 'Invalid email address or password.' });
       } else {
         setErrors({ general: backendMessage });
       }
@@ -83,7 +90,7 @@ export const RegisterContainer: React.FC = () => {
   };
 
   return (
-    <div className="w-full grid grid-cols-1 lg:grid-cols-2 min-h-[560px]">
+    <div className="w-full grid grid-cols-1 lg:grid-cols-2 min-h-[520px]">
       {/* LEFT COLUMN: Blue-Purple Gradient Hero Panel (matching reference UI model) */}
       <div className="bg-gradient-primary text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden">
         {/* Subtle background glow effect */}
@@ -101,11 +108,11 @@ export const RegisterContainer: React.FC = () => {
         {/* Middle: Headline & Subtitle & Metric Badge */}
         <div className="relative z-10 my-8 space-y-4">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight text-white">
-            Join Active Users Tracking Real-time Health Data.
+            The Smart Platform for AI Health Insights.
           </h2>
           <p className="text-sm text-white/85 leading-relaxed font-medium">
-            Create your Health AI account today and start tracking vital metrics with advanced
-            sensor AI.
+            Access your digital twin, real-time sensor analytics, and personalized AI health
+            guidance in one place.
           </p>
 
           {/* Info pill card matching reference model */}
@@ -126,16 +133,16 @@ export const RegisterContainer: React.FC = () => {
         <div className="relative z-10 space-y-3 pt-4 border-t border-white/15">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold text-white/90">Already have an account?</p>
-              <p className="text-[11px] text-white/70">Login to access your dashboard</p>
+              <p className="text-xs font-semibold text-white/90">New to platform?</p>
+              <p className="text-[11px] text-white/70">Create an account to get started</p>
             </div>
             <Button
               type="button"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/register')}
               className="bg-white text-primary hover:bg-white/90 font-bold shadow-md border-0 px-5 text-sm"
             >
-              <span>Login</span>
-              <LogIn className="w-4 h-4 shrink-0" />
+              <span>Register</span>
+              <UserPlus className="w-4 h-4 shrink-0" />
             </Button>
           </div>
         </div>
@@ -143,11 +150,12 @@ export const RegisterContainer: React.FC = () => {
 
       {/* RIGHT COLUMN: Crisp White Form Panel (matching reference UI model) */}
       <div className="bg-white/95 p-8 sm:p-10 flex flex-col justify-center">
-        <RegisterHeader />
-        <RegisterForm
+        <LoginHeader />
+        <LoginForm
           values={values}
           errors={errors}
           isSubmitting={isSubmitting}
+          verifiedMessage={verifiedMessage}
           onChange={handleChange}
           onSubmit={handleSubmit}
         />
