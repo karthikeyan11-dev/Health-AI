@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import axios from 'axios';
 import authRouter from './modules/auth/auth.routes';
+import usersRouter from './modules/users/users.routes';
+import patientsRouter from './modules/patients/patients.routes';
 
 const app: Express = express();
 
@@ -12,6 +14,8 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/v1', authRouter);
+app.use('/api/v1', usersRouter);
+app.use('/api/v1', patientsRouter);
 
 app.get('/api/v1/health/liveness', (_req: Request, res: Response): void => {
   res.status(200).json({

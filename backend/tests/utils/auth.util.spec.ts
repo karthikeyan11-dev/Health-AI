@@ -13,8 +13,6 @@ import type { RedisProvider } from '@shared/providers/storage/redis.provider';
 describe('Auth Utilities & OTP Utilities Unit Tests', () => {
   describe('toUserRole & toSchemaRole Utilities', () => {
     it('should correctly convert role strings to UserRole enum', () => {
-      expect(toUserRole('CLINICIAN')).toBe(UserRole.CLINICIAN);
-      expect(toUserRole('ADMIN')).toBe(UserRole.ADMIN);
       expect(toUserRole('SYSTEM')).toBe(UserRole.SYSTEM);
       expect(toUserRole('PATIENT')).toBe(UserRole.PATIENT);
       expect(toUserRole(undefined)).toBe(UserRole.PATIENT);
@@ -22,8 +20,6 @@ describe('Auth Utilities & OTP Utilities Unit Tests', () => {
     });
 
     it('should correctly convert UserRole enum to OpenAPI schema role string', () => {
-      expect(toSchemaRole(UserRole.CLINICIAN)).toBe('CLINICIAN');
-      expect(toSchemaRole(UserRole.ADMIN)).toBe('ADMIN');
       expect(toSchemaRole(UserRole.SYSTEM)).toBe('SYSTEM');
       expect(toSchemaRole(UserRole.PATIENT)).toBe('PATIENT');
     });

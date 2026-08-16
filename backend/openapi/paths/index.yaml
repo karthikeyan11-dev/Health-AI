@@ -127,3 +127,9 @@
   $ref: './system/get-system-info.yaml'
 /system/metrics:
   $ref: './system/get-system-metrics.yaml'
+
+# Patient Endpoints
+/patients/overview:
+  $ref: './patients/get-patient-overview.yaml'
+
+

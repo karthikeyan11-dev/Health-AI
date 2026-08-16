@@ -103,64 +103,33 @@ describe('AuthService Unit Tests', () => {
       );
     });
 
-    it('should register successfully with custom CLINICIAN role and phoneNumber', async () => {
+    it('should register successfully with custom SYSTEM role and phoneNumber', async () => {
       mockRepo.existsByEmail.mockResolvedValue(false);
       jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashed_pw' as never);
 
       const result = await authService.register({
-        email: 'clinician@example.com',
+        email: 'system@example.com',
         password: 'password123',
-        firstName: 'Alice',
-        lastName: 'Smith',
+        firstName: 'System',
+        lastName: 'Service',
         phoneNumber: '+1234567890',
         age: 40,
         gender: 'FEMALE',
-        role: 'CLINICIAN',
+        role: 'SYSTEM',
       });
 
-      expect(result.email).toBe('clinician@example.com');
+      expect(result.email).toBe('system@example.com');
       expect(mockOtpSvc.storePendingRegistration).toHaveBeenCalledWith(
-        'clinician@example.com',
+        'system@example.com',
         {
-          email: 'clinician@example.com',
+          email: 'system@example.com',
           passwordHash: 'hashed_pw',
-          firstName: 'Alice',
-          lastName: 'Smith',
+          firstName: 'System',
+          lastName: 'Service',
           phoneNumber: '+1234567890',
           age: 40,
           gender: 'FEMALE',
-          role: UserRole.CLINICIAN,
-        },
-        '123456',
-      );
-    });
-
-    it('should register successfully with custom ADMIN role', async () => {
-      mockRepo.existsByEmail.mockResolvedValue(false);
-      jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashed_pw' as never);
-
-      const result = await authService.register({
-        email: 'admin@example.com',
-        password: 'password123',
-        firstName: 'Super',
-        lastName: 'Admin',
-        age: 45,
-        gender: 'OTHER',
-        role: 'ADMIN',
-      });
-
-      expect(result.email).toBe('admin@example.com');
-      expect(mockOtpSvc.storePendingRegistration).toHaveBeenCalledWith(
-        'admin@example.com',
-        {
-          email: 'admin@example.com',
-          passwordHash: 'hashed_pw',
-          firstName: 'Super',
-          lastName: 'Admin',
-          phoneNumber: undefined,
-          age: 45,
-          gender: 'OTHER',
-          role: UserRole.ADMIN,
+          role: UserRole.SYSTEM,
         },
         '123456',
       );
@@ -234,75 +203,31 @@ describe('AuthService Unit Tests', () => {
       expect(mockEmailSvc.sendWelcomeEmail).toHaveBeenCalledWith('user@example.com', 'John');
     });
 
-    it('should verify OTP and create CLINICIAN, ADMIN or SYSTEM user', async () => {
-      const pendingClinician = {
-        email: 'doctor@example.com',
+    it('should verify OTP and create SYSTEM user', async () => {
+      const pendingSystem = {
+        email: 'system@example.com',
         passwordHash: 'hashed_pw',
-        firstName: 'Doc',
-        lastName: 'House',
+        firstName: 'Sys',
+        lastName: 'Admin',
         age: 40,
         gender: 'MALE' as const,
-        role: UserRole.CLINICIAN,
+        role: UserRole.SYSTEM,
         hashedOtp: 'hashed_otp',
         remainingTries: 5,
         createdAt: new Date().toISOString(),
       };
 
-      const createdClinician = {
-        id: 'doc_123',
-        ...pendingClinician,
-        role: UserRole.CLINICIAN,
+      const createdSystem = {
+        id: 'sys_123',
+        ...pendingSystem,
+        role: UserRole.SYSTEM,
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      mockOtpSvc.verifyRegistrationOtp.mockResolvedValue(pendingClinician);
-      mockRepo.existsByEmail.mockResolvedValue(false);
-      mockRepo.createUser.mockResolvedValue(createdClinician as unknown as IUserDocument);
-
-      await expect(
-        authService.verifyOtp({
-          email: 'doctor@example.com',
-          otp: '123456',
-        }),
-      ).resolves.not.toThrow();
-
-      const pendingAdmin = {
-        ...pendingClinician,
-        email: 'admin@example.com',
-        role: UserRole.ADMIN,
-      };
-      const createdAdmin = {
-        ...createdClinician,
-        id: 'admin_123',
-        email: 'admin@example.com',
-        role: UserRole.ADMIN,
-      };
-
-      mockOtpSvc.verifyRegistrationOtp.mockResolvedValue(pendingAdmin);
-      mockRepo.createUser.mockResolvedValue(createdAdmin as unknown as IUserDocument);
-
-      await expect(
-        authService.verifyOtp({
-          email: 'admin@example.com',
-          otp: '123456',
-        }),
-      ).resolves.not.toThrow();
-
-      const pendingSystem = {
-        ...pendingClinician,
-        email: 'system@example.com',
-        role: UserRole.SYSTEM,
-      };
-      const createdSystem = {
-        ...createdClinician,
-        id: 'system_123',
-        email: 'system@example.com',
-        role: UserRole.SYSTEM,
-      };
-
       mockOtpSvc.verifyRegistrationOtp.mockResolvedValue(pendingSystem);
+      mockRepo.existsByEmail.mockResolvedValue(false);
       mockRepo.createUser.mockResolvedValue(createdSystem as unknown as IUserDocument);
 
       await expect(

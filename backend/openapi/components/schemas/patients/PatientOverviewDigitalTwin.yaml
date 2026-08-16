@@ -1,0 +1,15 @@
+type: object
+required:
+  - healthState
+properties:
+  overallHealthScore:
+    type: number
+    nullable: true
+    example: 92.5
+  healthState:
+    type: string
+    example: "STABLE"
+  lastUpdated:
+    type: string
+    nullable: true
+    example: "2026-08-14T10:30:00.000Z"

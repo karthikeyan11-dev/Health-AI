@@ -1,0 +1,33 @@
+get:
+  tags:
+    - Patients
+  summary: Retrieve Patient Dashboard Overview
+  description: Returns personalized patient health overview analytics including current vitals, assessment summary, digital twin health state, IoT device connectivity status, active recommendations, vital sign trends, and recent activity log.
+  operationId: getPatientOverview
+  security:
+    - BearerAuth: []
+  responses:
+    '200':
+      description: Patient overview analytics retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/patients/PatientOverviewResponse.yaml'
+    '401':
+      description: Unauthorized request
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '404':
+      description: Patient record not found
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

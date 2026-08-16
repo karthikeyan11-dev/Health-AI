@@ -181,6 +181,56 @@ export class AuthController {
       });
     }
   };
+
+  /**
+   * GET /auth/profile
+   * Returns current user profile details.
+   */
+  public getProfile = async (
+    req: TypedRequest<'getProfile'>,
+    res: TypedResponse<'getProfile'>,
+  ): Promise<TypedResponse<'getProfile'>> => {
+    try {
+      const userId = req.user?.id;
+      const profile = await this.service.getUserProfile(userId);
+      return res.status(200).json({
+        success: true,
+        message: 'Profile details retrieved successfully',
+        data: profile,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: `req_${Math.random().toString(36).substring(2, 10)}`,
+        },
+      });
+    } catch (error) {
+      logger.error({ err: error }, 'AuthController.getProfile - Exception occurred');
+      if (error instanceof HttpErrors) {
+        return res.status(error.statusCode).json({
+          success: false,
+          error: {
+            code: error.name.toUpperCase(),
+            message: error.message,
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: `req_${Math.random().toString(36).substring(2, 10)}`,
+          },
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        error: {
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Internal server error',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: `req_${Math.random().toString(36).substring(2, 10)}`,
+        },
+      });
+    }
+  };
 }
 
 export const authController = new AuthController();

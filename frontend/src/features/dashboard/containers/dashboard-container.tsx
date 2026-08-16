@@ -1,57 +1,55 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { DashboardView } from '../components';
-import { dashboardApi } from '../api';
-import {
-  DASHBOARD_BRAND,
-  FOUNDATION_VERIFICATION,
-  DEFAULT_GATEWAY_INFO,
-  DASHBOARD_ACTIONS,
-} from '../constants';
-import type { GatewayInfo } from '../types';
+import { PatientOverviewView } from '../components/PatientOverviewView';
+import { patientOverviewApi } from '../api/patient-overview.api';
+import type { PatientOverviewData } from '@/sdk';
+import { Loader2 } from 'lucide-react';
+import { PATIENT_OVERVIEW_TEXTS } from '../constants/patient-overview.constants';
+import { ErrorCard } from '@/components/ui';
+import { extractErrorMessage } from '@/utils/error.util';
 
 export function DashboardContainer(): React.JSX.Element {
-  const navigate = useNavigate();
-  const [gateway, setGateway] = useState<GatewayInfo>(DEFAULT_GATEWAY_INFO);
+  const [data, setData] = useState<PatientOverviewData | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadGatewayStatus(): Promise<void> {
-      const status = await dashboardApi.getGatewayStatus();
-      if (isMounted) {
-        setGateway(status);
-      }
+  const fetchOverview = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const overviewData = await patientOverviewApi.getPatientOverview();
+      setData(overviewData);
+    } catch (err) {
+      setError(extractErrorMessage(err, PATIENT_OVERVIEW_TEXTS.ERROR_SUBTITLE));
+    } finally {
+      setIsLoading(false);
     }
-
-    void loadGatewayStatus();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
-  const handleExplore = useCallback(() => {
-    // Record visit timestamp in storage and navigate or trigger exploration intent
-    localStorage.setItem(DASHBOARD_ACTIONS.STORAGE_KEY_LAST_VISIT, new Date().toISOString());
-    navigate('/');
-  }, [navigate]);
+  useEffect(() => {
+    void fetchOverview();
+  }, [fetchOverview]);
 
-  return (
-    <DashboardView
-      header={{
-        title: DASHBOARD_BRAND.TITLE,
-        badgeText: DASHBOARD_BRAND.BADGE,
-        description: DASHBOARD_BRAND.DESCRIPTION,
-      }}
-      foundationGrid={{
-        sectionTitle: FOUNDATION_VERIFICATION.SECTION_TITLE,
-        statusBadgeText: FOUNDATION_VERIFICATION.STATUS_BADGE,
-        items: FOUNDATION_VERIFICATION.ITEMS,
-      }}
-      gateway={gateway}
-      ctaText={DASHBOARD_ACTIONS.EXPLORE_CTA}
-      onExplore={handleExplore}
-    />
-  );
+  if (isLoading && !data) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-3">
+        <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+        <p className="text-sm font-medium text-slate-500">{PATIENT_OVERVIEW_TEXTS.LOADING_TEXT}</p>
+      </div>
+    );
+  }
+
+  if (error && !data) {
+    return (
+      <div className="max-w-3xl mx-auto py-6">
+        <ErrorCard
+          title={PATIENT_OVERVIEW_TEXTS.ERROR_TITLE}
+          message={error}
+          onRetry={() => void fetchOverview()}
+          retryText={PATIENT_OVERVIEW_TEXTS.RETRY_BUTTON}
+        />
+      </div>
+    );
+  }
+
+  return <PatientOverviewView data={data} isLoading={isLoading} onRefresh={fetchOverview} />;
 }

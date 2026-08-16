@@ -1,0 +1,19 @@
+type: object
+required:
+  - timestamp
+properties:
+  timestamp:
+    type: string
+    example: "10:00"
+  heartRate:
+    type: number
+    nullable: true
+    example: 72
+  spo2:
+    type: number
+    nullable: true
+    example: 98.5
+  temperature:
+    type: number
+    nullable: true
+    example: 36.6

@@ -1,7 +1,5 @@
 type: string
 enum:
   - PATIENT
-  - CLINICIAN
-  - ADMIN
   - SYSTEM
 example: "PATIENT"

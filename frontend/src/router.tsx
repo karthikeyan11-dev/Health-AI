@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { RootLayout } from '@/app/layouts';
-import { DashboardPage } from '@/pages/dashboard';
+import { RootLayout, PatientLayout } from '@/app/layouts';
 import { RegisterPage, VerifyOtpPage, LoginPage } from '@/pages/auth';
+import { OverviewPage, ProfilePage } from '@/pages/patient';
 
 export const router = createBrowserRouter([
   {
@@ -10,7 +10,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <DashboardPage />,
+        element: <Navigate to="/dashboard" replace />,
       },
       {
         path: 'register',
@@ -25,8 +25,29 @@ export const router = createBrowserRouter([
         element: <LoginPage />,
       },
       {
+        element: <PatientLayout />,
+        children: [
+          {
+            path: 'dashboard',
+            element: <OverviewPage />,
+          },
+          {
+            path: 'profile',
+            element: <ProfilePage />,
+          },
+        ],
+      },
+      {
+        path: 'users',
+        element: <Navigate to="/dashboard" replace />,
+      },
+      {
+        path: 'admin/*',
+        element: <Navigate to="/dashboard" replace />,
+      },
+      {
         path: '*',
-        element: <Navigate to="/register" replace />,
+        element: <Navigate to="/dashboard" replace />,
       },
     ],
   },

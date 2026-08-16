@@ -3,8 +3,6 @@ import { Gender } from './patient.model';
 
 export enum UserRole {
   PATIENT = 'PATIENT',
-  CLINICIAN = 'CLINICIAN',
-  ADMIN = 'ADMIN',
   SYSTEM = 'SYSTEM',
 }
 

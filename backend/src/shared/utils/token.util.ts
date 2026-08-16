@@ -27,3 +27,15 @@ export function generateTokens(payload: TokenPayload): AuthTokensResponse {
     expiresIn: 3600,
   };
 }
+
+/**
+ * Verifies JWT access token and returns decoded TokenPayload.
+ */
+export function verifyAccessToken(token: string): TokenPayload {
+  const decoded = jwt.verify(token, Config.JWT_SECRET) as TokenPayload & jwt.JwtPayload;
+  return {
+    userId: decoded.userId,
+    email: decoded.email,
+    role: decoded.role,
+  };
+}

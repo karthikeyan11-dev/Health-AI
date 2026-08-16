@@ -19,8 +19,6 @@ jest.mock('../../src/models/user.model', () => {
     UserModel: MockUserModel,
     UserRole: {
       PATIENT: 'PATIENT',
-      CLINICIAN: 'CLINICIAN',
-      ADMIN: 'ADMIN',
       SYSTEM: 'SYSTEM',
     },
   };

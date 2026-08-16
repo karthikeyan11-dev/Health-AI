@@ -79,6 +79,18 @@ export class AuthRepository {
   }
 
   /**
+   * Finds a user document by ID.
+   */
+  public async findById(userId: string): Promise<IUserDocument | null> {
+    try {
+      return await UserModel.findById(userId).exec();
+    } catch (error) {
+      logger.error({ err: error, userId }, 'AuthRepository.findById - Database error occurred');
+      return null;
+    }
+  }
+
+  /**
    * Updates lastLoginAt timestamp for the specified user ID.
    */
   public async updateLastLogin(userId: string): Promise<void> {

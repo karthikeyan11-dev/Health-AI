@@ -2,7 +2,7 @@ post:
   tags:
     - Authentication
   summary: Register new user account
-  description: Registers a new patient, clinician, or administrator account into the Health AI platform.
+  description: Registers a new patient account into the Health AI platform.
   operationId: registerUser
   requestBody:
     required: true
