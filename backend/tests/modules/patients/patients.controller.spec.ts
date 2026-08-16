@@ -63,6 +63,7 @@ describe('PatientsController Unit Tests', () => {
   beforeEach(() => {
     mockService = {
       getPatientOverview: jest.fn(),
+      getHealthMonitoring: jest.fn(),
     } as unknown as jest.Mocked<PatientsService>;
 
     controller = new PatientsController(mockService);
@@ -176,6 +177,114 @@ describe('PatientsController Unit Tests', () => {
           error: expect.objectContaining({
             code: 'INTERNAL_SERVER_ERROR',
             message: 'Failed to retrieve patient overview',
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('getHealthMonitoring', () => {
+    it('should return 200 with health monitoring data when authenticated', async () => {
+      const req = {
+        user: {
+          id: '507f1f77bcf86cd799439011',
+          email: 'karthikeyanm2209@gmail.com',
+          role: 'PATIENT',
+        },
+        query: { timeRange: '24h', deviceId: 'ESP32_01' },
+      };
+
+      const mockHealthData = {
+        currentReadings: { heartRate: null, spo2: null, temperature: null },
+        devices: [],
+        heartRateHistory: [],
+        spo2History: [],
+        temperatureHistory: [],
+        combinedVitalTrends: [],
+      };
+
+      mockService.getHealthMonitoring.mockResolvedValue(mockHealthData);
+
+      await controller.getHealthMonitoring(
+        req as unknown as TypedRequest<'getHealthMonitoring'>,
+        mockResponse as TypedResponse<'getHealthMonitoring'>,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(200);
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: 'Health monitoring data retrieved successfully',
+          data: mockHealthData,
+        }),
+      );
+    });
+
+    it('should return 401 when req.user is undefined', async () => {
+      const req = { user: undefined, query: {} };
+
+      await controller.getHealthMonitoring(
+        req as unknown as TypedRequest<'getHealthMonitoring'>,
+        mockResponse as TypedResponse<'getHealthMonitoring'>,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(401);
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({
+            code: 'UNAUTHORIZEDERROR',
+            message: 'Authentication required to access health monitoring',
+          }),
+        }),
+      );
+    });
+
+    it('should return 404 when user record is not found', async () => {
+      const req = {
+        user: { id: 'invalid_user', email: 'missing@example.com', role: 'PATIENT' },
+        query: {},
+      };
+
+      mockService.getHealthMonitoring.mockRejectedValue(new NotFoundError('User record not found'));
+
+      await controller.getHealthMonitoring(
+        req as unknown as TypedRequest<'getHealthMonitoring'>,
+        mockResponse as TypedResponse<'getHealthMonitoring'>,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(404);
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({
+            code: 'NOTFOUNDERROR',
+            message: 'User record not found',
+          }),
+        }),
+      );
+    });
+
+    it('should return 500 when an internal error occurs', async () => {
+      const req = {
+        user: { id: '507f1f77bcf86cd799439011', email: 'test@example.com', role: 'PATIENT' },
+        query: {},
+      };
+
+      mockService.getHealthMonitoring.mockRejectedValue(new Error('Internal failure'));
+
+      await controller.getHealthMonitoring(
+        req as unknown as TypedRequest<'getHealthMonitoring'>,
+        mockResponse as TypedResponse<'getHealthMonitoring'>,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to retrieve health monitoring data',
           }),
         }),
       );

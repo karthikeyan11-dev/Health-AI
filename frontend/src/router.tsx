@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { RootLayout, PatientLayout } from '@/app/layouts';
 import { RegisterPage, VerifyOtpPage, LoginPage } from '@/pages/auth';
-import { OverviewPage, ProfilePage } from '@/pages/patient';
+import { OverviewPage, ProfilePage, HealthMonitoringPage } from '@/pages/patient';
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +30,10 @@ export const router = createBrowserRouter([
           {
             path: 'dashboard',
             element: <OverviewPage />,
+          },
+          {
+            path: 'health-monitoring',
+            element: <HealthMonitoringPage />,
           },
           {
             path: 'profile',

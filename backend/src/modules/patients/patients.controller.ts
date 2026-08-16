@@ -59,6 +59,67 @@ export class PatientsController {
       });
     }
   };
+
+  /**
+   * GET /patients/health-monitoring
+   * Returns patient physiological sensor telemetry, current readings, time-series chart history, and devices.
+   */
+  public getHealthMonitoring = async (
+    req: TypedRequest<'getHealthMonitoring'>,
+    res: TypedResponse<'getHealthMonitoring'>,
+  ): Promise<TypedResponse<'getHealthMonitoring'>> => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        throw new UnauthorizedError('Authentication required to access health monitoring');
+      }
+
+      const query = {
+        timeRange: req.query.timeRange as string | undefined,
+        deviceId: req.query.deviceId as string | undefined,
+        startDate: req.query.startDate as string | undefined,
+        endDate: req.query.endDate as string | undefined,
+      };
+
+      const healthData = await this.service.getHealthMonitoring(userId, query);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Health monitoring data retrieved successfully',
+        data: healthData,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: `req_${Math.random().toString(36).substring(2, 10)}`,
+        },
+      });
+    } catch (error) {
+      logger.error({ err: error }, 'PatientsController.getHealthMonitoring - Error');
+      if (error instanceof HttpErrors) {
+        return res.status(error.statusCode).json({
+          success: false,
+          error: {
+            code: error.name.toUpperCase(),
+            message: error.message,
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: `req_${Math.random().toString(36).substring(2, 10)}`,
+          },
+        });
+      }
+      return res.status(500).json({
+        success: false,
+        error: {
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to retrieve health monitoring data',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: `req_${Math.random().toString(36).substring(2, 10)}`,
+        },
+      });
+    }
+  };
 }
 
 export const patientsController = new PatientsController();

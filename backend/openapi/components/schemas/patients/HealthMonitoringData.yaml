@@ -1,0 +1,138 @@
+type: object
+required:
+  - currentReadings
+  - devices
+  - heartRateHistory
+  - spo2History
+  - temperatureHistory
+  - combinedVitalTrends
+properties:
+  currentReadings:
+    type: object
+    required:
+      - heartRate
+      - spo2
+      - temperature
+    properties:
+      heartRate:
+        type: object
+        nullable: true
+        properties:
+          value:
+            type: number
+          unit:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+          deviceId:
+            type: string
+      spo2:
+        type: object
+        nullable: true
+        properties:
+          value:
+            type: number
+          unit:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+          deviceId:
+            type: string
+      temperature:
+        type: object
+        nullable: true
+        properties:
+          value:
+            type: number
+          unit:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+          deviceId:
+            type: string
+  devices:
+    type: array
+    items:
+      type: object
+      required:
+        - deviceId
+        - status
+      properties:
+        deviceId:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+        lastSeenAt:
+          type: string
+          format: date-time
+  heartRateHistory:
+    type: array
+    items:
+      type: object
+      required:
+        - timestamp
+        - value
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        value:
+          type: number
+        deviceId:
+          type: string
+  spo2History:
+    type: array
+    items:
+      type: object
+      required:
+        - timestamp
+        - value
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        value:
+          type: number
+        deviceId:
+          type: string
+  temperatureHistory:
+    type: array
+    items:
+      type: object
+      required:
+        - timestamp
+        - value
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        value:
+          type: number
+        deviceId:
+          type: string
+  combinedVitalTrends:
+    type: array
+    items:
+      type: object
+      required:
+        - timestamp
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        heartRate:
+          type: number
+          nullable: true
+        spo2:
+          type: number
+          nullable: true
+        temperature:
+          type: number
+          nullable: true
+        deviceId:
+          type: string

@@ -247,4 +247,59 @@ describe('PatientsRepository Unit Tests', () => {
       expect(result).toEqual([]);
     });
   });
+
+  describe('findAllDevicesByUserId', () => {
+    it('should return devices list when DeviceModel query succeeds', async () => {
+      const mockExec = jest.fn().mockResolvedValue([{ deviceId: 'DEV_01' }]);
+      const mockSort = jest.fn().mockReturnValue({ exec: mockExec });
+      (DeviceModel.find as jest.Mock).mockReturnValue({ sort: mockSort });
+
+      const result = await repository.findAllDevicesByUserId('507f1f77bcf86cd799439011');
+      expect(result).toEqual([{ deviceId: 'DEV_01' }]);
+    });
+
+    it('should return empty array when DeviceModel query throws exception', async () => {
+      const mockExec = jest.fn().mockRejectedValue(new Error('Device find error'));
+      const mockSort = jest.fn().mockReturnValue({ exec: mockExec });
+      (DeviceModel.find as jest.Mock).mockReturnValue({ sort: mockSort });
+
+      const result = await repository.findAllDevicesByUserId('507f1f77bcf86cd799439011');
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('findSensorReadingsFiltered', () => {
+    it('should query sensor readings with deviceId and date boundaries', async () => {
+      const mockExec = jest.fn().mockResolvedValue([{ value: 75 }]);
+      const mockLimit = jest.fn().mockReturnValue({ exec: mockExec });
+      const mockSort = jest.fn().mockReturnValue({ limit: mockLimit });
+      (SensorReadingModel.find as jest.Mock).mockReturnValue({ sort: mockSort });
+
+      const startDate = new Date('2026-01-01');
+      const endDate = new Date('2026-01-02');
+      const result = await repository.findSensorReadingsFiltered('507f1f77bcf86cd799439011', {
+        deviceId: 'DEV_01',
+        startDate,
+        endDate,
+      });
+
+      expect(result).toEqual([{ value: 75 }]);
+      expect(SensorReadingModel.find).toHaveBeenCalledWith({
+        userId: '507f1f77bcf86cd799439011',
+        sensorType: { $in: ['HEART_RATE', 'SPO2', 'TEMPERATURE'] },
+        deviceId: 'DEV_01',
+        timestamp: { $gte: startDate, $lte: endDate },
+      });
+    });
+
+    it('should return empty array when SensorReadingModel query throws exception', async () => {
+      const mockExec = jest.fn().mockRejectedValue(new Error('Sensor query error'));
+      const mockLimit = jest.fn().mockReturnValue({ exec: mockExec });
+      const mockSort = jest.fn().mockReturnValue({ limit: mockLimit });
+      (SensorReadingModel.find as jest.Mock).mockReturnValue({ sort: mockSort });
+
+      const result = await repository.findSensorReadingsFiltered('507f1f77bcf86cd799439011');
+      expect(result).toEqual([]);
+    });
+  });
 });

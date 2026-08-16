@@ -1,7 +1,7 @@
 import { patientsRepository, PatientsRepository } from './patients.repository';
 import { SensorType } from '@models/sensor-reading.model';
 import { NotFoundError } from '../../shared/errors/httpErrors';
-import type { PatientOverviewData } from './patients.dto';
+import type { PatientOverviewData, HealthMonitoringData } from './patients.dto';
 import { logger } from '@config/logger';
 
 export class PatientsService {
@@ -210,6 +210,163 @@ export class PatientsService {
       };
     } catch (error) {
       logger.error({ err: error, userId }, 'PatientsService.getPatientOverview - Error');
+      throw error;
+    }
+  }
+
+  /**
+   * Compiles Patient Health Monitoring Data (Heart Rate, SpO2, Temperature, Devices)
+   * filtered by time range and device ID directly from database records.
+   */
+  public async getHealthMonitoring(
+    userId: string,
+    query: {
+      timeRange?: string;
+      deviceId?: string;
+      startDate?: string;
+      endDate?: string;
+    } = {},
+  ): Promise<HealthMonitoringData> {
+    try {
+      const user = await this.repo.findUserById(userId);
+      if (!user) {
+        throw new NotFoundError('User record not found');
+      }
+
+      const activeUserId = user._id.toString();
+
+      // Compute time range date boundary
+      let startDate: Date | undefined;
+      let endDate: Date | undefined;
+
+      if (query.startDate) {
+        startDate = new Date(query.startDate);
+      }
+      if (query.endDate) {
+        endDate = new Date(query.endDate);
+      }
+
+      if (!startDate && !endDate && query.timeRange !== 'all') {
+        const now = Date.now();
+        const range = query.timeRange || '24h';
+        if (range === '24h') {
+          startDate = new Date(now - 24 * 60 * 60 * 1000);
+        } else if (range === '7d') {
+          startDate = new Date(now - 7 * 24 * 60 * 60 * 1000);
+        } else if (range === '30d') {
+          startDate = new Date(now - 30 * 24 * 60 * 60 * 1000);
+        }
+      }
+
+      const [devicesList, hrLatest, spo2Latest, tempLatest, filteredReadings] = await Promise.all([
+        this.repo.findAllDevicesByUserId(activeUserId),
+        this.repo.findLatestReading(activeUserId, SensorType.HEART_RATE),
+        this.repo.findLatestReading(activeUserId, SensorType.SPO2),
+        this.repo.findLatestReading(activeUserId, SensorType.TEMPERATURE),
+        this.repo.findSensorReadingsFiltered(activeUserId, {
+          deviceId: query.deviceId,
+          startDate,
+          endDate,
+          limit: 500,
+        }),
+      ]);
+
+      // 1. Devices list
+      const devices = devicesList.map((d) => ({
+        deviceId: d.deviceId,
+        name: d.name,
+        status: d.status,
+        lastSeenAt: d.lastSeenAt ? new Date(d.lastSeenAt).toISOString() : undefined,
+      }));
+
+      // 2. Current readings
+      const currentReadings = {
+        heartRate: hrLatest
+          ? {
+              value: hrLatest.value,
+              unit: hrLatest.unit,
+              timestamp: new Date(hrLatest.timestamp).toISOString(),
+              deviceId: hrLatest.deviceId,
+            }
+          : null,
+        spo2: spo2Latest
+          ? {
+              value: spo2Latest.value,
+              unit: spo2Latest.unit,
+              timestamp: new Date(spo2Latest.timestamp).toISOString(),
+              deviceId: spo2Latest.deviceId,
+            }
+          : null,
+        temperature: tempLatest
+          ? {
+              value: tempLatest.value,
+              unit: tempLatest.unit,
+              timestamp: new Date(tempLatest.timestamp).toISOString(),
+              deviceId: tempLatest.deviceId,
+            }
+          : null,
+      };
+
+      // 3. Sensor Histories
+      const heartRateHistory: Array<{ timestamp: string; value: number; deviceId: string }> = [];
+      const spo2History: Array<{ timestamp: string; value: number; deviceId: string }> = [];
+      const temperatureHistory: Array<{ timestamp: string; value: number; deviceId: string }> = [];
+
+      const trendMap = new Map<
+        string,
+        {
+          timestamp: string;
+          heartRate?: number;
+          spo2?: number;
+          temperature?: number;
+          deviceId: string;
+        }
+      >();
+
+      filteredReadings.forEach((reading) => {
+        const isoTime = new Date(reading.timestamp).toISOString();
+        if (reading.sensorType === SensorType.HEART_RATE) {
+          heartRateHistory.push({
+            timestamp: isoTime,
+            value: reading.value,
+            deviceId: reading.deviceId,
+          });
+        } else if (reading.sensorType === SensorType.SPO2) {
+          spo2History.push({
+            timestamp: isoTime,
+            value: reading.value,
+            deviceId: reading.deviceId,
+          });
+        } else if (reading.sensorType === SensorType.TEMPERATURE) {
+          temperatureHistory.push({
+            timestamp: isoTime,
+            value: reading.value,
+            deviceId: reading.deviceId,
+          });
+        }
+
+        const existing = trendMap.get(isoTime) || {
+          timestamp: isoTime,
+          deviceId: reading.deviceId,
+        };
+        if (reading.sensorType === SensorType.HEART_RATE) existing.heartRate = reading.value;
+        if (reading.sensorType === SensorType.SPO2) existing.spo2 = reading.value;
+        if (reading.sensorType === SensorType.TEMPERATURE) existing.temperature = reading.value;
+        trendMap.set(isoTime, existing);
+      });
+
+      const combinedVitalTrends = Array.from(trendMap.values());
+
+      return {
+        currentReadings,
+        devices,
+        heartRateHistory,
+        spo2History,
+        temperatureHistory,
+        combinedVitalTrends,
+      };
+    } catch (error) {
+      logger.error({ err: error, userId, query }, 'PatientsService.getHealthMonitoring - Error');
       throw error;
     }
   }

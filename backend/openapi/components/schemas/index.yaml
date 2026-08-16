@@ -207,6 +207,10 @@ PatientOverviewResponse:
   $ref: './patients/PatientOverviewResponse.yaml'
 PatientOverviewData:
   $ref: './patients/PatientOverviewData.yaml'
+HealthMonitoringResponse:
+  $ref: './patients/HealthMonitoringResponse.yaml'
+HealthMonitoringData:
+  $ref: './patients/HealthMonitoringData.yaml'
 PatientOverviewInfo:
   $ref: './patients/PatientOverviewInfo.yaml'
 PatientOverviewDeviceInfo:

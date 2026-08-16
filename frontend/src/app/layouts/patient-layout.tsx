@@ -30,6 +30,11 @@ export function PatientLayout(): React.JSX.Element {
       path: '/dashboard',
       icon: LayoutDashboard,
     },
+    {
+      title: 'Health Monitoring',
+      path: '/health-monitoring',
+      icon: HeartPulse,
+    },
   ];
 
   return (

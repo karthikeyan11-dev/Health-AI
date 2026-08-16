@@ -131,5 +131,7 @@
 # Patient Endpoints
 /patients/overview:
   $ref: './patients/get-patient-overview.yaml'
+/patients/health-monitoring:
+  $ref: './patients/get-health-monitoring.yaml'
 
 

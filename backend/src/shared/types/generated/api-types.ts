@@ -1096,6 +1096,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/patients/health-monitoring": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve Patient Health Monitoring Data
+         * @description Returns physiological sensor telemetry (Heart Rate, SpO2, Temperature) current readings, time-series chart histories, combined vital trends, and registered device status with optional time range and device filtering.
+         */
+        get: operations["getHealthMonitoring"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2498,6 +2518,72 @@ export interface components {
             /** @example Patient health overview retrieved successfully */
             message: string;
             data: components["schemas"]["PatientOverviewData"];
+            meta: components["schemas"]["Metadata"];
+        };
+        HealthMonitoringData: {
+            currentReadings: {
+                heartRate: {
+                    value?: number;
+                    unit?: string;
+                    /** Format: date-time */
+                    timestamp?: string;
+                    deviceId?: string;
+                } | null;
+                spo2: {
+                    value?: number;
+                    unit?: string;
+                    /** Format: date-time */
+                    timestamp?: string;
+                    deviceId?: string;
+                } | null;
+                temperature: {
+                    value?: number;
+                    unit?: string;
+                    /** Format: date-time */
+                    timestamp?: string;
+                    deviceId?: string;
+                } | null;
+            };
+            devices: {
+                deviceId: string;
+                name?: string;
+                status: string;
+                /** Format: date-time */
+                lastSeenAt?: string;
+            }[];
+            heartRateHistory: {
+                /** Format: date-time */
+                timestamp: string;
+                value: number;
+                deviceId?: string;
+            }[];
+            spo2History: {
+                /** Format: date-time */
+                timestamp: string;
+                value: number;
+                deviceId?: string;
+            }[];
+            temperatureHistory: {
+                /** Format: date-time */
+                timestamp: string;
+                value: number;
+                deviceId?: string;
+            }[];
+            combinedVitalTrends: {
+                /** Format: date-time */
+                timestamp: string;
+                heartRate?: number | null;
+                spo2?: number | null;
+                temperature?: number | null;
+                deviceId?: string;
+            }[];
+        };
+        HealthMonitoringResponse: {
+            /** @example true */
+            success: boolean;
+            /** @example Health monitoring data retrieved successfully */
+            message: string;
+            data: components["schemas"]["HealthMonitoringData"];
             meta: components["schemas"]["Metadata"];
         };
         Timestamp: {
@@ -4493,6 +4579,62 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PatientOverviewResponse"];
+                };
+            };
+            /** @description Unauthorized request */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Patient record not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getHealthMonitoring: {
+        parameters: {
+            query?: {
+                /** @description Time range filter (24h, 7d, 30d, all) */
+                timeRange?: "24h" | "7d" | "30d" | "all";
+                /** @description Specific device ID filter */
+                deviceId?: string;
+                /** @description ISO start date timestamp filter */
+                startDate?: string;
+                /** @description ISO end date timestamp filter */
+                endDate?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Health monitoring data retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthMonitoringResponse"];
                 };
             };
             /** @description Unauthorized request */

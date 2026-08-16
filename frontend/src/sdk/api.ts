@@ -322,6 +322,49 @@ export interface HealthHistoryResponseDataInner {
 }
 
 
+export interface HealthMonitoringData {
+    'currentReadings': HealthMonitoringDataCurrentReadings;
+    'devices': Array<HealthMonitoringDataDevicesInner>;
+    'heartRateHistory': Array<HealthMonitoringDataHeartRateHistoryInner>;
+    'spo2History': Array<HealthMonitoringDataHeartRateHistoryInner>;
+    'temperatureHistory': Array<HealthMonitoringDataHeartRateHistoryInner>;
+    'combinedVitalTrends': Array<HealthMonitoringDataCombinedVitalTrendsInner>;
+}
+export interface HealthMonitoringDataCombinedVitalTrendsInner {
+    'timestamp': string;
+    'heartRate'?: number | null;
+    'spo2'?: number | null;
+    'temperature'?: number | null;
+    'deviceId'?: string;
+}
+export interface HealthMonitoringDataCurrentReadings {
+    'heartRate': HealthMonitoringDataCurrentReadingsHeartRate | null;
+    'spo2': HealthMonitoringDataCurrentReadingsHeartRate | null;
+    'temperature': HealthMonitoringDataCurrentReadingsHeartRate | null;
+}
+export interface HealthMonitoringDataCurrentReadingsHeartRate {
+    'value'?: number;
+    'unit'?: string;
+    'timestamp'?: string;
+    'deviceId'?: string;
+}
+export interface HealthMonitoringDataDevicesInner {
+    'deviceId': string;
+    'name'?: string;
+    'status': string;
+    'lastSeenAt'?: string;
+}
+export interface HealthMonitoringDataHeartRateHistoryInner {
+    'timestamp': string;
+    'value': number;
+    'deviceId'?: string;
+}
+export interface HealthMonitoringResponse {
+    'success': boolean;
+    'message': string;
+    'data': HealthMonitoringData;
+    'meta': Metadata;
+}
 
 export const HealthStatusEnum = {
     Healthy: 'HEALTHY',
@@ -4633,6 +4676,64 @@ export class NotificationsApi extends BaseAPI {
 export const PatientsApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
+         * Returns physiological sensor telemetry (Heart Rate, SpO2, Temperature) current readings, time-series chart histories, combined vital trends, and registered device status with optional time range and device filtering.
+         * @summary Retrieve Patient Health Monitoring Data
+         * @param {GetHealthMonitoringTimeRangeEnum} [timeRange] Time range filter (24h, 7d, 30d, all)
+         * @param {string} [deviceId] Specific device ID filter
+         * @param {string} [startDate] ISO start date timestamp filter
+         * @param {string} [endDate] ISO end date timestamp filter
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getHealthMonitoring: async (timeRange?: GetHealthMonitoringTimeRangeEnum, deviceId?: string, startDate?: string, endDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/patients/health-monitoring`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (timeRange !== undefined) {
+                localVarQueryParameter['timeRange'] = timeRange;
+            }
+
+            if (deviceId !== undefined) {
+                localVarQueryParameter['deviceId'] = deviceId;
+            }
+
+            if (startDate !== undefined) {
+                localVarQueryParameter['startDate'] = (startDate as any instanceof Date) ?
+                    (startDate as any).toISOString() :
+                    startDate;
+            }
+
+            if (endDate !== undefined) {
+                localVarQueryParameter['endDate'] = (endDate as any instanceof Date) ?
+                    (endDate as any).toISOString() :
+                    endDate;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Returns personalized patient health overview analytics including current vitals, assessment summary, digital twin health state, IoT device connectivity status, active recommendations, vital sign trends, and recent activity log.
          * @summary Retrieve Patient Dashboard Overview
          * @param {*} [options] Override http request option.
@@ -4676,6 +4777,22 @@ export const PatientsApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = PatientsApiAxiosParamCreator(configuration)
     return {
         /**
+         * Returns physiological sensor telemetry (Heart Rate, SpO2, Temperature) current readings, time-series chart histories, combined vital trends, and registered device status with optional time range and device filtering.
+         * @summary Retrieve Patient Health Monitoring Data
+         * @param {GetHealthMonitoringTimeRangeEnum} [timeRange] Time range filter (24h, 7d, 30d, all)
+         * @param {string} [deviceId] Specific device ID filter
+         * @param {string} [startDate] ISO start date timestamp filter
+         * @param {string} [endDate] ISO end date timestamp filter
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getHealthMonitoring(timeRange?: GetHealthMonitoringTimeRangeEnum, deviceId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HealthMonitoringResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getHealthMonitoring(timeRange, deviceId, startDate, endDate, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['PatientsApi.getHealthMonitoring']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Returns personalized patient health overview analytics including current vitals, assessment summary, digital twin health state, IoT device connectivity status, active recommendations, vital sign trends, and recent activity log.
          * @summary Retrieve Patient Dashboard Overview
          * @param {*} [options] Override http request option.
@@ -4697,6 +4814,19 @@ export const PatientsApiFactory = function (configuration?: Configuration, baseP
     const localVarFp = PatientsApiFp(configuration)
     return {
         /**
+         * Returns physiological sensor telemetry (Heart Rate, SpO2, Temperature) current readings, time-series chart histories, combined vital trends, and registered device status with optional time range and device filtering.
+         * @summary Retrieve Patient Health Monitoring Data
+         * @param {GetHealthMonitoringTimeRangeEnum} [timeRange] Time range filter (24h, 7d, 30d, all)
+         * @param {string} [deviceId] Specific device ID filter
+         * @param {string} [startDate] ISO start date timestamp filter
+         * @param {string} [endDate] ISO end date timestamp filter
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getHealthMonitoring(timeRange?: GetHealthMonitoringTimeRangeEnum, deviceId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<HealthMonitoringResponse> {
+            return localVarFp.getHealthMonitoring(timeRange, deviceId, startDate, endDate, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Returns personalized patient health overview analytics including current vitals, assessment summary, digital twin health state, IoT device connectivity status, active recommendations, vital sign trends, and recent activity log.
          * @summary Retrieve Patient Dashboard Overview
          * @param {*} [options] Override http request option.
@@ -4713,6 +4843,20 @@ export const PatientsApiFactory = function (configuration?: Configuration, baseP
  */
 export class PatientsApi extends BaseAPI {
     /**
+     * Returns physiological sensor telemetry (Heart Rate, SpO2, Temperature) current readings, time-series chart histories, combined vital trends, and registered device status with optional time range and device filtering.
+     * @summary Retrieve Patient Health Monitoring Data
+     * @param {GetHealthMonitoringTimeRangeEnum} [timeRange] Time range filter (24h, 7d, 30d, all)
+     * @param {string} [deviceId] Specific device ID filter
+     * @param {string} [startDate] ISO start date timestamp filter
+     * @param {string} [endDate] ISO end date timestamp filter
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getHealthMonitoring(timeRange?: GetHealthMonitoringTimeRangeEnum, deviceId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig) {
+        return PatientsApiFp(this.configuration).getHealthMonitoring(timeRange, deviceId, startDate, endDate, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Returns personalized patient health overview analytics including current vitals, assessment summary, digital twin health state, IoT device connectivity status, active recommendations, vital sign trends, and recent activity log.
      * @summary Retrieve Patient Dashboard Overview
      * @param {*} [options] Override http request option.
@@ -4723,6 +4867,13 @@ export class PatientsApi extends BaseAPI {
     }
 }
 
+export const GetHealthMonitoringTimeRangeEnum = {
+    _24h: '24h',
+    _7d: '7d',
+    _30d: '30d',
+    All: 'all',
+} as const;
+export type GetHealthMonitoringTimeRangeEnum = typeof GetHealthMonitoringTimeRangeEnum[keyof typeof GetHealthMonitoringTimeRangeEnum];
 
 
 /**

@@ -258,7 +258,8 @@ All API endpoints MUST return responses adhering strictly to the standardized en
 
 ## 9. 🧪 TESTING CONVENTIONS & COVERAGE GATES
 
-- **Test Location**: All test files MUST be placed in `backend/tests/<feature>/` mirroring `backend/src/modules/<feature>/`.
+- **Test Location**: All test files MUST be placed in `backend/tests/modules/<feature>/` mirroring `backend/src/modules/<feature>/`.
+- **Module Isolation**: Tests must be maintained strictly within the affected module's test structure (`backend/tests/modules/<module>/`). Do not place unit tests outside the designated feature test directory.
 - **Target Files**: Unit test suites are written separately ONLY for business logic layers:
   - `<feature>.controller.spec.ts`
   - `<feature>.service.spec.ts`

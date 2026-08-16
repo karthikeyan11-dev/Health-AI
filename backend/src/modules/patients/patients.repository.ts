@@ -150,6 +150,60 @@ export class PatientsRepository {
       return [];
     }
   }
+
+  /**
+   * Finds all devices belonging to patient.
+   */
+  public async findAllDevicesByUserId(userId: string): Promise<IDeviceDocument[]> {
+    try {
+      return await DeviceModel.find({ userId }).sort({ updatedAt: -1 }).exec();
+    } catch (error) {
+      logger.error({ err: error, userId }, 'PatientsRepository.findAllDevicesByUserId - Error');
+      return [];
+    }
+  }
+
+  /**
+   * Finds time-series sensor readings with optional time-range and device filtering.
+   */
+  public async findSensorReadingsFiltered(
+    userId: string,
+    filter: {
+      deviceId?: string;
+      startDate?: Date;
+      endDate?: Date;
+      limit?: number;
+    } = {},
+  ): Promise<ISensorReadingDocument[]> {
+    try {
+      const query: Record<string, unknown> = {
+        userId,
+        sensorType: { $in: [SensorType.HEART_RATE, SensorType.SPO2, SensorType.TEMPERATURE] },
+      };
+
+      if (filter.deviceId) {
+        query.deviceId = filter.deviceId;
+      }
+
+      if (filter.startDate || filter.endDate) {
+        const timestampQuery: Record<string, Date> = {};
+        if (filter.startDate) timestampQuery.$gte = filter.startDate;
+        if (filter.endDate) timestampQuery.$lte = filter.endDate;
+        query.timestamp = timestampQuery;
+      }
+
+      return await SensorReadingModel.find(query)
+        .sort({ timestamp: 1 })
+        .limit(filter.limit || 500)
+        .exec();
+    } catch (error) {
+      logger.error(
+        { err: error, userId, filter },
+        'PatientsRepository.findSensorReadingsFiltered - Error',
+      );
+      return [];
+    }
+  }
 }
 
 export const patientsRepository = new PatientsRepository();

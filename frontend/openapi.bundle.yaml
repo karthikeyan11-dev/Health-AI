@@ -1729,6 +1729,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /patients/health-monitoring:
+    get:
+      tags:
+        - Patients
+      summary: Retrieve Patient Health Monitoring Data
+      description: Returns physiological sensor telemetry (Heart Rate, SpO2, Temperature) current readings, time-series chart histories, combined vital trends, and registered device status with optional time range and device filtering.
+      operationId: getHealthMonitoring
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: timeRange
+          in: query
+          required: false
+          description: Time range filter (24h, 7d, 30d, all)
+          schema:
+            type: string
+            enum:
+              - 24h
+              - 7d
+              - 30d
+              - all
+            default: 24h
+        - name: deviceId
+          in: query
+          required: false
+          description: Specific device ID filter
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          required: false
+          description: ISO start date timestamp filter
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          required: false
+          description: ISO end date timestamp filter
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Health monitoring data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthMonitoringResponse'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Patient record not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     UserRoleEnum:
@@ -4066,6 +4133,163 @@ components:
           example: Patient health overview retrieved successfully
         data:
           $ref: '#/components/schemas/PatientOverviewData'
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    HealthMonitoringData:
+      type: object
+      required:
+        - currentReadings
+        - devices
+        - heartRateHistory
+        - spo2History
+        - temperatureHistory
+        - combinedVitalTrends
+      properties:
+        currentReadings:
+          type: object
+          required:
+            - heartRate
+            - spo2
+            - temperature
+          properties:
+            heartRate:
+              type: object
+              nullable: true
+              properties:
+                value:
+                  type: number
+                unit:
+                  type: string
+                timestamp:
+                  type: string
+                  format: date-time
+                deviceId:
+                  type: string
+            spo2:
+              type: object
+              nullable: true
+              properties:
+                value:
+                  type: number
+                unit:
+                  type: string
+                timestamp:
+                  type: string
+                  format: date-time
+                deviceId:
+                  type: string
+            temperature:
+              type: object
+              nullable: true
+              properties:
+                value:
+                  type: number
+                unit:
+                  type: string
+                timestamp:
+                  type: string
+                  format: date-time
+                deviceId:
+                  type: string
+        devices:
+          type: array
+          items:
+            type: object
+            required:
+              - deviceId
+              - status
+            properties:
+              deviceId:
+                type: string
+              name:
+                type: string
+              status:
+                type: string
+              lastSeenAt:
+                type: string
+                format: date-time
+        heartRateHistory:
+          type: array
+          items:
+            type: object
+            required:
+              - timestamp
+              - value
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              value:
+                type: number
+              deviceId:
+                type: string
+        spo2History:
+          type: array
+          items:
+            type: object
+            required:
+              - timestamp
+              - value
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              value:
+                type: number
+              deviceId:
+                type: string
+        temperatureHistory:
+          type: array
+          items:
+            type: object
+            required:
+              - timestamp
+              - value
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              value:
+                type: number
+              deviceId:
+                type: string
+        combinedVitalTrends:
+          type: array
+          items:
+            type: object
+            required:
+              - timestamp
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              heartRate:
+                type: number
+                nullable: true
+              spo2:
+                type: number
+                nullable: true
+              temperature:
+                type: number
+                nullable: true
+              deviceId:
+                type: string
+    HealthMonitoringResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Health monitoring data retrieved successfully
+        data:
+          $ref: '#/components/schemas/HealthMonitoringData'
         meta:
           $ref: '#/components/schemas/Metadata'
     Timestamp:

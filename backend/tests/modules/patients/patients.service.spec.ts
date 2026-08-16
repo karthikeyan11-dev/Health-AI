@@ -95,6 +95,8 @@ describe('PatientsService Unit Tests', () => {
       findLatestStressAssessment: jest.fn(),
       findDigitalTwin: jest.fn(),
       findActiveRecommendations: jest.fn(),
+      findAllDevicesByUserId: jest.fn(),
+      findSensorReadingsFiltered: jest.fn(),
     } as unknown as jest.Mocked<PatientsRepository>;
 
     service = new PatientsService(mockRepo);
@@ -241,6 +243,145 @@ describe('PatientsService Unit Tests', () => {
 
       await expect(service.getPatientOverview('507f1f77bcf86cd799439011')).rejects.toThrow(
         'Mongo connection failure',
+      );
+    });
+  });
+
+  describe('getHealthMonitoring', () => {
+    it('should compile health monitoring data with current readings, devices, and histories', async () => {
+      mockRepo.findUserById.mockResolvedValue(
+        mockUser as unknown as Awaited<ReturnType<typeof mockRepo.findUserById>>,
+      );
+      mockRepo.findAllDevicesByUserId.mockResolvedValue([
+        {
+          deviceId: 'ESP32_01',
+          name: 'Health Sensor 1',
+          status: 'ONLINE',
+          lastSeenAt: new Date(),
+        },
+      ] as unknown as Awaited<ReturnType<typeof mockRepo.findAllDevicesByUserId>>);
+      mockRepo.findLatestReading.mockImplementation((_userId, type) => {
+        if (type === SensorType.HEART_RATE)
+          return Promise.resolve({
+            value: 75,
+            unit: 'bpm',
+            timestamp: new Date(),
+            deviceId: 'ESP32_01',
+          } as unknown as Awaited<ReturnType<typeof mockRepo.findLatestReading>>);
+        if (type === SensorType.SPO2)
+          return Promise.resolve({
+            value: 99,
+            unit: '%',
+            timestamp: new Date(),
+            deviceId: 'ESP32_01',
+          } as unknown as Awaited<ReturnType<typeof mockRepo.findLatestReading>>);
+        if (type === SensorType.TEMPERATURE)
+          return Promise.resolve({
+            value: 36.8,
+            unit: '°C',
+            timestamp: new Date(),
+            deviceId: 'ESP32_01',
+          } as unknown as Awaited<ReturnType<typeof mockRepo.findLatestReading>>);
+        return Promise.resolve(null);
+      });
+      mockRepo.findSensorReadingsFiltered.mockResolvedValue([
+        {
+          sensorType: SensorType.HEART_RATE,
+          value: 75,
+          unit: 'bpm',
+          timestamp: new Date(),
+          deviceId: 'ESP32_01',
+        },
+        {
+          sensorType: SensorType.SPO2,
+          value: 99,
+          unit: '%',
+          timestamp: new Date(),
+          deviceId: 'ESP32_01',
+        },
+        {
+          sensorType: SensorType.TEMPERATURE,
+          value: 36.8,
+          unit: '°C',
+          timestamp: new Date(),
+          deviceId: 'ESP32_01',
+        },
+      ] as unknown as Awaited<ReturnType<typeof mockRepo.findSensorReadingsFiltered>>);
+
+      const result = await service.getHealthMonitoring('507f1f77bcf86cd799439011', {
+        timeRange: '24h',
+      });
+
+      expect(result.currentReadings.heartRate?.value).toBe(75);
+      expect(result.currentReadings.spo2?.value).toBe(99);
+      expect(result.currentReadings.temperature?.value).toBe(36.8);
+      expect(result.devices.length).toBe(1);
+      expect(result.heartRateHistory.length).toBe(1);
+      expect(result.spo2History.length).toBe(1);
+      expect(result.temperatureHistory.length).toBe(1);
+      expect(result.combinedVitalTrends.length).toBe(1);
+    });
+
+    it('should support timeRange filters (7d, 30d, all, unknown) and explicit startDate/endDate', async () => {
+      mockRepo.findUserById.mockResolvedValue(
+        mockUser as unknown as Awaited<ReturnType<typeof mockRepo.findUserById>>,
+      );
+      mockRepo.findAllDevicesByUserId.mockResolvedValue([
+        {
+          deviceId: 'ESP32_NO_LASTSEEN',
+          name: 'Device Without Last Seen',
+          status: 'OFFLINE',
+          lastSeenAt: undefined,
+        },
+      ] as unknown as Awaited<ReturnType<typeof mockRepo.findAllDevicesByUserId>>);
+      mockRepo.findLatestReading.mockResolvedValue(null);
+      mockRepo.findSensorReadingsFiltered.mockResolvedValue([]);
+
+      await service.getHealthMonitoring('507f1f77bcf86cd799439011', { timeRange: '7d' });
+      await service.getHealthMonitoring('507f1f77bcf86cd799439011', { timeRange: '30d' });
+      await service.getHealthMonitoring('507f1f77bcf86cd799439011', { timeRange: 'all' });
+      await service.getHealthMonitoring('507f1f77bcf86cd799439011', {
+        timeRange: 'custom_unknown',
+      });
+      await service.getHealthMonitoring('507f1f77bcf86cd799439011', {
+        startDate: '2026-01-01T00:00:00Z',
+        endDate: '2026-01-02T00:00:00Z',
+      });
+
+      expect(mockRepo.findSensorReadingsFiltered).toHaveBeenCalledTimes(5);
+    });
+
+    it('should return null currentReadings and empty arrays when DB has no sensor readings or devices', async () => {
+      mockRepo.findUserById.mockResolvedValue(
+        mockUser as unknown as Awaited<ReturnType<typeof mockRepo.findUserById>>,
+      );
+      mockRepo.findAllDevicesByUserId.mockResolvedValue([]);
+      mockRepo.findLatestReading.mockResolvedValue(null);
+      mockRepo.findSensorReadingsFiltered.mockResolvedValue([]);
+
+      const result = await service.getHealthMonitoring('507f1f77bcf86cd799439011');
+
+      expect(result.currentReadings.heartRate).toBeNull();
+      expect(result.currentReadings.spo2).toBeNull();
+      expect(result.currentReadings.temperature).toBeNull();
+      expect(result.devices).toEqual([]);
+      expect(result.heartRateHistory).toEqual([]);
+      expect(result.spo2History).toEqual([]);
+      expect(result.temperatureHistory).toEqual([]);
+      expect(result.combinedVitalTrends).toEqual([]);
+    });
+
+    it('should throw NotFoundError if user record is missing in database', async () => {
+      mockRepo.findUserById.mockResolvedValue(null);
+
+      await expect(service.getHealthMonitoring('invalid_user_id')).rejects.toThrow(NotFoundError);
+    });
+
+    it('should rethrow error when database error occurs', async () => {
+      mockRepo.findUserById.mockRejectedValue(new Error('DB failure'));
+
+      await expect(service.getHealthMonitoring('507f1f77bcf86cd799439011')).rejects.toThrow(
+        'DB failure',
       );
     });
   });
