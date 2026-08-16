@@ -23,4 +23,6 @@ export type OtpFormProps = {
   isSubmitting: boolean;
   onOtpChange: (otp: string) => void;
   onSubmit: (e: React.FormEvent) => void;
+  onResend?: () => void;
+  onBack?: () => void;
 };

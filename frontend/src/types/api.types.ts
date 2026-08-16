@@ -15,7 +15,7 @@ export interface paths {
         put?: never;
         /**
          * Register new user account
-         * @description Registers a new patient, clinician, or administrator account into the Health AI platform.
+         * @description Registers a new patient account into the Health AI platform.
          */
         post: operations["registerUser"];
         delete?: never;
@@ -198,7 +198,7 @@ export interface paths {
         get: operations["getUsers"];
         put?: never;
         /**
-         * Create user (Admin/Clinician)
+         * Create user
          * @description Creates a new user record in the system with specified role and credentials.
          */
         post: operations["createUser"];
@@ -1076,6 +1076,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/patients/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve Patient Dashboard Overview
+         * @description Returns personalized patient health overview analytics including current vitals, assessment summary, digital twin health state, IoT device connectivity status, active recommendations, vital sign trends, and recent activity log.
+         */
+        get: operations["getPatientOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1084,7 +1104,7 @@ export interface components {
          * @example PATIENT
          * @enum {string}
          */
-        UserRoleEnum: "PATIENT" | "CLINICIAN" | "ADMIN" | "SYSTEM";
+        UserRoleEnum: "PATIENT" | "SYSTEM";
         RegisterRequest: {
             /**
              * Format: email
@@ -1340,6 +1360,48 @@ export interface components {
              * @example 2026-08-07T09:00:00.000Z
              */
             updatedAt: string;
+            /**
+             * @description Overall physiological health state indicator for patient
+             * @example STABLE
+             */
+            healthStatus?: string;
+            /**
+             * @description Assigned primary healthcare practitioner name
+             * @example Dr. Sarah Jenkins
+             */
+            primaryPhysician?: string;
+            /**
+             * @description Count of actively paired IoT medical devices
+             * @example 2
+             */
+            connectedDevicesCount?: number;
+            /**
+             * @description Count of active real-time telemetry sensor streams
+             * @example 1
+             */
+            activeMonitoringStreams?: number;
+            /**
+             * @description Latest average heart rate in BPM
+             * @example 72
+             */
+            recentHeartRateBpm?: number;
+            /**
+             * @description Latest blood oxygen saturation percentage
+             * @example 98.5
+             */
+            recentSpo2Percent?: number;
+            /**
+             * @description Latest body temperature in degrees Celsius
+             * @example 36.6
+             */
+            recentTemperatureCelsius?: number;
+            /**
+             * @description AI evaluated cardiovascular and stress risk level
+             * @example LOW_RISK
+             */
+            riskAssessmentScore?: string;
+            /** @example Patient telemetry within physiological baseline. */
+            medicalNotes?: string;
         };
         UserResponse: {
             /** @example true */
@@ -2326,6 +2388,118 @@ export interface components {
             };
             meta: components["schemas"]["Metadata"];
         };
+        PatientOverviewInfo: {
+            /** @example usr_99281a */
+            id: string;
+            /** @example John */
+            firstName: string;
+            /** @example Doe */
+            lastName: string;
+            /** @example patient@healthai.com */
+            email: string;
+            /** @example 34 */
+            age: number;
+            /** @example MALE */
+            gender: string;
+            /** @example STABLE */
+            healthStatus: string;
+        };
+        PatientOverviewDeviceInfo: {
+            /** @example ESP32_DEV_01 */
+            deviceId?: string | null;
+            /** @example ESP32-WROOM-32 */
+            deviceType?: string | null;
+            /** @example ONLINE */
+            status: string;
+            /** @example 2026-08-14T10:30:00.000Z */
+            lastSeen?: string | null;
+        };
+        PatientOverviewVitals: {
+            /** @example 72 */
+            heartRateBpm?: number | null;
+            /** @example 98.5 */
+            spo2Percent?: number | null;
+            /** @example 36.6 */
+            temperatureCelsius?: number | null;
+            /** @example 2026-08-14T10:30:00.000Z */
+            timestamp?: string | null;
+        };
+        PatientOverviewCardioRisk: {
+            /** @example 18.5 */
+            riskScore?: number | null;
+            /** @example LOW */
+            riskLevel: string;
+            /** @example 2026-08-14T09:00:00.000Z */
+            timestamp?: string | null;
+        };
+        PatientOverviewStress: {
+            /** @example 22 */
+            stressScore?: number | null;
+            /** @example LOW */
+            stressLevel: string;
+            /** @example 2026-08-14T09:00:00.000Z */
+            timestamp?: string | null;
+        };
+        PatientOverviewDigitalTwin: {
+            /** @example 92.5 */
+            overallHealthScore?: number | null;
+            /** @example STABLE */
+            healthState: string;
+            /** @example 2026-08-14T10:30:00.000Z */
+            lastUpdated?: string | null;
+        };
+        PatientVitalTrendPoint: {
+            /** @example 10:00 */
+            timestamp: string;
+            /** @example 72 */
+            heartRate?: number | null;
+            /** @example 98.5 */
+            spo2?: number | null;
+            /** @example 36.6 */
+            temperature?: number | null;
+        };
+        PatientHealthRiskSummary: {
+            /** @example 70 */
+            optimalPercent: number;
+            /** @example 20 */
+            stablePercent: number;
+            /** @example 8 */
+            elevatedPercent: number;
+            /** @example 2 */
+            atRiskPercent: number;
+        };
+        PatientOverviewActivityItem: {
+            /** @example act_101 */
+            id: string;
+            /** @example ASSESSMENT */
+            type: string;
+            /** @example Cardiovascular Risk Assessment Completed */
+            title: string;
+            /** @example Risk score evaluated as LOW risk based on latest vitals. */
+            description: string;
+            /** @example 2026-08-14T10:30:00.000Z */
+            timestamp: string;
+        };
+        PatientOverviewData: {
+            patientInfo: components["schemas"]["PatientOverviewInfo"];
+            deviceInfo: components["schemas"]["PatientOverviewDeviceInfo"];
+            latestVitals: components["schemas"]["PatientOverviewVitals"];
+            latestCardiovascularRisk: components["schemas"]["PatientOverviewCardioRisk"];
+            latestStressAssessment: components["schemas"]["PatientOverviewStress"];
+            digitalTwinState: components["schemas"]["PatientOverviewDigitalTwin"];
+            recentRecommendations: components["schemas"]["Recommendation"][];
+            vitalSignTrend: components["schemas"]["PatientVitalTrendPoint"][];
+            healthRiskSummary: components["schemas"]["PatientHealthRiskSummary"];
+            recentActivity: components["schemas"]["PatientOverviewActivityItem"][];
+        };
+        PatientOverviewResponse: {
+            /** @example true */
+            success: boolean;
+            /** @example Patient health overview retrieved successfully */
+            message: string;
+            data: components["schemas"]["PatientOverviewData"];
+            meta: components["schemas"]["Metadata"];
+        };
         Timestamp: {
             /**
              * Format: date-time
@@ -2540,6 +2714,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthTokensResponse"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Invalid credentials */
@@ -4290,6 +4473,53 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SystemMetricsResponse"];
+                };
+            };
+        };
+    };
+    getPatientOverview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Patient overview analytics retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientOverviewResponse"];
+                };
+            };
+            /** @description Unauthorized request */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Patient record not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

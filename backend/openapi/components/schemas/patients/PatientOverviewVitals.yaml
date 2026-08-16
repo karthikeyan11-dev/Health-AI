@@ -1,0 +1,18 @@
+type: object
+properties:
+  heartRateBpm:
+    type: number
+    nullable: true
+    example: 72
+  spo2Percent:
+    type: number
+    nullable: true
+    example: 98.5
+  temperatureCelsius:
+    type: number
+    nullable: true
+    example: 36.6
+  timestamp:
+    type: string
+    nullable: true
+    example: "2026-08-14T10:30:00.000Z"

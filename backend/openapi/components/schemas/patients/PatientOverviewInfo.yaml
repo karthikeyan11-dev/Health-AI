@@ -1,0 +1,31 @@
+type: object
+required:
+  - id
+  - firstName
+  - lastName
+  - email
+  - age
+  - gender
+  - healthStatus
+properties:
+  id:
+    type: string
+    example: "usr_99281a"
+  firstName:
+    type: string
+    example: "John"
+  lastName:
+    type: string
+    example: "Doe"
+  email:
+    type: string
+    example: "patient@healthai.com"
+  age:
+    type: integer
+    example: 34
+  gender:
+    type: string
+    example: "MALE"
+  healthStatus:
+    type: string
+    example: "STABLE"

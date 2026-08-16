@@ -195,6 +195,28 @@
     animation: authDecorPulse 7s ease-in-out infinite;
     will-change: opacity, transform;
   }
+
+  /* ── Custom Modern Scrollbar ─────────────────────────── */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(8, 48, 50, 0.25);
+    border-radius: 9999px;
+    transition: background 0.2s ease;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(8, 48, 50, 0.55);
+  }
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(8, 48, 50, 0.25) transparent;
+  }
 }
 
 /* ── Keyframes ────────────────────────────────────────── */

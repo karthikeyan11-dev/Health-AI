@@ -41,7 +41,7 @@ get:
 post:
   tags:
     - Users
-  summary: Create user (Admin/Clinician)
+  summary: Create user
   description: Creates a new user record in the system with specified role and credentials.
   operationId: createUser
   security:

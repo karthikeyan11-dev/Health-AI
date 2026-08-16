@@ -14,7 +14,7 @@ export const registerSchema = z.object({
   gender: z.enum(['MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY'], {
     message: 'Gender is required',
   }),
-  role: z.enum(['PATIENT', 'CLINICIAN', 'ADMIN']).optional(),
+  role: z.enum(['PATIENT', 'SYSTEM']).optional(),
 });
 
 export const verifyOtpSchema = z.object({

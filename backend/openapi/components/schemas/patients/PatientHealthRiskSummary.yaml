@@ -1,0 +1,19 @@
+type: object
+required:
+  - optimalPercent
+  - stablePercent
+  - elevatedPercent
+  - atRiskPercent
+properties:
+  optimalPercent:
+    type: number
+    example: 70
+  stablePercent:
+    type: number
+    example: 20
+  elevatedPercent:
+    type: number
+    example: 8
+  atRiskPercent:
+    type: number
+    example: 2

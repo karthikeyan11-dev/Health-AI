@@ -63,3 +63,41 @@ properties:
     type: string
     format: date-time
     example: "2026-08-07T09:00:00.000Z"
+
+  # Optional patient-specific health fields (populated when user role is PATIENT)
+  healthStatus:
+    type: string
+    example: "STABLE"
+    description: "Overall physiological health state indicator for patient"
+  primaryPhysician:
+    type: string
+    example: "Dr. Sarah Jenkins"
+    description: "Assigned primary healthcare practitioner name"
+  connectedDevicesCount:
+    type: integer
+    example: 2
+    description: "Count of actively paired IoT medical devices"
+  activeMonitoringStreams:
+    type: integer
+    example: 1
+    description: "Count of active real-time telemetry sensor streams"
+  recentHeartRateBpm:
+    type: number
+    example: 72
+    description: "Latest average heart rate in BPM"
+  recentSpo2Percent:
+    type: number
+    example: 98.5
+    description: "Latest blood oxygen saturation percentage"
+  recentTemperatureCelsius:
+    type: number
+    example: 36.6
+    description: "Latest body temperature in degrees Celsius"
+  riskAssessmentScore:
+    type: string
+    example: "LOW_RISK"
+    description: "AI evaluated cardiovascular and stress risk level"
+  medicalNotes:
+    type: string
+    example: "Patient telemetry within physiological baseline."
+

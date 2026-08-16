@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Input, Label, Select } from '@/components/ui';
-import { GENDER_OPTIONS, ROLE_OPTIONS } from '../constants/register.constants';
+import { GENDER_OPTIONS, ROLE_OPTIONS, REGISTER_TEXTS } from '../constants/register.constants';
 import type { RegisterFormValues, RegisterFormProps } from '../types/register.types';
 import { Loader2, ArrowRight } from 'lucide-react';
 
@@ -25,13 +25,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         {/* First Name */}
         <div className="space-y-1.5">
           <Label htmlFor="firstName" required>
-            First Name
+            {REGISTER_TEXTS.labels.firstName}
           </Label>
           <Input
             id="firstName"
             name="firstName"
             type="text"
-            placeholder="John"
+            placeholder={REGISTER_TEXTS.placeholders.firstName}
             value={values.firstName}
             onChange={(e) => onChange('firstName', e.target.value)}
             disabled={isSubmitting}
@@ -45,13 +45,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         {/* Last Name */}
         <div className="space-y-1.5">
           <Label htmlFor="lastName" required>
-            Last Name
+            {REGISTER_TEXTS.labels.lastName}
           </Label>
           <Input
             id="lastName"
             name="lastName"
             type="text"
-            placeholder="Doe"
+            placeholder={REGISTER_TEXTS.placeholders.lastName}
             value={values.lastName}
             onChange={(e) => onChange('lastName', e.target.value)}
             disabled={isSubmitting}
@@ -66,13 +66,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       {/* Email Address */}
       <div className="space-y-1.5">
         <Label htmlFor="email" required>
-          Email Address
+          {REGISTER_TEXTS.labels.email}
         </Label>
         <Input
           id="email"
           name="email"
           type="email"
-          placeholder="john.doe@example.com"
+          placeholder={REGISTER_TEXTS.placeholders.email}
           value={values.email}
           onChange={(e) => onChange('email', e.target.value)}
           disabled={isSubmitting}
@@ -86,13 +86,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       {/* Password */}
       <div className="space-y-1.5">
         <Label htmlFor="password" required>
-          Password
+          {REGISTER_TEXTS.labels.password}
         </Label>
         <Input
           id="password"
           name="password"
           type="password"
-          placeholder="••••••••"
+          placeholder={REGISTER_TEXTS.placeholders.password}
           value={values.password}
           onChange={(e) => onChange('password', e.target.value)}
           disabled={isSubmitting}
@@ -108,7 +108,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         {/* Age */}
         <div className="space-y-1.5">
           <Label htmlFor="age" required>
-            Age
+            {REGISTER_TEXTS.labels.age}
           </Label>
           <Input
             id="age"
@@ -116,7 +116,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             type="number"
             min={1}
             max={120}
-            placeholder="12"
+            placeholder={REGISTER_TEXTS.placeholders.age}
             value={values.age}
             onChange={(e) => onChange('age', e.target.value)}
             disabled={isSubmitting}
@@ -128,7 +128,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         {/* Gender */}
         <div className="space-y-1.5">
           <Label htmlFor="gender" required>
-            Gender
+            {REGISTER_TEXTS.labels.gender}
           </Label>
           <Select
             id="gender"
@@ -150,12 +150,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Phone Number */}
         <div className="space-y-1.5">
-          <Label htmlFor="phoneNumber">Phone Number</Label>
+          <Label htmlFor="phoneNumber">{REGISTER_TEXTS.labels.phoneNumber}</Label>
           <Input
             id="phoneNumber"
             name="phoneNumber"
             type="tel"
-            placeholder="+1234567890"
+            placeholder={REGISTER_TEXTS.placeholders.phoneNumber}
             value={values.phoneNumber}
             onChange={(e) => onChange('phoneNumber', e.target.value)}
             disabled={isSubmitting}
@@ -168,7 +168,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
         {/* Role (Only PATIENT allowed) */}
         <div className="space-y-1.5">
-          <Label htmlFor="role">Account Role</Label>
+          <Label htmlFor="role">{REGISTER_TEXTS.labels.role}</Label>
           <Select
             id="role"
             name="role"
@@ -193,11 +193,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         {isSubmitting ? (
           <>
             <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            Sending Verification OTP...
+            {REGISTER_TEXTS.submitLoadingText}
           </>
         ) : (
           <>
-            Create Account & Send OTP
+            {REGISTER_TEXTS.submitButtonText}
             <ArrowRight className="w-4 h-4 ml-2" />
           </>
         )}

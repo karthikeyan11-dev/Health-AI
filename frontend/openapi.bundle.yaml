@@ -24,7 +24,7 @@ paths:
       tags:
         - Authentication
       summary: Register new user account
-      description: Registers a new patient, clinician, or administrator account into the Health AI platform.
+      description: Registers a new patient account into the Health AI platform.
       operationId: registerUser
       requestBody:
         required: true
@@ -326,7 +326,7 @@ paths:
     post:
       tags:
         - Users
-      summary: Create user (Admin/Clinician)
+      summary: Create user
       description: Creates a new user record in the system with specified role and credentials.
       operationId: createUser
       security:
@@ -1695,14 +1695,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SystemMetricsResponse'
+  /patients/overview:
+    get:
+      tags:
+        - Patients
+      summary: Retrieve Patient Dashboard Overview
+      description: Returns personalized patient health overview analytics including current vitals, assessment summary, digital twin health state, IoT device connectivity status, active recommendations, vital sign trends, and recent activity log.
+      operationId: getPatientOverview
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Patient overview analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientOverviewResponse'
+        '401':
+          description: Unauthorized request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Patient record not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     UserRoleEnum:
       type: string
       enum:
         - PATIENT
-        - CLINICIAN
-        - ADMIN
         - SYSTEM
       example: PATIENT
     RegisterRequest:
@@ -2057,6 +2089,41 @@ components:
           type: string
           format: date-time
           example: '2026-08-07T09:00:00.000Z'
+        healthStatus:
+          type: string
+          example: STABLE
+          description: Overall physiological health state indicator for patient
+        primaryPhysician:
+          type: string
+          example: Dr. Sarah Jenkins
+          description: Assigned primary healthcare practitioner name
+        connectedDevicesCount:
+          type: integer
+          example: 2
+          description: Count of actively paired IoT medical devices
+        activeMonitoringStreams:
+          type: integer
+          example: 1
+          description: Count of active real-time telemetry sensor streams
+        recentHeartRateBpm:
+          type: number
+          example: 72
+          description: Latest average heart rate in BPM
+        recentSpo2Percent:
+          type: number
+          example: 98.5
+          description: Latest blood oxygen saturation percentage
+        recentTemperatureCelsius:
+          type: number
+          example: 36.6
+          description: Latest body temperature in degrees Celsius
+        riskAssessmentScore:
+          type: string
+          example: LOW_RISK
+          description: AI evaluated cardiovascular and stress risk level
+        medicalNotes:
+          type: string
+          example: Patient telemetry within physiological baseline.
     UserResponse:
       type: object
       required:
@@ -3758,6 +3825,247 @@ components:
             requestsPerMinute:
               type: number
               example: 150
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    PatientOverviewInfo:
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - email
+        - age
+        - gender
+        - healthStatus
+      properties:
+        id:
+          type: string
+          example: usr_99281a
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        email:
+          type: string
+          example: patient@healthai.com
+        age:
+          type: integer
+          example: 34
+        gender:
+          type: string
+          example: MALE
+        healthStatus:
+          type: string
+          example: STABLE
+    PatientOverviewDeviceInfo:
+      type: object
+      required:
+        - status
+      properties:
+        deviceId:
+          type: string
+          nullable: true
+          example: ESP32_DEV_01
+        deviceType:
+          type: string
+          nullable: true
+          example: ESP32-WROOM-32
+        status:
+          type: string
+          example: ONLINE
+        lastSeen:
+          type: string
+          nullable: true
+          example: '2026-08-14T10:30:00.000Z'
+    PatientOverviewVitals:
+      type: object
+      properties:
+        heartRateBpm:
+          type: number
+          nullable: true
+          example: 72
+        spo2Percent:
+          type: number
+          nullable: true
+          example: 98.5
+        temperatureCelsius:
+          type: number
+          nullable: true
+          example: 36.6
+        timestamp:
+          type: string
+          nullable: true
+          example: '2026-08-14T10:30:00.000Z'
+    PatientOverviewCardioRisk:
+      type: object
+      required:
+        - riskLevel
+      properties:
+        riskScore:
+          type: number
+          nullable: true
+          example: 18.5
+        riskLevel:
+          type: string
+          example: LOW
+        timestamp:
+          type: string
+          nullable: true
+          example: '2026-08-14T09:00:00.000Z'
+    PatientOverviewStress:
+      type: object
+      required:
+        - stressLevel
+      properties:
+        stressScore:
+          type: number
+          nullable: true
+          example: 22
+        stressLevel:
+          type: string
+          example: LOW
+        timestamp:
+          type: string
+          nullable: true
+          example: '2026-08-14T09:00:00.000Z'
+    PatientOverviewDigitalTwin:
+      type: object
+      required:
+        - healthState
+      properties:
+        overallHealthScore:
+          type: number
+          nullable: true
+          example: 92.5
+        healthState:
+          type: string
+          example: STABLE
+        lastUpdated:
+          type: string
+          nullable: true
+          example: '2026-08-14T10:30:00.000Z'
+    PatientVitalTrendPoint:
+      type: object
+      required:
+        - timestamp
+      properties:
+        timestamp:
+          type: string
+          example: '10:00'
+        heartRate:
+          type: number
+          nullable: true
+          example: 72
+        spo2:
+          type: number
+          nullable: true
+          example: 98.5
+        temperature:
+          type: number
+          nullable: true
+          example: 36.6
+    PatientHealthRiskSummary:
+      type: object
+      required:
+        - optimalPercent
+        - stablePercent
+        - elevatedPercent
+        - atRiskPercent
+      properties:
+        optimalPercent:
+          type: number
+          example: 70
+        stablePercent:
+          type: number
+          example: 20
+        elevatedPercent:
+          type: number
+          example: 8
+        atRiskPercent:
+          type: number
+          example: 2
+    PatientOverviewActivityItem:
+      type: object
+      required:
+        - id
+        - type
+        - title
+        - description
+        - timestamp
+      properties:
+        id:
+          type: string
+          example: act_101
+        type:
+          type: string
+          example: ASSESSMENT
+        title:
+          type: string
+          example: Cardiovascular Risk Assessment Completed
+        description:
+          type: string
+          example: Risk score evaluated as LOW risk based on latest vitals.
+        timestamp:
+          type: string
+          example: '2026-08-14T10:30:00.000Z'
+    PatientOverviewData:
+      type: object
+      required:
+        - patientInfo
+        - deviceInfo
+        - latestVitals
+        - latestCardiovascularRisk
+        - latestStressAssessment
+        - digitalTwinState
+        - recentRecommendations
+        - vitalSignTrend
+        - healthRiskSummary
+        - recentActivity
+      properties:
+        patientInfo:
+          $ref: '#/components/schemas/PatientOverviewInfo'
+        deviceInfo:
+          $ref: '#/components/schemas/PatientOverviewDeviceInfo'
+        latestVitals:
+          $ref: '#/components/schemas/PatientOverviewVitals'
+        latestCardiovascularRisk:
+          $ref: '#/components/schemas/PatientOverviewCardioRisk'
+        latestStressAssessment:
+          $ref: '#/components/schemas/PatientOverviewStress'
+        digitalTwinState:
+          $ref: '#/components/schemas/PatientOverviewDigitalTwin'
+        recentRecommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recommendation'
+        vitalSignTrend:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatientVitalTrendPoint'
+        healthRiskSummary:
+          $ref: '#/components/schemas/PatientHealthRiskSummary'
+        recentActivity:
+          type: array
+          items:
+            $ref: '#/components/schemas/PatientOverviewActivityItem'
+    PatientOverviewResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Patient health overview retrieved successfully
+        data:
+          $ref: '#/components/schemas/PatientOverviewData'
         meta:
           $ref: '#/components/schemas/Metadata'
     Timestamp:

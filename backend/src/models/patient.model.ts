@@ -19,7 +19,6 @@ export interface IPatient {
   gender?: Gender;
   bloodType?: string;
   emergencyContact?: IEmergencyContact;
-  assignedClinicianId?: Types.ObjectId;
   medicalHistorySummary?: string;
   isActive: boolean;
   createdAt?: Date;
@@ -64,12 +63,6 @@ const patientSchema = new Schema<IPatientDocument>(
     },
     emergencyContact: {
       type: emergencyContactSchema,
-      default: undefined,
-    },
-    assignedClinicianId: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      index: true,
       default: undefined,
     },
     medicalHistorySummary: {
