@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Input, Label } from '@/components/ui';
+import { LOGIN_TEXTS } from '../constants/login.constants';
 import type { LoginFormProps } from '../types/login.types';
 import { Loader2, LogIn, CheckCircle2 } from 'lucide-react';
 
@@ -31,13 +32,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       {/* Email Address Field */}
       <div className="space-y-1.5">
         <Label htmlFor="loginEmail" required>
-          Email Address
+          {LOGIN_TEXTS.labels.email}
         </Label>
         <Input
           id="loginEmail"
           name="email"
           type="email"
-          placeholder="john.doe@example.com"
+          placeholder={LOGIN_TEXTS.placeholders.email}
           value={values.email}
           onChange={(e) => onChange('email', e.target.value)}
           disabled={isSubmitting}
@@ -51,13 +52,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       {/* Password Field */}
       <div className="space-y-1.5">
         <Label htmlFor="loginPassword" required>
-          Password
+          {LOGIN_TEXTS.labels.password}
         </Label>
         <Input
           id="loginPassword"
           name="password"
           type="password"
-          placeholder="••••••••"
+          placeholder={LOGIN_TEXTS.placeholders.password}
           value={values.password}
           onChange={(e) => onChange('password', e.target.value)}
           disabled={isSubmitting}
@@ -79,11 +80,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         {isSubmitting ? (
           <>
             <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            Authenticating...
+            {LOGIN_TEXTS.submitLoadingText}
           </>
         ) : (
           <>
-            Login
+            {LOGIN_TEXTS.submitButtonText}
             <LogIn className="w-4 h-4 ml-2" />
           </>
         )}

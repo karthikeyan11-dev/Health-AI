@@ -1,0 +1,15 @@
+type: object
+required:
+  - riskLevel
+properties:
+  riskScore:
+    type: number
+    nullable: true
+    example: 18.5
+  riskLevel:
+    type: string
+    example: "LOW"
+  timestamp:
+    type: string
+    nullable: true
+    example: "2026-08-14T09:00:00.000Z"

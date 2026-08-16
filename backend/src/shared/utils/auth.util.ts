@@ -28,12 +28,6 @@ export function toGender(gender?: string): Gender | undefined {
  * Converts string role (from OpenAPI schema or input) to UserRole enum.
  */
 export function toUserRole(role?: string): UserRole {
-  if (role === 'CLINICIAN') {
-    return UserRole.CLINICIAN;
-  }
-  if (role === 'ADMIN') {
-    return UserRole.ADMIN;
-  }
   if (role === 'SYSTEM') {
     return UserRole.SYSTEM;
   }
@@ -43,13 +37,7 @@ export function toUserRole(role?: string): UserRole {
 /**
  * Converts UserRole enum to OpenAPI schema role string.
  */
-export function toSchemaRole(role: UserRole): 'PATIENT' | 'CLINICIAN' | 'ADMIN' | 'SYSTEM' {
-  if (role === UserRole.CLINICIAN) {
-    return 'CLINICIAN';
-  }
-  if (role === UserRole.ADMIN) {
-    return 'ADMIN';
-  }
+export function toSchemaRole(role: UserRole): 'PATIENT' | 'SYSTEM' {
   if (role === UserRole.SYSTEM) {
     return 'SYSTEM';
   }

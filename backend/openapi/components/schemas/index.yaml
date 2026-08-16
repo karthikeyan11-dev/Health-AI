@@ -201,3 +201,33 @@ SystemInfoResponse:
   $ref: './system/SystemInfoResponse.yaml'
 SystemMetricsResponse:
   $ref: './system/SystemMetricsResponse.yaml'
+
+# Patient Schemas
+PatientOverviewResponse:
+  $ref: './patients/PatientOverviewResponse.yaml'
+PatientOverviewData:
+  $ref: './patients/PatientOverviewData.yaml'
+HealthMonitoringResponse:
+  $ref: './patients/HealthMonitoringResponse.yaml'
+HealthMonitoringData:
+  $ref: './patients/HealthMonitoringData.yaml'
+PatientOverviewInfo:
+  $ref: './patients/PatientOverviewInfo.yaml'
+PatientOverviewDeviceInfo:
+  $ref: './patients/PatientOverviewDeviceInfo.yaml'
+PatientOverviewVitals:
+  $ref: './patients/PatientOverviewVitals.yaml'
+PatientOverviewCardioRisk:
+  $ref: './patients/PatientOverviewCardioRisk.yaml'
+PatientOverviewStress:
+  $ref: './patients/PatientOverviewStress.yaml'
+PatientOverviewDigitalTwin:
+  $ref: './patients/PatientOverviewDigitalTwin.yaml'
+PatientVitalTrendPoint:
+  $ref: './patients/PatientVitalTrendPoint.yaml'
+PatientHealthRiskSummary:
+  $ref: './patients/PatientHealthRiskSummary.yaml'
+PatientOverviewActivityItem:
+  $ref: './patients/PatientOverviewActivityItem.yaml'
+
+

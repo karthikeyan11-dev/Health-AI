@@ -1,0 +1,66 @@
+get:
+  tags:
+    - Patients
+  summary: Retrieve Patient Health Monitoring Data
+  description: Returns physiological sensor telemetry (Heart Rate, SpO2, Temperature) current readings, time-series chart histories, combined vital trends, and registered device status with optional time range and device filtering.
+  operationId: getHealthMonitoring
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: timeRange
+      in: query
+      required: false
+      description: Time range filter (24h, 7d, 30d, all)
+      schema:
+        type: string
+        enum:
+          - 24h
+          - 7d
+          - 30d
+          - all
+        default: 24h
+    - name: deviceId
+      in: query
+      required: false
+      description: Specific device ID filter
+      schema:
+        type: string
+    - name: startDate
+      in: query
+      required: false
+      description: ISO start date timestamp filter
+      schema:
+        type: string
+        format: date-time
+    - name: endDate
+      in: query
+      required: false
+      description: ISO end date timestamp filter
+      schema:
+        type: string
+        format: date-time
+  responses:
+    '200':
+      description: Health monitoring data retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/patients/HealthMonitoringResponse.yaml'
+    '401':
+      description: Unauthorized request
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '404':
+      description: Patient record not found
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '../../components/schemas/common/ErrorResponse.yaml'

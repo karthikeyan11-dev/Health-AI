@@ -1,0 +1,19 @@
+type: object
+required:
+  - status
+properties:
+  deviceId:
+    type: string
+    nullable: true
+    example: "ESP32_DEV_01"
+  deviceType:
+    type: string
+    nullable: true
+    example: "ESP32-WROOM-32"
+  status:
+    type: string
+    example: "ONLINE"
+  lastSeen:
+    type: string
+    nullable: true
+    example: "2026-08-14T10:30:00.000Z"

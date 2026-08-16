@@ -1,0 +1,39 @@
+type: object
+required:
+  - patientInfo
+  - deviceInfo
+  - latestVitals
+  - latestCardiovascularRisk
+  - latestStressAssessment
+  - digitalTwinState
+  - recentRecommendations
+  - vitalSignTrend
+  - healthRiskSummary
+  - recentActivity
+properties:
+  patientInfo:
+    $ref: './PatientOverviewInfo.yaml'
+  deviceInfo:
+    $ref: './PatientOverviewDeviceInfo.yaml'
+  latestVitals:
+    $ref: './PatientOverviewVitals.yaml'
+  latestCardiovascularRisk:
+    $ref: './PatientOverviewCardioRisk.yaml'
+  latestStressAssessment:
+    $ref: './PatientOverviewStress.yaml'
+  digitalTwinState:
+    $ref: './PatientOverviewDigitalTwin.yaml'
+  recentRecommendations:
+    type: array
+    items:
+      $ref: '../recommendations/Recommendation.yaml'
+  vitalSignTrend:
+    type: array
+    items:
+      $ref: './PatientVitalTrendPoint.yaml'
+  healthRiskSummary:
+    $ref: './PatientHealthRiskSummary.yaml'
+  recentActivity:
+    type: array
+    items:
+      $ref: './PatientOverviewActivityItem.yaml'

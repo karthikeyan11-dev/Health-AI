@@ -8,6 +8,7 @@ import {
   HealthReportsApi,
   HealthSystemOpsApi,
   NotificationsApi,
+  PatientsApi,
   RecommendationEngineApi,
   SensorsApi,
   StressAnalysisApi,
@@ -24,6 +25,7 @@ export const emotionServiceApi = new EmotionAIServiceApi(apiConfig);
 export const reportsApi = new HealthReportsApi(apiConfig);
 export const healthSystemOpsApi = new HealthSystemOpsApi(apiConfig);
 export const notificationsApi = new NotificationsApi(apiConfig);
+export const patientsApi = new PatientsApi(apiConfig);
 export const recommendationsApi = new RecommendationEngineApi(apiConfig);
 export const sensorsApi = new SensorsApi(apiConfig);
 export const stressAnalysisApi = new StressAnalysisApi(apiConfig);

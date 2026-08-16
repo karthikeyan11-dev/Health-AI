@@ -9,5 +9,5 @@ export type StoredOtpRecord = components['schemas']['StoredOtpRecord'];
 export type LoginRequest = components['schemas']['LoginRequest'];
 export type AuthTokensResponse = components['schemas']['AuthTokensResponse'];
 export type UserResponse = components['schemas']['UserResponse'];
-export type User = components['schemas']['User'];
+export type UserProfileData = components['schemas']['User'];
 export type ErrorResponse = components['schemas']['ErrorResponse'];

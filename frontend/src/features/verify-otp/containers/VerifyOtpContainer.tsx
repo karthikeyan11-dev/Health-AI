@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { OtpHeader } from '../components/OtpHeader';
-import { OtpForm } from '../components/OtpForm';
+import { VerifyOtpView } from '../components/VerifyOtpView';
 import { validateOtp } from '../utils/verifyOtp.utils';
 import { verifyOtpApi } from '../api/verifyOtp.api';
 import type { OtpFormErrors } from '../types/verifyOtp.types';
+import { extractErrorMessage } from '@/utils/error.util';
 
 export const VerifyOtpContainer: React.FC = () => {
   const navigate = useNavigate();
@@ -57,53 +57,35 @@ export const VerifyOtpContainer: React.FC = () => {
         state: { verified: true, message: 'User created successfully. Please log in.' },
       });
     } catch (err: unknown) {
-      const errorObj = err as {
-        response?: {
-          data?: {
-            error?: { message?: string };
-            message?: string;
-          };
-        };
-        message?: string;
-      };
-
-      const backendMessage =
-        errorObj.response?.data?.error?.message ||
-        errorObj.response?.data?.message ||
-        errorObj.message ||
-        'OTP verification failed. Please try again.';
-
-      // Specific error mapping based on backend error message contract
-      if (
-        backendMessage.toLowerCase().includes('otp is invalid') ||
-        backendMessage.toLowerCase().includes('invalid otp')
-      ) {
-        setErrors({ otp: 'OTP is Invalid' });
-      } else if (
-        backendMessage.toLowerCase().includes('tried so many times') ||
-        backendMessage.toLowerCase().includes('expired') ||
-        backendMessage.toLowerCase().includes('not found')
-      ) {
-        setErrors({ general: backendMessage });
+      const friendlyMessage = extractErrorMessage(
+        err,
+        'OTP verification failed. Please check the code and try again.',
+      );
+      if (friendlyMessage.toLowerCase().includes('invalid')) {
+        setErrors({ otp: 'The verification code entered is invalid or expired.' });
       } else {
-        setErrors({ general: backendMessage });
+        setErrors({ general: friendlyMessage });
       }
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleResend = () => {
+    // Trigger resend endpoint if available
+  };
+
   return (
-    <div className="w-full max-w-md mx-auto">
-      <OtpHeader email={email} />
-      <OtpForm
-        email={email}
-        otp={otp}
-        errors={errors}
-        isSubmitting={isSubmitting}
-        onOtpChange={handleOtpChange}
-        onSubmit={handleSubmit}
-      />
-    </div>
+    <VerifyOtpView
+      email={email}
+      otp={otp}
+      errors={errors}
+      isSubmitting={isSubmitting}
+      onOtpChange={handleOtpChange}
+      onSubmit={handleSubmit}
+      onResend={handleResend}
+      onBack={() => navigate('/register')}
+      onNavigateRegister={() => navigate('/register')}
+    />
   );
 };
