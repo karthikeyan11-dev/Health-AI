@@ -7,6 +7,7 @@ import {
   HealthMonitoringPage,
   CardiovascularPage,
   StressPage,
+  DigitalTwinPage,
 } from '@/pages/patient';
 
 export const router = createBrowserRouter([
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
           {
             path: 'health-monitoring',
             element: <HealthMonitoringPage />,
+          },
+          {
+            path: 'digital-twin',
+            element: <DigitalTwinPage />,
           },
           {
             path: 'assessments',

@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Activity,
   LogOut,
+  Dna,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { storage } from '@/lib/storage';
@@ -157,6 +158,30 @@ export function PatientLayout(): React.JSX.Element {
                   )}
                 />
                 {!collapsed && <span className="truncate">Health Monitoring</span>}
+              </NavLink>
+
+              {/* Patient Digital Twin */}
+              <NavLink
+                to="/digital-twin"
+                onClick={() => setMobileOpen(false)}
+                title={collapsed ? 'Digital Twin' : undefined}
+                className={cn(
+                  'flex items-center rounded-xl text-sm font-medium transition-all duration-200 group',
+                  collapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5',
+                  location.pathname === '/digital-twin'
+                    ? 'bg-white/15 text-white font-semibold shadow-inner border border-white/10 backdrop-blur-md'
+                    : 'text-white/75 hover:bg-white/10 hover:text-white',
+                )}
+              >
+                <Dna
+                  className={cn(
+                    'w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110',
+                    location.pathname === '/digital-twin'
+                      ? 'text-emerald-400'
+                      : 'text-white/60 group-hover:text-white',
+                  )}
+                />
+                {!collapsed && <span className="truncate">Digital Twin</span>}
               </NavLink>
 
               {/* Section 3: AI Assessments Dropdown Group */}

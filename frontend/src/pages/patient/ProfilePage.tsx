@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { authApi } from '@/api';
 import type { User } from '@/sdk';
-import { User as UserIcon, Mail, Phone, Calendar, Loader2, HeartPulse } from 'lucide-react';
+import { User as UserIcon, Mail, Phone, Calendar, HeartPulse } from 'lucide-react';
 import { ErrorCard } from '@/components/ui';
+import { PageLoader } from '@/components/common';
 import { extractErrorMessage } from '@/utils/error.util';
 
 export function ProfilePage(): React.JSX.Element {
@@ -28,12 +29,7 @@ export function ProfilePage(): React.JSX.Element {
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 space-y-3">
-        <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
-        <p className="text-sm font-medium text-slate-500">Loading user profile...</p>
-      </div>
-    );
+    return <PageLoader page="profile" />;
   }
 
   if (error || !profile) {

@@ -2,6 +2,7 @@ import React from 'react';
 import type { StressHistoryItem } from '../types/stress.types';
 import { STRESS_LEVEL_COLORS } from '../constants/stress.constants';
 import { Clock, History } from 'lucide-react';
+import { SectionLoader } from '@/components/common';
 import { cn } from '@/lib/utils';
 
 interface StressHistoryTableProps {
@@ -32,9 +33,11 @@ export const StressHistoryTable: React.FC<StressHistoryTableProps> = ({ history,
       </div>
 
       {isLoading ? (
-        <div className="py-12 text-center text-slate-400 text-xs animate-pulse">
-          Loading stress history records...
-        </div>
+        <SectionLoader
+          message="Loading stress history records..."
+          colorTheme="purple"
+          paddingY="py-12"
+        />
       ) : history.length === 0 ? (
         <div className="py-12 text-center text-slate-500 text-xs">
           No past stress evaluations found. Click &quot;New Assessment&quot; to test your autonomic

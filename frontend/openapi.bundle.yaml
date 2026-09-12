@@ -1094,6 +1094,78 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthTrendAnalysisResponse'
+  /digital-twin/{userId}/snapshots:
+    get:
+      tags:
+        - Digital Twin
+      summary: Get Digital Twin immutable evolution snapshots
+      description: Returns paginated historical evolution snapshots of the patient's Digital Twin for auditing and state reconstruction.
+      operationId: getDigitalTwinSnapshots
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: trigger
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/SnapshotTriggerReasonEnum'
+      responses:
+        '200':
+          description: Digital Twin snapshots retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalTwinSnapshotListResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Digital Twin not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /stress/assess:
     post:
       tags:
@@ -2873,6 +2945,13 @@ components:
         userId:
           type: string
           example: 64f1a2b3c4d5e6f7a8b9c0d1
+        patientId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d2
+        version:
+          type: integer
+          minimum: 1
+          example: 1
         overallHealthScore:
           type: number
           minimum: 0
@@ -3047,6 +3126,124 @@ components:
               example:
                 - Heart rate baseline has remained consistent over the last 7 days.
                 - Stress levels decreased by 12% following improved sleep patterns.
+        meta:
+          $ref: '#/components/schemas/Metadata'
+    SnapshotTriggerReasonEnum:
+      type: string
+      enum:
+        - TELEMETRY_SYNC
+        - STATE_TRANSITION
+        - BASELINE_CALIBRATION
+        - ASSESSMENT_COMPLETED
+        - MANUAL_SYNC
+      example: TELEMETRY_SYNC
+    DigitalTwinSnapshot:
+      type: object
+      required:
+        - id
+        - userId
+        - digitalTwinId
+        - overallHealthScore
+        - healthState
+        - triggerReason
+        - version
+        - timestamp
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d9
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        patientId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d2
+        digitalTwinId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d5
+        overallHealthScore:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 84.5
+        healthState:
+          $ref: '#/components/schemas/TwinHealthStateEnum'
+        heartRate:
+          type: number
+          example: 72
+        spO2:
+          type: number
+          example: 98.5
+        temperature:
+          type: number
+          example: 36.6
+        dominantEmotion:
+          $ref: '#/components/schemas/EmotionEnum'
+        stressScore:
+          type: number
+          example: 24
+        cardioRiskScore:
+          type: number
+          example: 14.5
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 92
+        triggerReason:
+          $ref: '#/components/schemas/SnapshotTriggerReasonEnum'
+        version:
+          type: integer
+          minimum: 1
+          example: 3
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-09-12T08:00:00.000Z'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-09-12T08:00:00.000Z'
+    DigitalTwinSnapshotListResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Digital twin snapshots retrieved successfully
+        data:
+          type: object
+          required:
+            - items
+            - total
+            - page
+            - limit
+            - totalPages
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/DigitalTwinSnapshot'
+            total:
+              type: integer
+              example: 42
+            page:
+              type: integer
+              example: 1
+            limit:
+              type: integer
+              example: 10
+            totalPages:
+              type: integer
+              example: 5
         meta:
           $ref: '#/components/schemas/Metadata'
     StressAssessmentRequest:
