@@ -1,6 +1,16 @@
 import type { RiskAssessmentResponse } from '@/sdk';
 
-export type CardioRiskData = RiskAssessmentResponse['data'];
+export type CardioRiskData = RiskAssessmentResponse['data'] & {
+  mapScore?: number;
+  ratePressureProduct?: number;
+  pulsePressure?: number;
+  autonomicStressScore?: number;
+  actionId?: number;
+  isActionSafe?: boolean;
+  heartRate?: number;
+  systolicBp?: number;
+  diastolicBp?: number;
+};
 
 export interface CardioHistoryItem {
   id?: string;
@@ -18,6 +28,12 @@ export interface CardioHistoryItem {
   explanation?: string;
   recommendations?: string[];
   recommendedIntervention?: string;
+  actionId?: number;
+  isActionSafe?: boolean;
+  mapScore?: number;
+  ratePressureProduct?: number;
+  pulsePressure?: number;
+  autonomicStressScore?: number;
   guidance?: {
     status: string;
     provider: string;

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { Types } from 'mongoose';
 import { DigitalTwinService } from '../../../src/modules/digital-twin/digital-twin.service';
 import type { DigitalTwinRepository } from '../../../src/modules/digital-twin/digital-twin.repository';
@@ -6,10 +7,16 @@ import {
   EmotionType,
   type IDigitalTwinDocument,
 } from '../../../src/models/digital-twin.model';
-import { NotFoundError, BadRequestError } from '../../../src/shared/errors/httpErrors';
+import {
+  NotFoundError,
+  BadRequestError,
+  InternalServerError,
+} from '../../../src/shared/errors/httpErrors';
 import type { ISensorReadingDocument } from '../../../src/models/sensor-reading.model';
 import type { ICardiovascularAssessmentDocument } from '../../../src/models/cardiovascular-assessment.model';
 import type { IStressAssessmentDocument } from '../../../src/models/stress-assessment.model';
+
+jest.mock('axios');
 
 describe('DigitalTwinService Unit Tests', () => {
   let service: DigitalTwinService;
@@ -757,6 +764,153 @@ describe('DigitalTwinService Unit Tests', () => {
         snapWithoutPatient as unknown as import('../../../src/models/digital-twin-snapshot.model').IDigitalTwinSnapshotDocument,
       );
       expect(formatted.patientId).toBeUndefined();
+    });
+  });
+
+  describe('simulateDigitalTwinTrajectory', () => {
+    const mockTrajectoryResponse = {
+      data: {
+        status: 'success',
+        forecast_days: 30,
+        mean_risk_score: 15.0,
+        risk_trend: 'STABLE',
+        trajectory: [
+          {
+            day: 1,
+            risk_class: 0,
+            risk_level: 'OPTIMAL',
+            risk_score: 15.0,
+            confidence: 95.0,
+            probabilities: { OPTIMAL: 0.95, LOW: 0.05 },
+            vitals_snapshot: {
+              resting_hr: 72.0,
+              bp_systolic: 120.0,
+              bp_diastolic: 80.0,
+              hrv: 50.0,
+            },
+          },
+        ],
+      },
+    };
+
+    it('should simulate digital twin trajectory successfully using AI Service', async () => {
+      mockRepo.findUserById.mockResolvedValue(
+        mockUserDoc as unknown as Awaited<ReturnType<typeof mockRepo.findUserById>>,
+      );
+      mockRepo.findByUserId.mockResolvedValue(mockTwinDoc);
+      mockRepo.findLatestReadings.mockResolvedValue({
+        heartRate: { value: 74 } as unknown as ISensorReadingDocument,
+        spo2: { value: 99 } as unknown as ISensorReadingDocument,
+        temperature: { value: 36.8 } as unknown as ISensorReadingDocument,
+      });
+      mockRepo.findLatestCardioAssessment.mockResolvedValue({
+        systolicBp: 122,
+        diastolicBp: 82,
+      } as unknown as ICardiovascularAssessmentDocument);
+
+      (axios.post as jest.Mock).mockResolvedValue(mockTrajectoryResponse);
+
+      const result = await service.simulateDigitalTwinTrajectory(userId, 30);
+
+      expect(result.status).toBe('success');
+      expect(result.forecast_days).toBe(30);
+      expect(result.trajectory.length).toBe(1);
+      expect(result.risk_trend).toBe('STABLE');
+      expect(axios.post).toHaveBeenCalledWith(
+        expect.stringContaining('/digital-twin/simulate'),
+        expect.objectContaining({
+          user_id: userId,
+          forecast_days: 30,
+          initial_vitals: expect.objectContaining({
+            resting_hr: 74,
+            spo2: 99,
+            body_temp_c: 36.8,
+            bp_systolic: 122,
+            bp_diastolic: 82,
+          }),
+        }),
+        expect.any(Object),
+      );
+    });
+
+    it('should simulate digital twin trajectory successfully using default forecastDays', async () => {
+      mockRepo.findUserById.mockResolvedValue(
+        mockUserDoc as unknown as Awaited<ReturnType<typeof mockRepo.findUserById>>,
+      );
+      mockRepo.findByUserId.mockResolvedValue(mockTwinDoc);
+      mockRepo.findLatestReadings.mockResolvedValue({
+        heartRate: { value: 72 } as unknown as ISensorReadingDocument,
+        spo2: { value: 98 } as unknown as ISensorReadingDocument,
+        temperature: { value: 36.5 } as unknown as ISensorReadingDocument,
+      });
+      mockRepo.findLatestCardioAssessment.mockResolvedValue(null);
+
+      (axios.post as jest.Mock).mockResolvedValue(mockTrajectoryResponse);
+
+      const result = await service.simulateDigitalTwinTrajectory(userId);
+
+      expect(result.status).toBe('success');
+      expect(result.forecast_days).toBe(30);
+      expect(axios.post).toHaveBeenCalledWith(
+        expect.stringContaining('/digital-twin/simulate'),
+        expect.objectContaining({
+          user_id: userId,
+          forecast_days: 30,
+        }),
+        expect.any(Object),
+      );
+    });
+
+    it('should fallback to twin baselines when latest sensor readings and assessments are missing', async () => {
+      mockRepo.findUserById.mockResolvedValue(
+        mockUserDoc as unknown as Awaited<ReturnType<typeof mockRepo.findUserById>>,
+      );
+      mockRepo.findByUserId.mockResolvedValue(mockTwinDoc);
+      mockRepo.findLatestReadings.mockResolvedValue({
+        heartRate: undefined,
+        spo2: undefined,
+        temperature: undefined,
+      });
+      mockRepo.findLatestCardioAssessment.mockResolvedValue(null);
+
+      (axios.post as jest.Mock).mockResolvedValue(mockTrajectoryResponse);
+
+      const result = await service.simulateDigitalTwinTrajectory(userId, 14);
+
+      expect(result.status).toBe('success');
+      expect(axios.post).toHaveBeenCalledWith(
+        expect.stringContaining('/digital-twin/simulate'),
+        expect.objectContaining({
+          forecast_days: 14,
+          initial_vitals: expect.objectContaining({
+            resting_hr: mockTwinDoc.baselineHeartRate,
+            spo2: mockTwinDoc.baselineSpO2,
+            body_temp_c: mockTwinDoc.baselineTemperature,
+            bp_systolic: 120.0,
+            bp_diastolic: 80.0,
+          }),
+        }),
+        expect.any(Object),
+      );
+    });
+
+    it('should throw InternalServerError when AI service fails', async () => {
+      mockRepo.findUserById.mockResolvedValue(
+        mockUserDoc as unknown as Awaited<ReturnType<typeof mockRepo.findUserById>>,
+      );
+      mockRepo.findByUserId.mockResolvedValue(mockTwinDoc);
+      mockRepo.findLatestReadings.mockResolvedValue({
+        heartRate: { value: 72 } as unknown as ISensorReadingDocument,
+        spo2: { value: 98 } as unknown as ISensorReadingDocument,
+        temperature: { value: 36.5 } as unknown as ISensorReadingDocument,
+      });
+      mockRepo.findLatestCardioAssessment.mockResolvedValue(null);
+
+      (axios.post as jest.Mock).mockRejectedValue(new Error('Network error'));
+
+      await expect(service.simulateDigitalTwinTrajectory(userId, 30)).rejects.toThrow(
+        InternalServerError,
+      );
     });
   });
 });

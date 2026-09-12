@@ -112,14 +112,5 @@ temp/
 .env.*
 
 # Local AI Services & Submodules
-stress_assessment/
-stress_assessment
+Paper.docx
 emotion_detection/
-emotion_detection
-cardio/
-cardio
-cardio_risk_assessment/
-cardio_risk_assessment
-cardio.zip
-
-MATLAB.zip

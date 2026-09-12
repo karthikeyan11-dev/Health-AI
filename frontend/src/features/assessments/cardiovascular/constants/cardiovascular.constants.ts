@@ -114,6 +114,36 @@ export const FEATURE_HUMAN_NAMES: Record<
     description: 'Daily nutritional energy',
   },
   water_intake_l: { label: 'Water Intake', unit: 'L', description: 'Hydration volume' },
+  pulse_pressure: {
+    label: 'Pulse Pressure',
+    unit: 'mmHg',
+    description: 'Difference between systolic and diastolic BP (vascular compliance)',
+  },
+  map_score: {
+    label: 'Mean Arterial Pressure (MAP)',
+    unit: 'mmHg',
+    description: 'Average organ perfusion pressure over cardiac cycle',
+  },
+  rpp: {
+    label: 'Rate Pressure Product (RPP)',
+    unit: 'bpm·mmHg',
+    description: 'Myocardial oxygen consumption and cardiac workload',
+  },
+  sleep_impact: {
+    label: 'Sleep Quality Index',
+    unit: '',
+    description: 'Composite sleep duration and sleep efficiency product',
+  },
+  autonomic_stress_proxy: {
+    label: 'Autonomic Balance Score',
+    unit: '',
+    description: 'Sympathovagal balance proxy from suppressed HRV & elevated HR',
+  },
+  activity_efficiency: {
+    label: 'Metabolic Activity Efficiency',
+    unit: 'kcal/step',
+    description: 'Caloric burn rate per physical step taken',
+  },
   activity_Cycling: {
     label: 'Activity: Cycling',
     unit: '',

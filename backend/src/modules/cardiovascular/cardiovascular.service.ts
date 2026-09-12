@@ -45,6 +45,18 @@ interface AICardioDriver {
   impact: number;
 }
 
+interface AICardioBiometrics {
+  pulse_pressure: number;
+  map_score: number;
+  rpp: number;
+  sleep_impact: number;
+  autonomic_stress_proxy: number;
+  activity_efficiency: number;
+  bp_systolic: number;
+  bp_diastolic: number;
+  resting_hr: number;
+}
+
 interface AICardioResponse {
   status: string;
   assessment: {
@@ -53,10 +65,13 @@ interface AICardioResponse {
     risk_score: number;
     confidence: number;
     probabilities: Record<string, number>;
+    biometrics?: AICardioBiometrics;
     top_drivers: AICardioDriver[];
     shap_string: string;
     recommended_intervention: string;
     action_id: number;
+    raw_action_id?: number;
+    is_action_safe?: boolean;
   };
   guidance: {
     guidance_status: string;
@@ -122,7 +137,7 @@ export class CardiovascularService {
     const resolvedWaterIntakeL = input.waterIntakeL ?? 2.5;
     const resolvedActivityType = input.activityType ?? 'Walking';
 
-    // 4. Construct AI Hub Microservice Request Payload (26 Features)
+    // 4. Construct AI Hub Microservice Request Payload
     const aiPayload = {
       age: resolvedAge,
       sex: resolvedSex,
@@ -178,7 +193,7 @@ export class CardiovascularService {
     recommendations.push('Maintain consistent hydration throughout the day');
     recommendations.push('Aim for at least 7 hours of restorative sleep');
 
-    // 8. Persist Assessment to Database
+    // 8. Persist Assessment to Database with new clinical biometrics & PPO safety flags
     const savedAssessment = await this.repository.create({
       userId: new Types.ObjectId(userId),
       patientId: patient?._id ? new Types.ObjectId(patient._id) : undefined,
@@ -193,6 +208,12 @@ export class CardiovascularService {
       explanation: guidance.message,
       recommendations,
       recommendedIntervention: assessment.recommended_intervention,
+      actionId: assessment.action_id,
+      isActionSafe: assessment.is_action_safe ?? true,
+      mapScore: assessment.biometrics?.map_score,
+      ratePressureProduct: assessment.biometrics?.rpp,
+      pulsePressure: assessment.biometrics?.pulse_pressure,
+      autonomicStressScore: assessment.biometrics?.autonomic_stress_proxy,
       guidance: {
         status: guidance.guidance_status,
         provider: guidance.provider,

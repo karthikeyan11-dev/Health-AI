@@ -33,6 +33,29 @@ export interface HealthTrendAnalysisData {
   insights: string[];
 }
 
+export interface TrajectoryPointDTO {
+  day: number;
+  risk_class: number;
+  risk_level: string;
+  risk_score: number;
+  confidence: number;
+  probabilities: Record<string, number>;
+  vitals_snapshot: {
+    bp_systolic?: number;
+    bp_diastolic?: number;
+    resting_hr?: number;
+    hrv?: number;
+  };
+}
+
+export interface TrajectorySimulationResponseDTO {
+  status: string;
+  forecast_days: number;
+  mean_risk_score: number;
+  risk_trend: string;
+  trajectory: TrajectoryPointDTO[];
+}
+
 export interface DigitalTwinResponseDTO {
   id: string;
   userId: string;
