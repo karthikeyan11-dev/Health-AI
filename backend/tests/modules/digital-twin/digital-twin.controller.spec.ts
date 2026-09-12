@@ -1,3 +1,4 @@
+import type { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { DigitalTwinController } from '../../../src/modules/digital-twin/digital-twin.controller';
 import type { DigitalTwinService } from '../../../src/modules/digital-twin/digital-twin.service';
@@ -57,6 +58,7 @@ describe('DigitalTwinController Unit Tests', () => {
       getHealthHistory: jest.fn(),
       getHealthTrendAnalysis: jest.fn(),
       getSnapshots: jest.fn(),
+      simulateDigitalTwinTrajectory: jest.fn(),
     } as unknown as jest.Mocked<DigitalTwinService>;
 
     controller = new DigitalTwinController(mockService);
@@ -773,6 +775,185 @@ describe('DigitalTwinController Unit Tests', () => {
       mockService.getSnapshots.mockRejectedValue('String error failure');
 
       await controller.getDigitalTwinSnapshots(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+    });
+  });
+
+  describe('simulateTrajectory', () => {
+    const mockTrajectoryData = {
+      status: 'success',
+      forecast_days: 30,
+      mean_risk_score: 15.0,
+      risk_trend: 'STABLE',
+      trajectory: [],
+    };
+
+    it('should return 200 with simulation results when userId and forecastDays in query are provided', async () => {
+      const req = {
+        params: { userId },
+        query: { forecastDays: '14' },
+      } as unknown as Request<
+        { userId?: string },
+        unknown,
+        { forecastDays?: number },
+        { forecastDays?: string }
+      >;
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+      } as unknown as Response;
+
+      mockService.simulateDigitalTwinTrajectory.mockResolvedValue(mockTrajectoryData);
+
+      await controller.simulateTrajectory(req, res);
+
+      expect(mockService.simulateDigitalTwinTrajectory).toHaveBeenCalledWith(userId, 14);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: mockTrajectoryData,
+        }),
+      );
+    });
+
+    it('should read forecastDays from body if query not present', async () => {
+      const req = {
+        params: { userId },
+        query: {},
+        body: { forecastDays: 45 },
+      } as unknown as Request<
+        { userId?: string },
+        unknown,
+        { forecastDays?: number },
+        { forecastDays?: string }
+      >;
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+      } as unknown as Response;
+
+      mockService.simulateDigitalTwinTrajectory.mockResolvedValue(mockTrajectoryData);
+
+      await controller.simulateTrajectory(req, res);
+
+      expect(mockService.simulateDigitalTwinTrajectory).toHaveBeenCalledWith(userId, 45);
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('should fallback to auth user id and default 30 days when userId is "me"', async () => {
+      const req = {
+        params: { userId: 'me' },
+        user: { id: userId },
+      } as unknown as Request<
+        { userId?: string },
+        unknown,
+        { forecastDays?: number },
+        { forecastDays?: string }
+      >;
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+      } as unknown as Response;
+
+      mockService.simulateDigitalTwinTrajectory.mockResolvedValue(mockTrajectoryData);
+
+      await controller.simulateTrajectory(req, res);
+
+      expect(mockService.simulateDigitalTwinTrajectory).toHaveBeenCalledWith(userId, 30);
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('should return 400 when userId is missing', async () => {
+      const req = {
+        params: {},
+        user: undefined,
+      } as unknown as Request<
+        { userId?: string },
+        unknown,
+        { forecastDays?: number },
+        { forecastDays?: string }
+      >;
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+      } as unknown as Response;
+
+      await controller.simulateTrajectory(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({
+            message: 'User ID is required for trajectory simulation',
+          }),
+        }),
+      );
+    });
+
+    it('should handle HttpErrors appropriately', async () => {
+      const req = {
+        params: { userId },
+      } as unknown as Request<
+        { userId?: string },
+        unknown,
+        { forecastDays?: number },
+        { forecastDays?: string }
+      >;
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+      } as unknown as Response;
+
+      mockService.simulateDigitalTwinTrajectory.mockRejectedValue(
+        new NotFoundError('Twin not found'),
+      );
+
+      await controller.simulateTrajectory(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+    });
+
+    it('should handle generic errors in simulateTrajectory', async () => {
+      const req = {
+        params: { userId },
+      } as unknown as Request<
+        { userId?: string },
+        unknown,
+        { forecastDays?: number },
+        { forecastDays?: string }
+      >;
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+      } as unknown as Response;
+
+      mockService.simulateDigitalTwinTrajectory.mockRejectedValue(new Error('AI Engine crash'));
+
+      await controller.simulateTrajectory(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+    });
+
+    it('should handle non-Error generic errors in simulateTrajectory', async () => {
+      const req = {
+        params: { userId },
+      } as unknown as Request<
+        { userId?: string },
+        unknown,
+        { forecastDays?: number },
+        { forecastDays?: string }
+      >;
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+      } as unknown as Response;
+
+      mockService.simulateDigitalTwinTrajectory.mockRejectedValue('Unknown crash');
+
+      await controller.simulateTrajectory(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
     });

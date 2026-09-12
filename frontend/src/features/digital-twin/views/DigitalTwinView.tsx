@@ -6,6 +6,7 @@ import { AIModelStatesCard } from '../components/AIModelStatesCard';
 import { HealthScoreTrendChart } from '../components/HealthScoreTrendChart';
 import { VitalTrendChart } from '../components/VitalTrendChart';
 import { TrendAnalysisInsightsCard } from '../components/TrendAnalysisInsightsCard';
+import { TemporalTrajectoryForecastCard } from '../components/TemporalTrajectoryForecastCard';
 import { EvolutionTimelineCard } from '../components/EvolutionTimelineCard';
 import { TimeTravelSnapshotModal } from '../components/TimeTravelSnapshotModal';
 import { CalibrateBaselinesModal } from '../components/CalibrateBaselinesModal';
@@ -41,25 +42,11 @@ export const DigitalTwinView: React.FC = () => {
     return <PageLoader page="digital-twin" />;
   }
 
+  const userId = twin?.userId || '';
+
   return (
     <div className="space-y-6 pb-12">
-      {/* Error Alert Banner */}
-      {error && (
-        <div className="flex items-center justify-between p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold shadow-xs">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-            <span>{error}</span>
-          </div>
-          <button
-            onClick={refreshTwin}
-            className="px-3 py-1 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold transition-all text-xs cursor-pointer"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      {/* 1. Master Digital Twin Header Card (Radial Health Gauge + State) */}
+      {/* 1. Header Card with Composite Health Score, State Badge & Live Sync */}
       <DigitalTwinHeaderCard
         twin={twin}
         isSyncing={isSyncing}
@@ -67,14 +54,21 @@ export const DigitalTwinView: React.FC = () => {
         onOpenCalibration={() => setIsCalibrateModalOpen(true)}
       />
 
-      {/* 2. Physiological Biometrics & Sensor Telemetry Grid */}
+      {error && (
+        <div className="rounded-2xl bg-rose-50 border border-rose-200/80 p-4 text-xs text-rose-700 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* 2. Physiological Biometric Baselines & Deviation Telemetry */}
       <PhysiologicalStateCard twin={twin} />
 
-      {/* 3. AI Diagnostic Subsystems (Cardio & Stress Models) */}
+      {/* 3. AI-Derived Subsystems State (Cardiovascular & Autonomic Stress) */}
       <AIModelStatesCard twin={twin} />
 
-      {/* 4. Charts Grid: Health Score Trajectory + Vital Progression */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      {/* 4. Longitudinal Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <HealthScoreTrendChart history={history} period={period} onPeriodChange={changePeriod} />
         <VitalTrendChart
           history={history}
@@ -86,7 +80,10 @@ export const DigitalTwinView: React.FC = () => {
       {/* 5. Health Trajectory Analysis & Synthesized Clinical Observations */}
       <TrendAnalysisInsightsCard trends={trends} />
 
-      {/* 6. Digital Twin Evolution History & Immutable Snapshot Ledger */}
+      {/* 6. PyTorch GRU-Attention 30-Day Trajectory Simulation Engine */}
+      {userId && <TemporalTrajectoryForecastCard userId={userId} />}
+
+      {/* 7. Digital Twin Evolution History & Immutable Snapshot Ledger */}
       <EvolutionTimelineCard
         snapshots={snapshots}
         currentPage={snapshotPage}
@@ -97,7 +94,7 @@ export const DigitalTwinView: React.FC = () => {
         onInspectSnapshot={setSelectedSnapshot}
       />
 
-      {/* 7. Baseline Calibration Modal */}
+      {/* 8. Baseline Calibration Modal */}
       <CalibrateBaselinesModal
         isOpen={isCalibrateModalOpen}
         twin={twin}
@@ -106,7 +103,7 @@ export const DigitalTwinView: React.FC = () => {
         onSave={calibrateBaselines}
       />
 
-      {/* 8. Snapshot Time-Travel Comparison Modal */}
+      {/* 9. Snapshot Time-Travel Comparison Modal */}
       <TimeTravelSnapshotModal
         snapshot={selectedSnapshot}
         currentTwin={twin}

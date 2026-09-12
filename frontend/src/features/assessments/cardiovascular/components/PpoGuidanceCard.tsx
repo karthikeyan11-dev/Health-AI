@@ -1,18 +1,20 @@
 import React from 'react';
 import type { CardioRiskData } from '../types/cardiovascular.types';
-import { Bot, CheckCircle2, Stethoscope, Sparkles } from 'lucide-react';
+import { Bot, CheckCircle2, Stethoscope, Sparkles, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PpoGuidanceCardProps {
   recommendedIntervention?: string;
   recommendations?: string[];
   guidance?: CardioRiskData['guidance'];
+  isActionSafe?: boolean;
 }
 
 export const PpoGuidanceCard: React.FC<PpoGuidanceCardProps> = ({
   recommendedIntervention,
   recommendations,
   guidance,
+  isActionSafe = true,
 }) => {
   const providerLabel =
     guidance?.provider === 'gemini'
@@ -32,26 +34,40 @@ export const PpoGuidanceCard: React.FC<PpoGuidanceCardProps> = ({
             </div>
             <div>
               <h3 className="text-base font-extrabold tracking-tight text-white">
-                PPO Reinforcement Learning Action
+                PPO Reinforcement Learning Policy
               </h3>
               <p className="text-xs text-white/70">
-                Markov Decision Process (MDP) optimized clinical plan
+                Markov Decision Process (MDP) optimized clinical intervention
               </p>
             </div>
           </div>
-          <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-400/20 text-emerald-300 border border-emerald-400/30">
-            RL Policy
-          </span>
+
+          {/* Safety Guardrails Badge */}
+          {isActionSafe ? (
+            <span className="flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-400/20 text-emerald-300 border border-emerald-400/30">
+              <ShieldCheck className="w-3 h-3 text-emerald-400" /> Safety-Validated
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+              <AlertTriangle className="w-3 h-3 text-amber-400" /> Action-Mask Guardrail
+            </span>
+          )}
         </div>
 
         {/* Primary Recommended Intervention Banner */}
         <div className="p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md space-y-1.5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">
-            Primary Recommended Intervention
+            Primary Prescribed Intervention Protocol
           </span>
           <p className="text-lg font-extrabold text-white">
-            {recommendedIntervention || 'Maintain Current Routine & Continue Hydration'}
+            {recommendedIntervention || 'Maintain Current Routine & Continue Rest'}
           </p>
+          {!isActionSafe && (
+            <p className="text-[11px] text-amber-300/90 font-medium pt-1">
+              Note: Intense physical exertion was blocked due to elevated blood pressure or heart
+              rate threshold safeguards.
+            </p>
+          )}
         </div>
 
         {/* Actionable Steps */}
@@ -85,10 +101,10 @@ export const PpoGuidanceCard: React.FC<PpoGuidanceCardProps> = ({
               </div>
               <div>
                 <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
-                  Personalized AI Health Guidance
+                  Personalized Clinical Guidance
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Synthesized guidance from physiological markers
+                  Synthesized guidance from multi-signal physiological markers
                 </p>
               </div>
             </div>

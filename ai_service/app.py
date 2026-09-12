@@ -1,6 +1,6 @@
 """
 Unified AI Hub Microservice Entrypoint
-Serves Cardiovascular Risk, Autonomic Stress, and System Health on Port 5001.
+Serves Cardiovascular Risk, Autonomic Stress, Digital Twin Trajectory Simulation, and System Health on Port 5001.
 """
 
 import sys
@@ -23,7 +23,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import PORT, HOST
 from services.cardio.inference import get_cardio_engine
 from services.stress.inference import get_stress_engine
-from routers import health, cardio, stress
+from services.digital_twin.simulation import get_digital_twin_simulator
+from routers import health, cardio, stress, digital_twin
 
 # Configure logging
 logging.basicConfig(
@@ -36,17 +37,21 @@ logger = logging.getLogger("ai_service")
 async def lifespan(app: FastAPI):
     """
     Lifespan context manager to safely preload all ML model artifacts into RAM at startup.
-    Eliminates inference latency on first user requests.
+    Eliminates cold-start inference latency.
     """
     logger.info("Initializing Unified Health AI Hub Service...")
     try:
-        # Preload Cardio Engine (CatBoost, Scaler, PPO, SHAP background)
+        # Preload Cardio Engine (Random Forest, Scaler, PPO, SHAP background)
         cardio_eng = get_cardio_engine()
         logger.info(f"🚀 Cardio AI Engine initialized: {len(cardio_eng.feature_cols)} features loaded.")
         
         # Preload Stress Engine (SVM, Scaler, Metadata)
         stress_eng = get_stress_engine()
         logger.info(f"🚀 Stress AI Engine initialized: {len(stress_eng.feature_names)} features loaded.")
+
+        # Preload Digital Twin GRU-Attention Simulator
+        twin_sim = get_digital_twin_simulator()
+        logger.info(f"🚀 Digital Twin GRU Simulator initialized: {len(twin_sim.feature_cols)} features loaded.")
         
         logger.info("🎯 All AI Microservice Models are preloaded and ready for real-time inference!")
     except Exception as e:
@@ -78,6 +83,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(cardio.router)
 app.include_router(stress.router)
+app.include_router(digital_twin.router)
 
 if __name__ == "__main__":
     import uvicorn

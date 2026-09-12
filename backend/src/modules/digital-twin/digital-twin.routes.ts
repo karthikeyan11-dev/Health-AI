@@ -20,5 +20,11 @@ digitalTwinRouter.get(
   authenticate,
   digitalTwinController.getDigitalTwinSnapshots,
 );
+digitalTwinRouter.get(
+  '/:userId/trajectory',
+  authenticate,
+  digitalTwinController.simulateTrajectory,
+);
+digitalTwinRouter.post('/:userId/simulate', authenticate, digitalTwinController.simulateTrajectory);
 
 export default digitalTwinRouter;

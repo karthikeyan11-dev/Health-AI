@@ -1,5 +1,12 @@
+import axios from 'axios';
 import { Types } from 'mongoose';
-import { NotFoundError, BadRequestError } from '../../shared/errors/httpErrors';
+import { Config } from '@config/env.config';
+import { logger } from '@config/logger';
+import {
+  NotFoundError,
+  BadRequestError,
+  InternalServerError,
+} from '../../shared/errors/httpErrors';
 import { DigitalTwinRepository, digitalTwinRepository } from './digital-twin.repository';
 import {
   TwinHealthState,
@@ -18,6 +25,7 @@ import type {
   GetSnapshotsQueryDTO,
   PaginatedSnapshotsDTO,
   DigitalTwinSnapshotDTO,
+  TrajectorySimulationResponseDTO,
 } from './digital-twin.interface';
 
 export class DigitalTwinService {
@@ -628,6 +636,54 @@ export class DigitalTwinService {
       cardioRiskTrend: cardioTrend,
       insights,
     };
+  }
+
+  /**
+   * Simulates 30-day temporal digital twin trajectory using the PyTorch GRU-Attention model on AI Service.
+   */
+  public async simulateDigitalTwinTrajectory(
+    userId: string,
+    forecastDays: number = 30,
+  ): Promise<TrajectorySimulationResponseDTO> {
+    const twin = await this.getDigitalTwin(userId);
+    const { heartRate, spo2, temperature } = await this.repo.findLatestReadings(userId);
+    const latestCardio = await this.repo.findLatestCardioAssessment(userId);
+
+    const initialVitals = {
+      user_id: userId,
+      resting_hr: heartRate?.value ?? twin.baselineHeartRate,
+      spo2: spo2?.value ?? twin.baselineSpO2,
+      body_temp_c: temperature?.value ?? twin.baselineTemperature,
+      bp_systolic: latestCardio?.systolicBp ?? 120.0,
+      bp_diastolic: latestCardio?.diastolicBp ?? 80.0,
+      hrv: 50.0,
+      sleep_hours: 7.5,
+      sleep_efficiency: 0.85,
+      steps: 7500,
+      calories_burned: 2200,
+    };
+
+    const aiUrl = `${Config.AI_SERVICE_URL}/digital-twin/simulate`;
+    try {
+      const response = await axios.post<TrajectorySimulationResponseDTO>(
+        aiUrl,
+        {
+          user_id: userId,
+          initial_vitals: initialVitals,
+          forecast_days: forecastDays,
+        },
+        {
+          timeout: 15000,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+      return response.data;
+    } catch (err) {
+      logger.error({ err, url: aiUrl }, 'Failed to simulate Digital Twin trajectory on AI Service');
+      throw new InternalServerError(
+        'Digital Twin GRU simulation engine is temporarily unreachable. Please ensure ai_service is running.',
+      );
+    }
   }
 }
 

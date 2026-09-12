@@ -1,4 +1,9 @@
-import type { TypedRequest, TypedResponse } from '@shared/types/express/express.types';
+import type { Request, Response } from 'express';
+import type {
+  TypedRequest,
+  TypedResponse,
+  AuthenticatedUser,
+} from '@shared/types/express/express.types';
 import { DigitalTwinService, digitalTwinService } from './digital-twin.service';
 import { BadRequestError, HttpErrors } from '../../shared/errors/httpErrors';
 import { logger } from '@config/logger';
@@ -455,6 +460,78 @@ export class DigitalTwinController {
           code: 'INTERNAL_SERVER_ERROR',
           message:
             error instanceof Error ? error.message : 'Failed to retrieve digital twin snapshots',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: `req_${Math.random().toString(36).substring(2, 10)}`,
+        },
+      });
+    }
+  };
+
+  /**
+   * GET /digital-twin/:userId/trajectory
+   * POST /digital-twin/:userId/simulate
+   * Simulates 30-day temporal trajectory using the PyTorch GRU-Attention model.
+   */
+  public simulateTrajectory = async (
+    req: Request<
+      { userId?: string },
+      unknown,
+      { forecastDays?: number },
+      { forecastDays?: string }
+    > & {
+      user?: AuthenticatedUser;
+    },
+    res: Response,
+  ): Promise<Response> => {
+    try {
+      const { userId } = req.params;
+      const targetUserId =
+        userId && userId !== 'me' ? userId : req.user?.id ? String(req.user.id) : '';
+
+      if (!targetUserId) {
+        throw new BadRequestError('User ID is required for trajectory simulation');
+      }
+
+      const forecastDays = req.query?.forecastDays
+        ? Number(req.query.forecastDays)
+        : req.body?.forecastDays
+          ? Number(req.body.forecastDays)
+          : 30;
+
+      const result = await this.service.simulateDigitalTwinTrajectory(targetUserId, forecastDays);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Digital Twin 30-day trajectory simulated successfully',
+        data: result,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: `req_${Math.random().toString(36).substring(2, 10)}`,
+        },
+      });
+    } catch (error) {
+      logger.error({ err: error }, 'DigitalTwinController.simulateTrajectory - Error');
+      if (error instanceof HttpErrors) {
+        return res.status(error.statusCode).json({
+          success: false,
+          error: {
+            code: error.name.toUpperCase(),
+            message: error.message,
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: `req_${Math.random().toString(36).substring(2, 10)}`,
+          },
+        });
+      }
+      return res.status(500).json({
+        success: false,
+        error: {
+          code: 'INTERNAL_SERVER_ERROR',
+          message:
+            error instanceof Error ? error.message : 'Failed to simulate digital twin trajectory',
         },
         meta: {
           timestamp: new Date().toISOString(),

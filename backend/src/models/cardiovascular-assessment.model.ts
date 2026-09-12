@@ -33,6 +33,12 @@ export interface ICardiovascularAssessment {
   explanation?: string;
   recommendations: string[];
   recommendedIntervention?: string;
+  actionId?: number;
+  isActionSafe?: boolean;
+  mapScore?: number;
+  ratePressureProduct?: number;
+  pulsePressure?: number;
+  autonomicStressScore?: number;
   guidance?: IGuidanceData;
   heartRate: number;
   spo2: number;
@@ -115,6 +121,30 @@ const cardiovascularAssessmentSchema = new Schema<ICardiovascularAssessmentDocum
     recommendedIntervention: {
       type: String,
       trim: true,
+      default: undefined,
+    },
+    actionId: {
+      type: Number,
+      default: undefined,
+    },
+    isActionSafe: {
+      type: Boolean,
+      default: true,
+    },
+    mapScore: {
+      type: Number,
+      default: undefined,
+    },
+    ratePressureProduct: {
+      type: Number,
+      default: undefined,
+    },
+    pulsePressure: {
+      type: Number,
+      default: undefined,
+    },
+    autonomicStressScore: {
+      type: Number,
       default: undefined,
     },
     guidance: {

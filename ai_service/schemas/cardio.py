@@ -1,8 +1,8 @@
 """
-Pydantic Schemas for Cardiovascular Risk Assessment
+Pydantic Schemas for Cardiovascular Risk Assessment & Clinical Biometrics
 """
 
-from typing import List, Dict, Optional, Literal
+from typing import List, Dict, Optional, Literal, Any
 from pydantic import BaseModel, Field
 
 CardiovascularRiskLevel = Literal["OPTIMAL", "LOW", "MODERATE", "HIGH", "CRITICAL"]
@@ -48,6 +48,17 @@ class ShapDriver(BaseModel):
     value: float
     impact: float
 
+class ClinicalBiometrics(BaseModel):
+    pulse_pressure: float
+    map_score: float
+    rpp: float
+    sleep_impact: float
+    autonomic_stress_proxy: float
+    activity_efficiency: float
+    bp_systolic: float
+    bp_diastolic: float
+    resting_hr: float
+
 class GuidancePayload(BaseModel):
     guidance_status: str
     provider: str
@@ -55,16 +66,19 @@ class GuidancePayload(BaseModel):
 
 class CardioAssessmentData(BaseModel):
     risk_class: int
-    risk_level: CardioPredictRequest
-    risk_level_str: str = Field(alias="risk_level")
+    risk_level: str
+    risk_score: float
     confidence: float
     probabilities: Dict[str, float]
+    biometrics: ClinicalBiometrics
     top_drivers: List[ShapDriver]
     shap_string: str
     recommended_intervention: str
     action_id: int
+    raw_action_id: int
+    is_action_safe: bool
 
 class CardioPredictResponse(BaseModel):
     status: str
-    assessment: Dict[str, object]
+    assessment: Dict[str, Any]
     guidance: GuidancePayload

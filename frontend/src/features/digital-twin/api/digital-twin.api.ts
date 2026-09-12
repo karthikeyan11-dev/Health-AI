@@ -1,4 +1,7 @@
 import { digitalTwinApi } from '@/api';
+import globalAxios from 'axios';
+import { API_BASE_URL } from '@/api/apiConfig';
+import { storage } from '@/lib/storage';
 import type {
   DigitalTwinData,
   HealthHistoryPoint,
@@ -7,6 +10,7 @@ import type {
   SnapshotFilterParams,
   TrendPeriod,
   UpdateDigitalTwinPayload,
+  TrajectorySimulationData,
 } from '../types/digital-twin.types';
 
 export const digitalTwinServiceApi = {
@@ -69,5 +73,22 @@ export const digitalTwinServiceApi = {
       params?.trigger,
     );
     return response.data.data as PaginatedSnapshots;
+  },
+
+  /**
+   * Simulates 30-day temporal trajectory using the PyTorch GRU-Attention model.
+   */
+  async simulateTrajectory(
+    userId: string,
+    forecastDays: number = 30,
+  ): Promise<TrajectorySimulationData> {
+    const token = storage.getToken();
+    const response = await globalAxios.get(`${API_BASE_URL}/digital-twin/${userId}/trajectory`, {
+      params: { forecastDays },
+      headers: {
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+    });
+    return response.data.data as TrajectorySimulationData;
   },
 };
