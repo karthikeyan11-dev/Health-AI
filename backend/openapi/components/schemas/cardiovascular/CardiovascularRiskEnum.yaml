@@ -1,7 +1,8 @@
 type: string
 enum:
+  - OPTIMAL
   - LOW
   - MODERATE
   - HIGH
   - CRITICAL
-example: "LOW"
+example: "OPTIMAL"

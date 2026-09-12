@@ -448,4 +448,91 @@ describe('AuthController Unit Tests', () => {
       expect(statusMock).toHaveBeenCalledWith(500);
     });
   });
+
+  describe('refreshToken', () => {
+    it('should return 200 with new tokens when refreshToken is valid', async () => {
+      const mockReq = {
+        body: {
+          refreshToken: 'valid_refresh_token_123',
+        },
+      };
+
+      const mockTokens: AuthTokensResponse = {
+        accessToken: 'new_access_token',
+        refreshToken: 'new_refresh_token',
+        tokenType: 'Bearer',
+        expiresIn: 3600,
+      };
+
+      mockService.refreshToken = jest.fn().mockResolvedValue(mockTokens);
+
+      await controller.refreshToken(
+        mockReq as unknown as TypedRequest<'refreshToken'>,
+        mockResponse as unknown as TypedResponse<'refreshToken'>,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(200);
+      expect(jsonMock).toHaveBeenCalledWith(mockTokens);
+    });
+
+    it('should return 400 when req.body is undefined', async () => {
+      const mockReq = {};
+
+      await controller.refreshToken(
+        mockReq as unknown as TypedRequest<'refreshToken'>,
+        mockResponse as unknown as TypedResponse<'refreshToken'>,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(400);
+    });
+
+    it('should return 400 when refreshToken body field is missing', async () => {
+      const mockReq = {
+        body: {},
+      };
+
+      await controller.refreshToken(
+        mockReq as unknown as TypedRequest<'refreshToken'>,
+        mockResponse as unknown as TypedResponse<'refreshToken'>,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(400);
+    });
+
+    it('should return 401 when service throws UnauthorizedError for invalid token', async () => {
+      const mockReq = {
+        body: {
+          refreshToken: 'invalid_refresh_token',
+        },
+      };
+
+      mockService.refreshToken = jest
+        .fn()
+        .mockRejectedValue(new UnauthorizedError('Invalid refresh token'));
+
+      await controller.refreshToken(
+        mockReq as unknown as TypedRequest<'refreshToken'>,
+        mockResponse as unknown as TypedResponse<'refreshToken'>,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(401);
+    });
+
+    it('should return 500 when refreshToken service throws an unexpected internal error', async () => {
+      const mockReq = {
+        body: {
+          refreshToken: 'valid_refresh_token',
+        },
+      };
+
+      mockService.refreshToken = jest.fn().mockRejectedValue(new Error('Unexpected fault'));
+
+      await controller.refreshToken(
+        mockReq as unknown as TypedRequest<'refreshToken'>,
+        mockResponse as unknown as TypedResponse<'refreshToken'>,
+      );
+
+      expect(statusMock).toHaveBeenCalledWith(500);
+    });
+  });
 });

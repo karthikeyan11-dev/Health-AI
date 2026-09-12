@@ -2,10 +2,23 @@ import { Schema, model, type Document, type Model, Types } from 'mongoose';
 import { EmotionType } from './stress-assessment.model';
 
 export enum CardiovascularRiskLevel {
+  OPTIMAL = 'OPTIMAL',
   LOW = 'LOW',
   MODERATE = 'MODERATE',
   HIGH = 'HIGH',
   CRITICAL = 'CRITICAL',
+}
+
+export interface IShapDriver {
+  feature: string;
+  value: number;
+  impact: number;
+}
+
+export interface IGuidanceData {
+  status: string;
+  provider: string;
+  message: string;
 }
 
 export interface ICardiovascularAssessment {
@@ -14,9 +27,13 @@ export interface ICardiovascularAssessment {
   riskScore: number;
   riskLevel: CardiovascularRiskLevel;
   contributingFactors?: string[];
+  topDrivers?: IShapDriver[];
+  probabilities?: Record<string, number>;
   confidence?: number;
   explanation?: string;
   recommendations: string[];
+  recommendedIntervention?: string;
+  guidance?: IGuidanceData;
   heartRate: number;
   spo2: number;
   temperature: number;
@@ -64,6 +81,21 @@ const cardiovascularAssessmentSchema = new Schema<ICardiovascularAssessmentDocum
       type: [String],
       default: [],
     },
+    topDrivers: {
+      type: [
+        {
+          feature: { type: String, required: true },
+          value: { type: Number, required: true },
+          impact: { type: Number, required: true },
+        },
+      ],
+      default: undefined,
+    },
+    probabilities: {
+      type: Map,
+      of: Number,
+      default: undefined,
+    },
     confidence: {
       type: Number,
       min: [0, 'Confidence cannot be below 0'],
@@ -79,6 +111,16 @@ const cardiovascularAssessmentSchema = new Schema<ICardiovascularAssessmentDocum
       type: [String],
       default: [],
       required: true,
+    },
+    recommendedIntervention: {
+      type: String,
+      trim: true,
+      default: undefined,
+    },
+    guidance: {
+      status: { type: String },
+      provider: { type: String },
+      message: { type: String },
     },
     heartRate: {
       type: Number,

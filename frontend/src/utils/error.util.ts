@@ -48,15 +48,7 @@ export function extractErrorMessage(
       return 'Unable to connect to Health AI server. Please check your internet connection and try again.';
     }
 
-    // First: Check if rawMsg can be mapped to a specific friendly user message
-    if (rawMsg) {
-      const formatted = formatUserFriendlyMessage(rawMsg, '');
-      if (formatted) {
-        return formatted;
-      }
-    }
-
-    // Second: Fall back to HTTP status code mappings if no specific message match was found
+    // Handle HTTP status code mappings to friendly patient messages
     if (status === 401 || rawCode === 'UNAUTHORIZEDERROR') {
       if (
         rawMsg.toLowerCase().includes('credential') ||
@@ -93,9 +85,8 @@ export function extractErrorMessage(
       return 'Our servers are experiencing temporary technical difficulties. Please try again shortly.';
     }
 
-    // Third: If rawMsg is clean readable text, return rawMsg directly
-    if (rawMsg && !/[_{}[\]\\]/.test(rawMsg) && rawMsg.length > 5 && rawMsg.length < 150) {
-      return rawMsg;
+    if (rawMsg) {
+      return formatUserFriendlyMessage(rawMsg, fallback);
     }
   }
 
@@ -107,6 +98,11 @@ export function extractErrorMessage(
  */
 function formatUserFriendlyMessage(rawMsg: string, fallback: string): string {
   const msgLower = rawMsg.toLowerCase();
+
+  // Don't format generic Axios request failed messages as clean readable text
+  if (msgLower.startsWith('request failed with status code')) {
+    return fallback;
+  }
 
   if (
     msgLower.includes('invalid credentials') ||

@@ -15,5 +15,27 @@
   "prettier.singleQuote": true,
   "prettier.semi": true,
   "prettier.trailingComma": "all",
-  "prettier.printWidth": 100
+  "prettier.printWidth": 100,
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/stress_assessment",
+    "${workspaceFolder}/stress_assessment/service",
+    "${workspaceFolder}/stress_assessment/venv/lib/python3.12/site-packages",
+    "${workspaceFolder}/cardio_risk_assessment",
+    "${workspaceFolder}/cardio_risk_assessment/venv/lib/python3.12/site-packages"
+  ],
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}/stress_assessment",
+    "${workspaceFolder}/stress_assessment/service",
+    "${workspaceFolder}/stress_assessment/venv/lib/python3.12/site-packages",
+    "${workspaceFolder}/cardio_risk_assessment",
+    "${workspaceFolder}/cardio_risk_assessment/venv/lib/python3.12/site-packages"
+  ],
+  "python.analysis.exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    "stress_assessment/venv",
+    "stress_assessment/training_pipeline",
+    "cardio_risk_assessment/venv"
+  ],
+  "python.analysis.typeCheckingMode": "standard"
 }
