@@ -17,6 +17,15 @@ export enum EmotionType {
   SURPRISE = 'Surprise',
 }
 
+export function normalizeEmotion(emotion?: string | EmotionType | null): EmotionType | undefined {
+  if (!emotion) return undefined;
+  const upper = emotion.toUpperCase();
+  if (upper in EmotionType) {
+    return EmotionType[upper as keyof typeof EmotionType];
+  }
+  return Object.values(EmotionType).find((e) => e.toLowerCase() === emotion.toLowerCase());
+}
+
 export interface IStressAssessment {
   userId: Types.ObjectId;
   patientId?: Types.ObjectId;

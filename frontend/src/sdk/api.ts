@@ -51,6 +51,7 @@ export interface BaseEntity {
 }
 
 export const CardiovascularRiskEnum = {
+    Optimal: 'OPTIMAL',
     Low: 'LOW',
     Moderate: 'MODERATE',
     High: 'HIGH',
@@ -837,17 +838,85 @@ export interface ResetPasswordRequest {
 export interface RiskAssessmentRequest {
     'userId': string;
     /**
-     * Continuous PPG heart rate in BPM
+     * Age in years
+     */
+    'age'?: number;
+    /**
+     * Biological sex: 1 for Male, 0 for Female
+     */
+    'sex'?: RiskAssessmentRequestSexEnum;
+    /**
+     * Body Mass Index
+     */
+    'bmi'?: number;
+    /**
+     * Smoking status: 1 for active smoker, 0 for non-smoker
+     */
+    'smokingStatus'?: RiskAssessmentRequestSmokingStatusEnum;
+    /**
+     * Family history of cardiovascular disease: 1 for yes, 0 for no
+     */
+    'familyHistoryCvd'?: RiskAssessmentRequestFamilyHistoryCvdEnum;
+    /**
+     * Average Heart Rate in BPM
      */
     'heartRate'?: number;
     /**
-     * Continuous blood oxygen saturation percentage
+     * Resting Heart Rate in BPM
+     */
+    'restingHr'?: number;
+    /**
+     * Blood oxygen saturation percentage
      */
     'spo2'?: number;
     /**
-     * Continuous body temperature in Celsius
+     * Body temperature in Celsius
      */
     'temperature'?: number;
+    /**
+     * Systolic blood pressure in mmHg
+     */
+    'systolicBp'?: number;
+    /**
+     * Diastolic blood pressure in mmHg
+     */
+    'diastolicBp'?: number;
+    /**
+     * Heart rate variability in ms
+     */
+    'hrv'?: number;
+    /**
+     * Daily steps count
+     */
+    'steps'?: number;
+    /**
+     * Daily active calories burned in kcal
+     */
+    'caloriesBurned'?: number;
+    /**
+     * Daily distance traveled in km
+     */
+    'distanceKm'?: number;
+    /**
+     * Total sleep duration in hours
+     */
+    'sleepHours'?: number;
+    /**
+     * Sleep quality efficiency (0.0 to 1.0)
+     */
+    'sleepEfficiency'?: number;
+    /**
+     * Daily dietary caloric intake in kcal
+     */
+    'caloriesConsumed'?: number;
+    /**
+     * Daily water consumption in liters
+     */
+    'waterIntakeL'?: number;
+    /**
+     * Primary activity mode
+     */
+    'activityType'?: RiskAssessmentRequestActivityTypeEnum;
     'currentEmotion'?: EmotionEnum;
     /**
      * Calculated real-time stress index score (0-100)
@@ -857,16 +926,37 @@ export interface RiskAssessmentRequest {
      * Historical health baseline score from Digital Twin
      */
     'digitalTwinHealthScore'?: number;
-    /**
-     * Optional future enhancement parameter for systolic blood pressure (mmHg)
-     */
-    'systolicBp'?: number | null;
-    /**
-     * Optional future enhancement parameter for diastolic blood pressure (mmHg)
-     */
-    'diastolicBp'?: number | null;
 }
 
+export const RiskAssessmentRequestSexEnum = {
+    NUMBER_0: 0,
+    NUMBER_1: 1,
+} as const;
+
+export type RiskAssessmentRequestSexEnum = typeof RiskAssessmentRequestSexEnum[keyof typeof RiskAssessmentRequestSexEnum];
+export const RiskAssessmentRequestSmokingStatusEnum = {
+    NUMBER_0: 0,
+    NUMBER_1: 1,
+} as const;
+
+export type RiskAssessmentRequestSmokingStatusEnum = typeof RiskAssessmentRequestSmokingStatusEnum[keyof typeof RiskAssessmentRequestSmokingStatusEnum];
+export const RiskAssessmentRequestFamilyHistoryCvdEnum = {
+    NUMBER_0: 0,
+    NUMBER_1: 1,
+} as const;
+
+export type RiskAssessmentRequestFamilyHistoryCvdEnum = typeof RiskAssessmentRequestFamilyHistoryCvdEnum[keyof typeof RiskAssessmentRequestFamilyHistoryCvdEnum];
+export const RiskAssessmentRequestActivityTypeEnum = {
+    Cycling: 'Cycling',
+    MixedCardio: 'Mixed_Cardio',
+    Rest: 'Rest',
+    Running: 'Running',
+    Strength: 'Strength',
+    Walking: 'Walking',
+    Yoga: 'Yoga',
+} as const;
+
+export type RiskAssessmentRequestActivityTypeEnum = typeof RiskAssessmentRequestActivityTypeEnum[keyof typeof RiskAssessmentRequestActivityTypeEnum];
 
 export interface RiskAssessmentResponse {
     'success': boolean;
@@ -879,13 +969,27 @@ export interface RiskAssessmentResponseData {
     'riskScore': number;
     'riskLevel': CardiovascularRiskEnum;
     'contributingFactors'?: Array<string>;
+    'topDrivers'?: Array<RiskAssessmentResponseDataTopDriversInner>;
+    'probabilities'?: { [key: string]: number; };
     'confidence'?: number;
     'explanation'?: string;
     'recommendations': Array<string>;
+    'recommendedIntervention'?: string;
+    'guidance'?: RiskAssessmentResponseDataGuidance;
     'timestamp': string;
 }
 
 
+export interface RiskAssessmentResponseDataGuidance {
+    'status': string;
+    'provider': string;
+    'message': string;
+}
+export interface RiskAssessmentResponseDataTopDriversInner {
+    'feature': string;
+    'value': number;
+    'impact': number;
+}
 export interface RiskHistoryResponse {
     'success': boolean;
     'message': string;

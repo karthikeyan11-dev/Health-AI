@@ -1982,21 +1982,110 @@ export interface components {
             /** @example 64f1a2b3c4d5e6f7a8b9c0d1 */
             userId: string;
             /**
-             * @description Continuous PPG heart rate in BPM
-             * @example 85
+             * @description Age in years
+             * @example 45
+             */
+            age?: number;
+            /**
+             * @description Biological sex: 1 for Male, 0 for Female
+             * @example 1
+             * @enum {integer}
+             */
+            sex?: 0 | 1;
+            /**
+             * @description Body Mass Index
+             * @example 26.5
+             */
+            bmi?: number;
+            /**
+             * @description Smoking status: 1 for active smoker, 0 for non-smoker
+             * @example 0
+             * @enum {integer}
+             */
+            smokingStatus?: 0 | 1;
+            /**
+             * @description Family history of cardiovascular disease: 1 for yes, 0 for no
+             * @example 0
+             * @enum {integer}
+             */
+            familyHistoryCvd?: 0 | 1;
+            /**
+             * @description Average Heart Rate in BPM
+             * @example 78
              */
             heartRate?: number;
             /**
-             * @description Continuous blood oxygen saturation percentage
+             * @description Resting Heart Rate in BPM
+             * @example 68
+             */
+            restingHr?: number;
+            /**
+             * @description Blood oxygen saturation percentage
              * @example 98
              */
             spo2?: number;
             /**
-             * @description Continuous body temperature in Celsius
+             * @description Body temperature in Celsius
              * @example 36.6
              */
             temperature?: number;
-            /** @description Facial emotion classified by Python AI Microservice */
+            /**
+             * @description Systolic blood pressure in mmHg
+             * @example 120
+             */
+            systolicBp?: number;
+            /**
+             * @description Diastolic blood pressure in mmHg
+             * @example 80
+             */
+            diastolicBp?: number;
+            /**
+             * @description Heart rate variability in ms
+             * @example 45
+             */
+            hrv?: number;
+            /**
+             * @description Daily steps count
+             * @example 8500
+             */
+            steps?: number;
+            /**
+             * @description Daily active calories burned in kcal
+             * @example 2200
+             */
+            caloriesBurned?: number;
+            /**
+             * @description Daily distance traveled in km
+             * @example 5.5
+             */
+            distanceKm?: number;
+            /**
+             * @description Total sleep duration in hours
+             * @example 7.5
+             */
+            sleepHours?: number;
+            /**
+             * @description Sleep quality efficiency (0.0 to 1.0)
+             * @example 0.88
+             */
+            sleepEfficiency?: number;
+            /**
+             * @description Daily dietary caloric intake in kcal
+             * @example 2100
+             */
+            caloriesConsumed?: number;
+            /**
+             * @description Daily water consumption in liters
+             * @example 2.5
+             */
+            waterIntakeL?: number;
+            /**
+             * @description Primary activity mode
+             * @example Walking
+             * @enum {string}
+             */
+            activityType?: "Cycling" | "Mixed_Cardio" | "Rest" | "Running" | "Strength" | "Walking" | "Yoga";
+            /** @description Optional emotion classification */
             currentEmotion?: components["schemas"]["EmotionEnum"];
             /**
              * @description Calculated real-time stress index score (0-100)
@@ -2008,22 +2097,12 @@ export interface components {
              * @example 88.5
              */
             digitalTwinHealthScore?: number;
-            /**
-             * @description Optional future enhancement parameter for systolic blood pressure (mmHg)
-             * @example null
-             */
-            systolicBp?: number | null;
-            /**
-             * @description Optional future enhancement parameter for diastolic blood pressure (mmHg)
-             * @example null
-             */
-            diastolicBp?: number | null;
         };
         /**
-         * @example LOW
+         * @example OPTIMAL
          * @enum {string}
          */
-        CardiovascularRiskEnum: "LOW" | "MODERATE" | "HIGH" | "CRITICAL";
+        CardiovascularRiskEnum: "OPTIMAL" | "LOW" | "MODERATE" | "HIGH" | "CRITICAL";
         RiskAssessmentResponse: {
             /** @example true */
             success: boolean;
@@ -2042,9 +2121,29 @@ export interface components {
                  *     ]
                  */
                 contributingFactors?: string[];
+                topDrivers?: {
+                    /** @example bp_systolic */
+                    feature: string;
+                    /** @example 160 */
+                    value: number;
+                    /** @example 0.205 */
+                    impact: number;
+                }[];
+                /**
+                 * @example {
+                 *       "OPTIMAL": 0.012,
+                 *       "LOW": 0.854,
+                 *       "MODERATE": 0.098,
+                 *       "HIGH": 0.024,
+                 *       "CRITICAL": 0.012
+                 *     }
+                 */
+                probabilities?: {
+                    [key: string]: number;
+                };
                 /** @example 94 */
                 confidence?: number;
-                /** @example Risk assessment calculated from continuous heart rate, SpO2, body temperature, and emotional indicators. */
+                /** @example Risk assessment calculated from continuous physiological telemetry and lifestyle indicators. */
                 explanation?: string;
                 /**
                  * @example [
@@ -2053,6 +2152,16 @@ export interface components {
                  *     ]
                  */
                 recommendations: string[];
+                /** @example Diet & Nutrition Intervention */
+                recommendedIntervention?: string;
+                guidance?: {
+                    /** @example success */
+                    status: string;
+                    /** @example gemini */
+                    provider: string;
+                    /** @example Your cardiovascular vitals look strong today. Keep up your active walking routine and healthy hydration. */
+                    message: string;
+                };
                 /**
                  * Format: date-time
                  * @example 2026-08-07T09:00:00.000Z

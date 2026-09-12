@@ -96,5 +96,28 @@ temp/
 *.mp4
 *.db
 
+# Machine Learning Model Artifacts (Do not commit trained models)
+*.pkl
+*.cbm
+*.pt
+*.onnx
+*.h5
 
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# Environment & Secrets (Never commit credentials)
+.env
+.env.*
+
+# Local AI Services & Submodules
+stress_assessment/
+stress_assessment
+emotion_detection/
 emotion_detection
+cardio/
+cardio
+cardio_risk_assessment/
+cardio_risk_assessment
+cardio.zip

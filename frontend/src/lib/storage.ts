@@ -29,6 +29,37 @@ export const storage = {
     }
   },
 
+  getRefreshToken(): string | null {
+    try {
+      const item = window.localStorage.getItem('health_ai_refresh_token');
+      if (!item) return null;
+      try {
+        const parsed = JSON.parse(item);
+        return typeof parsed === 'string' ? parsed : item;
+      } catch {
+        return item;
+      }
+    } catch {
+      return null;
+    }
+  },
+
+  setRefreshToken(token: string): void {
+    try {
+      window.localStorage.setItem('health_ai_refresh_token', JSON.stringify(token));
+    } catch {
+      // Storage set error ignored defensively
+    }
+  },
+
+  removeRefreshToken(): void {
+    try {
+      window.localStorage.removeItem('health_ai_refresh_token');
+    } catch {
+      // Storage remove error ignored defensively
+    }
+  },
+
   get<T>(key: string, defaultValue: T): T {
     try {
       const item = window.localStorage.getItem(key);

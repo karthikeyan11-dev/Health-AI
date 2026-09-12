@@ -37,6 +37,34 @@ properties:
         example:
           - "Elevated heart rate"
           - "Subtle SpO2 drop"
+      topDrivers:
+        type: array
+        items:
+          type: object
+          required:
+            - feature
+            - value
+            - impact
+          properties:
+            feature:
+              type: string
+              example: "bp_systolic"
+            value:
+              type: number
+              example: 160.0
+            impact:
+              type: number
+              example: 0.205
+      probabilities:
+        type: object
+        additionalProperties:
+          type: number
+        example:
+          OPTIMAL: 0.012
+          LOW: 0.854
+          MODERATE: 0.098
+          HIGH: 0.024
+          CRITICAL: 0.012
       confidence:
         type: number
         minimum: 0
@@ -44,7 +72,7 @@ properties:
         example: 94.0
       explanation:
         type: string
-        example: "Risk assessment calculated from continuous heart rate, SpO2, body temperature, and emotional indicators."
+        example: "Risk assessment calculated from continuous physiological telemetry and lifestyle indicators."
       recommendations:
         type: array
         items:
@@ -52,6 +80,25 @@ properties:
         example:
           - "Maintain steady hydration"
           - "Engage in 30 mins moderate aerobic activity daily"
+      recommendedIntervention:
+        type: string
+        example: "Diet & Nutrition Intervention"
+      guidance:
+        type: object
+        required:
+          - status
+          - provider
+          - message
+        properties:
+          status:
+            type: string
+            example: "success"
+          provider:
+            type: string
+            example: "gemini"
+          message:
+            type: string
+            example: "Your cardiovascular vitals look strong today. Keep up your active walking routine and healthy hydration."
       timestamp:
         type: string
         format: date-time

@@ -1,16 +1,13 @@
 import { Router } from 'express';
 import { authController } from './auth.controller';
+import { authenticate } from '../../middlewares/auth.middleware';
 
 const authRouter = Router();
 
 authRouter.post('/register', authController.register);
 authRouter.post('/verify-otp', authController.verifyOtp);
 authRouter.post('/login', authController.login);
-authRouter.post('/auth/register', authController.register);
-authRouter.post('/auth/verify-otp', authController.verifyOtp);
-authRouter.post('/auth/login', authController.login);
-
-authRouter.get('/profile', authController.getProfile);
-authRouter.get('/auth/profile', authController.getProfile);
+authRouter.post('/refresh-token', authController.refreshToken);
+authRouter.get('/profile', authenticate, authController.getProfile);
 
 export default authRouter;

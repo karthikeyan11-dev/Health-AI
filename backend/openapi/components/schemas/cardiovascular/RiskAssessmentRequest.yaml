@@ -5,21 +5,100 @@ properties:
   userId:
     type: string
     example: "64f1a2b3c4d5e6f7a8b9c0d1"
+  age:
+    type: number
+    example: 45
+    description: Age in years
+  sex:
+    type: integer
+    enum: [0, 1]
+    example: 1
+    description: "Biological sex: 1 for Male, 0 for Female"
+  bmi:
+    type: number
+    example: 26.5
+    description: Body Mass Index
+  smokingStatus:
+    type: integer
+    enum: [0, 1]
+    example: 0
+    description: "Smoking status: 1 for active smoker, 0 for non-smoker"
+  familyHistoryCvd:
+    type: integer
+    enum: [0, 1]
+    example: 0
+    description: "Family history of cardiovascular disease: 1 for yes, 0 for no"
   heartRate:
     type: number
-    example: 85.0
-    description: Continuous PPG heart rate in BPM
+    example: 78.0
+    description: Average Heart Rate in BPM
+  restingHr:
+    type: number
+    example: 68.0
+    description: Resting Heart Rate in BPM
   spo2:
     type: number
     example: 98.0
-    description: Continuous blood oxygen saturation percentage
+    description: Blood oxygen saturation percentage
   temperature:
     type: number
     example: 36.6
-    description: Continuous body temperature in Celsius
+    description: Body temperature in Celsius
+  systolicBp:
+    type: number
+    example: 120.0
+    description: Systolic blood pressure in mmHg
+  diastolicBp:
+    type: number
+    example: 80.0
+    description: Diastolic blood pressure in mmHg
+  hrv:
+    type: number
+    example: 45.0
+    description: Heart rate variability in ms
+  steps:
+    type: number
+    example: 8500
+    description: Daily steps count
+  caloriesBurned:
+    type: number
+    example: 2200
+    description: Daily active calories burned in kcal
+  distanceKm:
+    type: number
+    example: 5.5
+    description: Daily distance traveled in km
+  sleepHours:
+    type: number
+    example: 7.5
+    description: Total sleep duration in hours
+  sleepEfficiency:
+    type: number
+    example: 0.88
+    description: Sleep quality efficiency (0.0 to 1.0)
+  caloriesConsumed:
+    type: number
+    example: 2100
+    description: Daily dietary caloric intake in kcal
+  waterIntakeL:
+    type: number
+    example: 2.5
+    description: Daily water consumption in liters
+  activityType:
+    type: string
+    enum:
+      - Cycling
+      - Mixed_Cardio
+      - Rest
+      - Running
+      - Strength
+      - Walking
+      - Yoga
+    example: "Walking"
+    description: Primary activity mode
   currentEmotion:
     $ref: '../emotion/EmotionEnum.yaml'
-    description: Facial emotion classified by Python AI Microservice
+    description: Optional emotion classification
   stressScore:
     type: number
     example: 35.0
@@ -28,13 +107,3 @@ properties:
     type: number
     example: 88.5
     description: Historical health baseline score from Digital Twin
-  systolicBp:
-    type: number
-    nullable: true
-    example: null
-    description: Optional future enhancement parameter for systolic blood pressure (mmHg)
-  diastolicBp:
-    type: number
-    nullable: true
-    example: null
-    description: Optional future enhancement parameter for diastolic blood pressure (mmHg)
