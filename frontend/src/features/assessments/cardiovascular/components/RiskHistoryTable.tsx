@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { CardioHistoryItem } from '../types/cardiovascular.types';
 import { CARDIO_RISK_COLORS } from '../constants/cardiovascular.constants';
 import { ChevronRight, ChevronDown, Clock, History } from 'lucide-react';
+import { SectionLoader } from '@/components/common';
 import { cn } from '@/lib/utils';
 
 interface RiskHistoryTableProps {
@@ -38,9 +39,11 @@ export const RiskHistoryTable: React.FC<RiskHistoryTableProps> = ({ history, isL
       </div>
 
       {isLoading ? (
-        <div className="py-12 text-center text-slate-400 text-xs animate-pulse">
-          Loading historical assessment records...
-        </div>
+        <SectionLoader
+          message="Loading historical assessment records..."
+          colorTheme="rose"
+          paddingY="py-12"
+        />
       ) : history.length === 0 ? (
         <div className="py-12 text-center text-slate-500 text-xs">
           No past assessment records found. Click &quot;New Assessment&quot; to generate an

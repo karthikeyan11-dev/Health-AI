@@ -107,6 +107,12 @@ DigitalTwin:
   $ref: './digitalTwin/DigitalTwin.yaml'
 TwinHealthStateEnum:
   $ref: './digitalTwin/TwinHealthStateEnum.yaml'
+SnapshotTriggerReasonEnum:
+  $ref: './digitalTwin/SnapshotTriggerReasonEnum.yaml'
+DigitalTwinSnapshot:
+  $ref: './digitalTwin/DigitalTwinSnapshot.yaml'
+DigitalTwinSnapshotListResponse:
+  $ref: './digitalTwin/DigitalTwinSnapshotListResponse.yaml'
 CreateTwinRequest:
   $ref: './digitalTwin/CreateTwinRequest.yaml'
 UpdateTwinRequest:

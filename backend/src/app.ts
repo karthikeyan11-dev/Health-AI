@@ -7,6 +7,7 @@ import usersRouter from './modules/users/users.routes';
 import patientsRouter from './modules/patients/patients.routes';
 import cardiovascularRouter from './modules/cardiovascular/cardiovascular.routes';
 import stressRouter from './modules/stress/stress.routes';
+import digitalTwinRouter from './modules/digital-twin/digital-twin.routes';
 
 const app: Express = express();
 
@@ -20,6 +21,7 @@ app.use('/api/v1', usersRouter);
 app.use('/api/v1', patientsRouter);
 app.use('/api/v1/cardiovascular', cardiovascularRouter);
 app.use('/api/v1/stress', stressRouter);
+app.use('/api/v1/digital-twin', digitalTwinRouter);
 
 app.get('/api/v1/health/liveness', (_req: Request, res: Response): void => {
   res.status(200).json({

@@ -65,6 +65,8 @@
   $ref: './digitalTwin/get-health-history.yaml'
 /digital-twin/{userId}/trends:
   $ref: './digitalTwin/get-trend-analysis.yaml'
+/digital-twin/{userId}/snapshots:
+  $ref: './digitalTwin/get-snapshots.yaml'
 
 # Stress Analysis Endpoints
 /stress/assess:

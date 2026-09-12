@@ -5,6 +5,7 @@ export * from './sensor-reading.model';
 export * from './stress-assessment.model';
 export * from './cardiovascular-assessment.model';
 export * from './digital-twin.model';
+export * from './digital-twin-snapshot.model';
 export * from './recommendation.model';
 export * from './chat-session.model';
 export * from './chat-message.model';

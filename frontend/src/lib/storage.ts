@@ -5,6 +5,27 @@
 const TOKEN_KEY = 'health_ai_access_token';
 
 export const storage = {
+  getUserId(): string | null {
+    try {
+      const token = this.getToken();
+      if (!token) return null;
+      const parts = token.split('.');
+      if (parts.length < 2) return null;
+      const base64Url = parts[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join(''),
+      );
+      const payload = JSON.parse(jsonPayload) as { userId?: string; id?: string };
+      return payload.userId ?? payload.id ?? null;
+    } catch {
+      return null;
+    }
+  },
+
   getToken(): string | null {
     try {
       return window.localStorage.getItem(TOKEN_KEY);

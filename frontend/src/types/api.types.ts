@@ -592,6 +592,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/digital-twin/{userId}/snapshots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Digital Twin immutable evolution snapshots
+         * @description Returns paginated historical evolution snapshots of the patient's Digital Twin for auditing and state reconstruction.
+         */
+        get: operations["getDigitalTwinSnapshots"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/stress/assess": {
         parameters: {
             query?: never;
@@ -1812,6 +1832,10 @@ export interface components {
             id: string;
             /** @example 64f1a2b3c4d5e6f7a8b9c0d1 */
             userId: string;
+            /** @example 64f1a2b3c4d5e6f7a8b9c0d2 */
+            patientId?: string;
+            /** @example 1 */
+            version?: number;
             /** @example 85.5 */
             overallHealthScore: number;
             healthState: components["schemas"]["TwinHealthStateEnum"];
@@ -1914,6 +1938,68 @@ export interface components {
                  *     ]
                  */
                 insights: string[];
+            };
+            meta: components["schemas"]["Metadata"];
+        };
+        /**
+         * @example TELEMETRY_SYNC
+         * @enum {string}
+         */
+        SnapshotTriggerReasonEnum: "TELEMETRY_SYNC" | "STATE_TRANSITION" | "BASELINE_CALIBRATION" | "ASSESSMENT_COMPLETED" | "MANUAL_SYNC";
+        DigitalTwinSnapshot: {
+            /** @example 64f1a2b3c4d5e6f7a8b9c0d9 */
+            id: string;
+            /** @example 64f1a2b3c4d5e6f7a8b9c0d1 */
+            userId: string;
+            /** @example 64f1a2b3c4d5e6f7a8b9c0d2 */
+            patientId?: string;
+            /** @example 64f1a2b3c4d5e6f7a8b9c0d5 */
+            digitalTwinId: string;
+            /** @example 84.5 */
+            overallHealthScore: number;
+            healthState: components["schemas"]["TwinHealthStateEnum"];
+            /** @example 72 */
+            heartRate?: number;
+            /** @example 98.5 */
+            spO2?: number;
+            /** @example 36.6 */
+            temperature?: number;
+            dominantEmotion?: components["schemas"]["EmotionEnum"];
+            /** @example 24 */
+            stressScore?: number;
+            /** @example 14.5 */
+            cardioRiskScore?: number;
+            /** @example 92 */
+            confidence?: number;
+            triggerReason: components["schemas"]["SnapshotTriggerReasonEnum"];
+            /** @example 3 */
+            version: number;
+            /**
+             * Format: date-time
+             * @example 2026-09-12T08:00:00.000Z
+             */
+            timestamp: string;
+            /**
+             * Format: date-time
+             * @example 2026-09-12T08:00:00.000Z
+             */
+            createdAt: string;
+        };
+        DigitalTwinSnapshotListResponse: {
+            /** @example true */
+            success: boolean;
+            /** @example Digital twin snapshots retrieved successfully */
+            message: string;
+            data: {
+                items: components["schemas"]["DigitalTwinSnapshot"][];
+                /** @example 42 */
+                total: number;
+                /** @example 1 */
+                page: number;
+                /** @example 10 */
+                limit: number;
+                /** @example 5 */
+                totalPages: number;
             };
             meta: components["schemas"]["Metadata"];
         };
@@ -4005,6 +4091,61 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthTrendAnalysisResponse"];
+                };
+            };
+        };
+    };
+    getDigitalTwinSnapshots: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                startDate?: string;
+                endDate?: string;
+                trigger?: components["schemas"]["SnapshotTriggerReasonEnum"];
+            };
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Digital Twin snapshots retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DigitalTwinSnapshotListResponse"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Digital Twin not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
