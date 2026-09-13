@@ -20,15 +20,16 @@ if os.path.exists(_VENV_SITE) and _VENV_SITE not in sys.path:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from config import PORT, HOST
+from config import PORT, HOST, LOG_LEVEL, CORS_ORIGINS
 from services.cardio.inference import get_cardio_engine
 from services.stress.inference import get_stress_engine
 from services.digital_twin.simulation import get_digital_twin_simulator
 from routers import health, cardio, stress, digital_twin
 
-# Configure logging
+# Configure logging dynamically from environment
+log_numeric_level = getattr(logging, LOG_LEVEL, logging.INFO)
 logging.basicConfig(
-    level=logging.INFO,
+    level=log_numeric_level,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
 logger = logging.getLogger("ai_service")
@@ -73,7 +74,7 @@ app = FastAPI(
 # Enable CORS for internal backend gateway communication
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

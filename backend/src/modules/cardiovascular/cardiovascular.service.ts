@@ -167,7 +167,7 @@ export class CardiovascularService {
 
     try {
       const aiResponse = await axios.post<AICardioResponse>(aiUrl, aiPayload, {
-        timeout: 15000,
+        timeout: Config.AI_SERVICE_TIMEOUT_MS,
         headers: { 'Content-Type': 'application/json' },
       });
       aiResponseData = aiResponse.data;
