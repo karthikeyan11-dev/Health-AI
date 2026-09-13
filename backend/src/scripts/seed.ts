@@ -7,8 +7,11 @@ import {
   UserRole,
   PatientModel,
   Gender,
+  ActivityLevel,
   DeviceModel,
   DeviceStatus,
+  DeviceType,
+  ConnectionProtocol,
   SensorReadingModel,
   SensorType,
   CardiovascularAssessmentModel,
@@ -78,34 +81,60 @@ async function seedDatabase(): Promise<void> {
     const patient = await PatientModel.create({
       userId: user._id,
       gender: Gender.MALE,
+      dateOfBirth: new Date('2000-09-22'),
       bloodType: 'O+',
+      heightCm: 175,
+      weightKg: 70.0,
+      bmi: 22.9,
+      smokingStatus: 0,
+      familyHistoryCvd: 0,
+      activityLevel: ActivityLevel.MODERATELY_ACTIVE,
+      dailyStepGoal: 8500,
+      targetSleepHours: 8.0,
       emergencyContact: {
         name: 'Parent / Primary Contact',
         relationship: 'Family',
         phoneNumber: '+919842000000',
       },
       medicalHistorySummary:
-        'Healthy adult patient. Active lifestyle with regular bio-telemetry monitoring.',
+        'Healthy adult patient. Active lifestyle with continuous smartwatch bio-telemetry monitoring.',
       isActive: true,
     });
     logger.info({ patientId: patient.id }, 'Seeded Patient profile created.');
 
-    // 4. Create connected telemetry Device
+    // 4. Create connected telemetry Device (Smartwatch)
     const device = await DeviceModel.create({
-      deviceId: 'ESP32_TELEMETRY_01',
-      name: 'Smart Health ESP32 Sensor Pack',
+      deviceId: 'WATCH_HEALTH_AI_PRO_01',
+      name: 'Health AI Pulse Pro Smartwatch',
       macAddress: 'AA:BB:CC:DD:EE:FF',
-      deviceType: 'ESP32-WROOM-32',
-      firmwareVersion: 'v1.2.0',
+      deviceType: DeviceType.SMARTWATCH,
+      supportedSensors: [
+        SensorType.HEART_RATE,
+        SensorType.RESTING_HEART_RATE,
+        SensorType.SPO2,
+        SensorType.TEMPERATURE,
+        SensorType.BLOOD_PRESSURE_SYSTOLIC,
+        SensorType.BLOOD_PRESSURE_DIASTOLIC,
+        SensorType.HRV,
+        SensorType.STEPS,
+        SensorType.CALORIES_BURNED,
+        SensorType.DISTANCE,
+        SensorType.SLEEP_HOURS,
+        SensorType.SLEEP_EFFICIENCY,
+      ],
+      batteryLevel: 94,
+      connectionProtocol: ConnectionProtocol.BLE,
+      syncFrequencySeconds: 5,
+      firmwareVersion: 'v2.1.0',
       status: DeviceStatus.ONLINE,
       userId: user._id,
       patientId: patient._id,
       isActive: true,
       lastSeenAt: new Date(),
     });
-    logger.info({ deviceId: device.deviceId }, 'Seeded Device created.');
+    logger.info({ deviceId: device.deviceId }, 'Seeded Smartwatch Device created.');
 
-    // 5. Create realistic time-series SensorReading documents
+    // 5. Create realistic time-series SensorReading documents from Smartwatch
     const now = Date.now();
     const sensorReadingsData = [
       // Heart Rate readings (BPM)
@@ -115,6 +144,9 @@ async function seedDatabase(): Promise<void> {
       { sensorType: SensorType.HEART_RATE, value: 75, unit: 'bpm', minutesAgo: 30 },
       { sensorType: SensorType.HEART_RATE, value: 73, unit: 'bpm', minutesAgo: 20 },
       { sensorType: SensorType.HEART_RATE, value: 72, unit: 'bpm', minutesAgo: 10 },
+
+      // Resting Heart Rate (BPM)
+      { sensorType: SensorType.RESTING_HEART_RATE, value: 64, unit: 'bpm', minutesAgo: 15 },
 
       // SpO2 readings (%)
       { sensorType: SensorType.SPO2, value: 98.5, unit: '%', minutesAgo: 60 },
@@ -131,6 +163,22 @@ async function seedDatabase(): Promise<void> {
       { sensorType: SensorType.TEMPERATURE, value: 36.7, unit: '°C', minutesAgo: 30 },
       { sensorType: SensorType.TEMPERATURE, value: 36.5, unit: '°C', minutesAgo: 20 },
       { sensorType: SensorType.TEMPERATURE, value: 36.6, unit: '°C', minutesAgo: 10 },
+
+      // Blood Pressure (mmHg)
+      { sensorType: SensorType.BLOOD_PRESSURE_SYSTOLIC, value: 118, unit: 'mmHg', minutesAgo: 30 },
+      { sensorType: SensorType.BLOOD_PRESSURE_DIASTOLIC, value: 78, unit: 'mmHg', minutesAgo: 30 },
+
+      // Heart Rate Variability (ms)
+      { sensorType: SensorType.HRV, value: 55, unit: 'ms', minutesAgo: 20 },
+
+      // Step count & Activity
+      { sensorType: SensorType.STEPS, value: 8420, unit: 'steps', minutesAgo: 10 },
+      { sensorType: SensorType.CALORIES_BURNED, value: 2150, unit: 'kcal', minutesAgo: 10 },
+      { sensorType: SensorType.DISTANCE, value: 5.6, unit: 'km', minutesAgo: 10 },
+
+      // Sleep metrics
+      { sensorType: SensorType.SLEEP_HOURS, value: 7.8, unit: 'hours', minutesAgo: 240 },
+      { sensorType: SensorType.SLEEP_EFFICIENCY, value: 0.89, unit: 'ratio', minutesAgo: 240 },
 
       // Emotion reading
       { sensorType: SensorType.EMOTION, value: 1, unit: 'state', minutesAgo: 10 },

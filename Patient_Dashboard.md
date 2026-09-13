@@ -155,3 +155,11 @@ Patient Portal (Final Frozen Navigation)
 1. **Avoid Duplicate Independent Fetching**: The Overview page fetches lightweight summary DTOs, while deep-dive pages fetch their own paginated historical records on demand.
 2. **Deterministic Clinical Integrity**: The frontend never invents or mocks risk classifications, SHAP values, or PPO actions; all calculations originate from verified Python AI services and backend repositories.
 3. **Responsive & Mobile-First**: All charts and cards dynamically adapt to mobile screens, collapsible sidebar navigation, and high-DPI desktop viewports.
+
+
+
+When you are ready, we can:
+
+Update and synchronize the MongoDB schemas (sensor-reading, patient, device).
+Build the high-throughput POST /api/v1/telemetry/ingest endpoint and a Smartwatch Telemetry Simulator / BLE Streamer script to feed live data.
+Set up the WebSocket live stream to make the frontend dashboards update in real time.

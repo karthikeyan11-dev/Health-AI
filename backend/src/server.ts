@@ -1,13 +1,17 @@
+import http from 'node:http';
 import app from './app';
-import { Config, connectDatabase, disconnectDatabase, logger } from './config';
+import { Config, connectDatabase, disconnectDatabase, initSocketServer, logger } from './config';
 
 async function bootstrap(): Promise<void> {
   try {
     // 1. Connect to MongoDB automatically on startup
     await connectDatabase();
 
-    // 2. Start HTTP Express Server
-    const server = app.listen(Config.PORT, (): void => {
+    // 2. Create HTTP and Socket.IO Server
+    const httpServer = http.createServer(app);
+    initSocketServer(httpServer);
+
+    const server = httpServer.listen(Config.PORT, (): void => {
       logger.info(
         {
           port: Config.PORT,

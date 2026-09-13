@@ -100,9 +100,25 @@ export class CardiovascularService {
 
     const patient = await PatientModel.findOne({ userId: user._id }).exec();
 
-    // 2. Fetch Latest Telemetry for each sensor type if not provided
-    const [latestHr, latestSpo2, latestTemp] = await Promise.all([
+    // 2. Fetch Latest Telemetry across all sensor streams in parallel
+    const [
+      latestHr,
+      latestRestingHr,
+      latestSpo2,
+      latestTemp,
+      latestSysBp,
+      latestDiaBp,
+      latestHrv,
+      latestSteps,
+      latestCalories,
+      latestDistance,
+      latestSleepHours,
+      latestSleepEff,
+    ] = await Promise.all([
       SensorReadingModel.findOne({ userId: user._id, sensorType: SensorType.HEART_RATE })
+        .sort({ timestamp: -1 })
+        .exec(),
+      SensorReadingModel.findOne({ userId: user._id, sensorType: SensorType.RESTING_HEART_RATE })
         .sort({ timestamp: -1 })
         .exec(),
       SensorReadingModel.findOne({ userId: user._id, sensorType: SensorType.SPO2 })
@@ -111,28 +127,93 @@ export class CardiovascularService {
       SensorReadingModel.findOne({ userId: user._id, sensorType: SensorType.TEMPERATURE })
         .sort({ timestamp: -1 })
         .exec(),
+      SensorReadingModel.findOne({
+        userId: user._id,
+        sensorType: SensorType.BLOOD_PRESSURE_SYSTOLIC,
+      })
+        .sort({ timestamp: -1 })
+        .exec(),
+      SensorReadingModel.findOne({
+        userId: user._id,
+        sensorType: SensorType.BLOOD_PRESSURE_DIASTOLIC,
+      })
+        .sort({ timestamp: -1 })
+        .exec(),
+      SensorReadingModel.findOne({ userId: user._id, sensorType: SensorType.HRV })
+        .sort({ timestamp: -1 })
+        .exec(),
+      SensorReadingModel.findOne({ userId: user._id, sensorType: SensorType.STEPS })
+        .sort({ timestamp: -1 })
+        .exec(),
+      SensorReadingModel.findOne({ userId: user._id, sensorType: SensorType.CALORIES_BURNED })
+        .sort({ timestamp: -1 })
+        .exec(),
+      SensorReadingModel.findOne({ userId: user._id, sensorType: SensorType.DISTANCE })
+        .sort({ timestamp: -1 })
+        .exec(),
+      SensorReadingModel.findOne({ userId: user._id, sensorType: SensorType.SLEEP_HOURS })
+        .sort({ timestamp: -1 })
+        .exec(),
+      SensorReadingModel.findOne({ userId: user._id, sensorType: SensorType.SLEEP_EFFICIENCY })
+        .sort({ timestamp: -1 })
+        .exec(),
     ]);
 
-    // 3. Resolve Input Feature Values with Intelligent Clinical Fallbacks
-    const resolvedAge = input.age ?? (user.age ? Number(user.age) : 35);
-    const resolvedSex = input.sex ?? (user.gender === 'FEMALE' ? 0 : 1);
-    const resolvedBmi = input.bmi ?? 24.5;
-    const resolvedSmoking = input.smokingStatus ?? 0;
-    const resolvedFamilyCvd = input.familyHistoryCvd ?? 0;
+    // 3. Resolve Input Feature Values from Database & Sensor Streams
+    // Age: Calculate from dateOfBirth or user.age
+    let calculatedAge = 35;
+    if (user.age) {
+      calculatedAge = Number(user.age);
+    } else if (patient?.dateOfBirth) {
+      const diffMs = Date.now() - new Date(patient.dateOfBirth).getTime();
+      calculatedAge = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 365.25));
+    }
+    const resolvedAge = input.age ?? calculatedAge;
 
+    // Sex: 1 for Male, 0 for Female
+    const resolvedSex =
+      input.sex ?? (user.gender === 'FEMALE' || patient?.gender === 'FEMALE' ? 0 : 1);
+
+    // BMI: from input -> patient.bmi -> patient height/weight -> fallback 24.5
+    let patientBmi = patient?.bmi;
+    if (!patientBmi && patient?.heightCm && patient?.weightKg) {
+      const heightM = patient.heightCm / 100.0;
+      patientBmi = Number((patient.weightKg / (heightM * heightM)).toFixed(1));
+    }
+    const resolvedBmi = input.bmi ?? patientBmi ?? 24.5;
+
+    // Clinical Risk Profile
+    const resolvedSmoking = input.smokingStatus ?? patient?.smokingStatus ?? 0;
+    const resolvedFamilyCvd = input.familyHistoryCvd ?? patient?.familyHistoryCvd ?? 0;
+
+    // Smartwatch Biometrics
     const resolvedHeartRate = input.heartRate ?? (latestHr?.value ? Number(latestHr.value) : 75.0);
-    const resolvedRestingHr = input.restingHr ?? 68.0;
+    let resolvedRestingHr = 68.0;
+    if (input.restingHr !== undefined) {
+      resolvedRestingHr = input.restingHr;
+    } else if (latestRestingHr?.value !== undefined) {
+      resolvedRestingHr = Number(latestRestingHr.value);
+    } else if (latestHr?.value !== undefined) {
+      resolvedRestingHr = Number(latestHr.value) - 5;
+    }
     const resolvedSpo2 = input.spo2 ?? (latestSpo2?.value ? Number(latestSpo2.value) : 98.0);
     const resolvedTemp = input.temperature ?? (latestTemp?.value ? Number(latestTemp.value) : 36.6);
-    const resolvedSystolicBp = input.systolicBp ?? 120.0;
-    const resolvedDiastolicBp = input.diastolicBp ?? 80.0;
-    const resolvedHrv = input.hrv ?? 45.0;
+    const resolvedSystolicBp =
+      input.systolicBp ?? (latestSysBp?.value ? Number(latestSysBp.value) : 120.0);
+    const resolvedDiastolicBp =
+      input.diastolicBp ?? (latestDiaBp?.value ? Number(latestDiaBp.value) : 80.0);
+    const resolvedHrv = input.hrv ?? (latestHrv?.value ? Number(latestHrv.value) : 45.0);
 
-    const resolvedSteps = input.steps ?? 7500;
-    const resolvedCaloriesBurned = input.caloriesBurned ?? 2200;
-    const resolvedDistanceKm = input.distanceKm ?? 5.0;
-    const resolvedSleepHours = input.sleepHours ?? 7.5;
-    const resolvedSleepEfficiency = input.sleepEfficiency ?? 0.85;
+    // Activity & Lifestyle
+    const resolvedSteps = input.steps ?? (latestSteps?.value ? Number(latestSteps.value) : 7500);
+    const resolvedCaloriesBurned =
+      input.caloriesBurned ?? (latestCalories?.value ? Number(latestCalories.value) : 2200);
+    const resolvedDistanceKm =
+      input.distanceKm ?? (latestDistance?.value ? Number(latestDistance.value) : 5.0);
+    const resolvedSleepHours =
+      input.sleepHours ?? (latestSleepHours?.value ? Number(latestSleepHours.value) : 7.5);
+    const resolvedSleepEfficiency =
+      input.sleepEfficiency ?? (latestSleepEff?.value ? Number(latestSleepEff.value) : 0.85);
     const resolvedCaloriesConsumed = input.caloriesConsumed ?? 2100;
     const resolvedWaterIntakeL = input.waterIntakeL ?? 2.5;
     const resolvedActivityType = input.activityType ?? 'Walking';

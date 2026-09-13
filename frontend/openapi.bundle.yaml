@@ -2558,23 +2558,36 @@ components:
       type: string
       enum:
         - HEART_RATE
-        - TEMPERATURE
+        - RESTING_HEART_RATE
         - SPO2
+        - TEMPERATURE
+        - BLOOD_PRESSURE_SYSTOLIC
+        - BLOOD_PRESSURE_DIASTOLIC
+        - HRV
+        - STEPS
+        - CALORIES_BURNED
+        - DISTANCE
+        - SLEEP_HOURS
+        - SLEEP_EFFICIENCY
+        - RESPIRATORY_RATE
         - EMOTION
       example: HEART_RATE
     IngestReadingsRequest:
       type: object
       required:
-        - deviceId
-        - userId
         - readings
       properties:
         deviceId:
           type: string
-          example: ESP32-HEALTH-001
+          example: WATCH_HEALTH_AI_PRO_01
         userId:
           type: string
-          example: 64f1a2b3c4d5e6f7a8b9c0d1
+          example: 6aa63692d48b7752f16803d2
+        batteryLevel:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 94
         readings:
           type: array
           items:
@@ -2582,7 +2595,6 @@ components:
             required:
               - sensorType
               - value
-              - unit
             properties:
               sensorType:
                 $ref: '#/components/schemas/SensorTypeEnum'
@@ -2592,10 +2604,18 @@ components:
               unit:
                 type: string
                 example: bpm
+              confidence:
+                type: number
+                minimum: 0
+                maximum: 100
+                example: 98.5
               timestamp:
                 type: string
                 format: date-time
-                example: '2026-08-07T09:00:00.000Z'
+                example: '2026-09-13T09:00:00.000Z'
+              metadata:
+                type: object
+                additionalProperties: true
     LatestReadingsResponse:
       type: object
       required:

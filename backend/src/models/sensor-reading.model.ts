@@ -2,8 +2,18 @@ import { Schema, model, type Document, type Model, Types } from 'mongoose';
 
 export enum SensorType {
   HEART_RATE = 'HEART_RATE',
-  TEMPERATURE = 'TEMPERATURE',
+  RESTING_HEART_RATE = 'RESTING_HEART_RATE',
   SPO2 = 'SPO2',
+  TEMPERATURE = 'TEMPERATURE',
+  BLOOD_PRESSURE_SYSTOLIC = 'BLOOD_PRESSURE_SYSTOLIC',
+  BLOOD_PRESSURE_DIASTOLIC = 'BLOOD_PRESSURE_DIASTOLIC',
+  HRV = 'HRV',
+  STEPS = 'STEPS',
+  CALORIES_BURNED = 'CALORIES_BURNED',
+  DISTANCE = 'DISTANCE',
+  SLEEP_HOURS = 'SLEEP_HOURS',
+  SLEEP_EFFICIENCY = 'SLEEP_EFFICIENCY',
+  RESPIRATORY_RATE = 'RESPIRATORY_RATE',
   EMOTION = 'EMOTION',
 }
 
@@ -14,6 +24,8 @@ export interface ISensorReading {
   sensorType: SensorType;
   value: number;
   unit: string;
+  confidence?: number;
+  metadata?: Record<string, unknown>;
   timestamp: Date;
   createdAt?: Date;
   updatedAt?: Date;
@@ -57,6 +69,16 @@ const sensorReadingSchema = new Schema<ISensorReadingDocument>(
       type: String,
       required: [true, 'Measurement unit is required'],
       trim: true,
+    },
+    confidence: {
+      type: Number,
+      min: [0, 'Confidence cannot be negative'],
+      max: [100, 'Confidence cannot exceed 100'],
+      default: undefined,
+    },
+    metadata: {
+      type: Schema.Types.Mixed,
+      default: undefined,
     },
     timestamp: {
       type: Date,

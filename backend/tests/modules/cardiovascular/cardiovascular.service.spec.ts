@@ -5,7 +5,7 @@ import type { CardiovascularRepository } from '../../../src/modules/cardiovascul
 import { CardiovascularRiskLevel } from '../../../src/models/cardiovascular-assessment.model';
 import { UserModel } from '../../../src/models/user.model';
 import { PatientModel } from '../../../src/models/patient.model';
-import { SensorReadingModel } from '../../../src/models/sensor-reading.model';
+import { SensorReadingModel, SensorType } from '../../../src/models/sensor-reading.model';
 import { DigitalTwinModel } from '../../../src/models/digital-twin.model';
 import { NotFoundError, InternalServerError } from '../../../src/shared/errors/httpErrors';
 
@@ -281,6 +281,215 @@ describe('CardiovascularService Unit Tests', () => {
       const result = await service.assessCardiovascularRisk({ userId });
 
       expect(result.riskLevel).toBe(CardiovascularRiskLevel.OPTIMAL);
+    });
+
+    it('should calculate age from patient dateOfBirth and BMI from height and weight when user age/bmi is missing', async () => {
+      const userWithoutAge = {
+        _id: new Types.ObjectId(userId),
+        email: 'dob@test.com',
+        gender: 'OTHER',
+      };
+
+      const patientWithDobAndDimensions = {
+        _id: new Types.ObjectId(),
+        dateOfBirth: new Date('1990-05-15'),
+        gender: 'FEMALE',
+        heightCm: 180,
+        weightKg: 81,
+        smokingStatus: 1,
+        familyHistoryCvd: 1,
+      };
+
+      (UserModel.findById as jest.Mock).mockReturnValue({
+        exec: jest.fn().mockResolvedValue(userWithoutAge),
+      });
+      (PatientModel.findOne as jest.Mock).mockReturnValue({
+        exec: jest.fn().mockResolvedValue(patientWithDobAndDimensions),
+      });
+
+      // Simulate latest heart rate present to trigger restingHr = latestHr.value - 5
+      (SensorReadingModel.findOne as jest.Mock).mockReturnValue({
+        sort: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ value: 80 }),
+        }),
+      });
+
+      (axios.post as jest.Mock).mockResolvedValue(mockAIResponse);
+
+      const mockSavedDoc = {
+        _id: new Types.ObjectId(),
+        userId: new Types.ObjectId(userId),
+        riskScore: 35.0,
+        riskLevel: CardiovascularRiskLevel.MODERATE,
+        confidence: 88.0,
+        recommendations: ['Monitor vitals'],
+        timestamp: new Date(),
+      };
+
+      mockRepo.create.mockResolvedValue(
+        mockSavedDoc as unknown as Awaited<ReturnType<typeof mockRepo.create>>,
+      );
+      (DigitalTwinModel.findOneAndUpdate as jest.Mock).mockReturnValue({
+        exec: jest.fn().mockResolvedValue({}),
+      });
+
+      const result = await service.assessCardiovascularRisk({ userId });
+      expect(result.riskScore).toBe(35.0);
+    });
+
+    it('should use patient.bmi directly when already stored on patient profile', async () => {
+      const userWithAge = {
+        _id: new Types.ObjectId(userId),
+        email: 'bmi@test.com',
+        age: 40,
+        gender: 'MALE',
+      };
+
+      const patientWithBmi = {
+        _id: new Types.ObjectId(),
+        bmi: 26.8,
+        smokingStatus: 0,
+        familyHistoryCvd: 0,
+      };
+
+      (UserModel.findById as jest.Mock).mockReturnValue({
+        exec: jest.fn().mockResolvedValue(userWithAge),
+      });
+      (PatientModel.findOne as jest.Mock).mockReturnValue({
+        exec: jest.fn().mockResolvedValue(patientWithBmi),
+      });
+      (SensorReadingModel.findOne as jest.Mock).mockReturnValue({
+        sort: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(null),
+        }),
+      });
+
+      (axios.post as jest.Mock).mockResolvedValue(mockAIResponse);
+
+      const mockSavedDoc = {
+        _id: new Types.ObjectId(),
+        userId: new Types.ObjectId(userId),
+        riskScore: 20.0,
+        riskLevel: CardiovascularRiskLevel.LOW,
+        confidence: 90.0,
+        recommendations: ['Maintain routine'],
+        timestamp: new Date(),
+      };
+
+      mockRepo.create.mockResolvedValue(
+        mockSavedDoc as unknown as Awaited<ReturnType<typeof mockRepo.create>>,
+      );
+      (DigitalTwinModel.findOneAndUpdate as jest.Mock).mockReturnValue({
+        exec: jest.fn().mockResolvedValue({}),
+      });
+
+      const result = await service.assessCardiovascularRisk({ userId });
+      expect(result.riskScore).toBe(20.0);
+    });
+
+    it('should use latestRestingHr sensor reading when present in database', async () => {
+      const userWithAge = {
+        _id: new Types.ObjectId(userId),
+        email: 'resting@test.com',
+        age: 45,
+        gender: 'MALE',
+      };
+
+      (UserModel.findById as jest.Mock).mockReturnValue({
+        exec: jest.fn().mockResolvedValue(userWithAge),
+      });
+      (PatientModel.findOne as jest.Mock).mockReturnValue({
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      // Mock findOne to return latestRestingHr when sensorType is RESTING_HEART_RATE
+      (SensorReadingModel.findOne as jest.Mock).mockImplementation(
+        (query: { sensorType: SensorType }) => {
+          if (query.sensorType === SensorType.RESTING_HEART_RATE) {
+            return {
+              sort: jest.fn().mockReturnValue({
+                exec: jest.fn().mockResolvedValue({ value: 62 }),
+              }),
+            };
+          }
+          return {
+            sort: jest.fn().mockReturnValue({
+              exec: jest.fn().mockResolvedValue(null),
+            }),
+          };
+        },
+      );
+
+      (axios.post as jest.Mock).mockResolvedValue(mockAIResponse);
+
+      const mockSavedDoc = {
+        _id: new Types.ObjectId(),
+        userId: new Types.ObjectId(userId),
+        riskScore: 15.0,
+        riskLevel: CardiovascularRiskLevel.OPTIMAL,
+        confidence: 95.0,
+        recommendations: ['Maintain active lifestyle'],
+        timestamp: new Date(),
+      };
+
+      mockRepo.create.mockResolvedValue(
+        mockSavedDoc as unknown as Awaited<ReturnType<typeof mockRepo.create>>,
+      );
+      (DigitalTwinModel.findOneAndUpdate as jest.Mock).mockReturnValue({
+        exec: jest.fn().mockResolvedValue({}),
+      });
+
+      const result = await service.assessCardiovascularRisk({ userId });
+      expect(result.riskScore).toBe(15.0);
+    });
+
+    it('should derive resting HR from current heart rate when latestRestingHr is absent', async () => {
+      (UserModel.findById as jest.Mock).mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockUserDoc),
+      });
+      (PatientModel.findOne as jest.Mock).mockReturnValue({
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      // Mock findOne to return latestHr when sensorType is HEART_RATE and null for RESTING_HEART_RATE
+      (SensorReadingModel.findOne as jest.Mock).mockImplementation(
+        (query: { sensorType?: SensorType }) => {
+          if (query.sensorType === SensorType.HEART_RATE) {
+            return {
+              sort: jest.fn().mockReturnValue({
+                exec: jest.fn().mockResolvedValue({ value: 75 }),
+              }),
+            };
+          }
+          return {
+            sort: jest.fn().mockReturnValue({
+              exec: jest.fn().mockResolvedValue(null),
+            }),
+          };
+        },
+      );
+
+      (axios.post as jest.Mock).mockResolvedValue(mockAIResponse);
+
+      const mockSavedDoc = {
+        _id: new Types.ObjectId(),
+        userId: new Types.ObjectId(userId),
+        riskScore: 22.5,
+        riskLevel: CardiovascularRiskLevel.LOW,
+        confidence: 85.0,
+        recommendations: ['Maintain active lifestyle'],
+        timestamp: new Date(),
+      };
+
+      mockRepo.create.mockResolvedValue(
+        mockSavedDoc as unknown as Awaited<ReturnType<typeof mockRepo.create>>,
+      );
+      (DigitalTwinModel.findOneAndUpdate as jest.Mock).mockReturnValue({
+        exec: jest.fn().mockResolvedValue({}),
+      });
+
+      const result = await service.assessCardiovascularRisk({ userId });
+      expect(result.riskScore).toBe(22.5);
     });
 
     it('should fallback to LOW when AI returns unrecognized risk level', async () => {

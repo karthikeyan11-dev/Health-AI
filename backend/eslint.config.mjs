@@ -23,6 +23,19 @@ export default tseslint.config(
       'no-empty': ['error', { allowEmptyCatch: false }],
     },
   },
+  {
+    files: ['src/scripts/**/*.ts'],
+    rules: {
+      'no-console': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+    },
+  },
+  {
+    files: ['tests/**/*.ts'],
+    rules: {
+      '@typescript-eslint/explicit-function-return-type': 'off',
+    },
+  },
   prettierConfig,
   {
     ignores: [

@@ -1,5 +1,7 @@
 import { Schema, model, type Document, type Model, Types } from 'mongoose';
 
+import { SensorType } from './sensor-reading.model';
+
 export enum DeviceStatus {
   ONLINE = 'ONLINE',
   OFFLINE = 'OFFLINE',
@@ -7,11 +9,33 @@ export enum DeviceStatus {
   UNREGISTERED = 'UNREGISTERED',
 }
 
+export enum DeviceType {
+  SMARTWATCH = 'SMARTWATCH',
+  ESP32_MULTI_SENSOR = 'ESP32_MULTI_SENSOR',
+  SMART_BP_CUFF = 'SMART_BP_CUFF',
+  BLE_PULSE_OXIMETER = 'BLE_PULSE_OXIMETER',
+  FITNESS_BAND = 'FITNESS_BAND',
+  SMART_RING = 'SMART_RING',
+  OTHER = 'OTHER',
+}
+
+export enum ConnectionProtocol {
+  BLE = 'BLE',
+  WIFI = 'WIFI',
+  COMPANION_APP = 'COMPANION_APP',
+  WEBSOCKET = 'WEBSOCKET',
+  MQTT = 'MQTT',
+}
+
 export interface IDevice {
   deviceId: string;
   name?: string;
   macAddress: string;
-  deviceType: string;
+  deviceType: DeviceType | string;
+  supportedSensors: SensorType[];
+  batteryLevel?: number;
+  connectionProtocol?: ConnectionProtocol | string;
+  syncFrequencySeconds?: number;
   firmwareVersion: string;
   status: DeviceStatus;
   userId?: Types.ObjectId;
@@ -51,8 +75,38 @@ const deviceSchema = new Schema<IDeviceDocument>(
     deviceType: {
       type: String,
       required: true,
-      default: 'ESP32-MULTI-SENSOR',
+      default: DeviceType.SMARTWATCH,
       trim: true,
+    },
+    supportedSensors: {
+      type: [String],
+      enum: Object.values(SensorType),
+      default: [
+        SensorType.HEART_RATE,
+        SensorType.RESTING_HEART_RATE,
+        SensorType.SPO2,
+        SensorType.TEMPERATURE,
+        SensorType.HRV,
+        SensorType.STEPS,
+        SensorType.CALORIES_BURNED,
+        SensorType.SLEEP_HOURS,
+      ],
+    },
+    batteryLevel: {
+      type: Number,
+      min: [0, 'Battery level cannot be negative'],
+      max: [100, 'Battery level cannot exceed 100'],
+      default: 100,
+    },
+    connectionProtocol: {
+      type: String,
+      enum: Object.values(ConnectionProtocol),
+      default: ConnectionProtocol.BLE,
+    },
+    syncFrequencySeconds: {
+      type: Number,
+      min: [1, 'Sync frequency must be at least 1 second'],
+      default: 5,
     },
     firmwareVersion: {
       type: String,

@@ -6,19 +6,24 @@ import { VitalsTrendLineChart } from './VitalsTrendLineChart';
 import { HealthRiskSummaryDonutChart } from './HealthRiskSummaryDonutChart';
 import { RecentActivityList } from './RecentActivityList';
 import { PATIENT_OVERVIEW_TEXTS } from '../constants/patient-overview.constants';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, AlertTriangle, XCircle } from 'lucide-react';
+import type { TelemetryStreamState } from '../utils/useTelemetryStream';
 
 interface PatientOverviewViewProps {
   data: PatientOverviewData | null;
   isLoading: boolean;
   onRefresh: () => void;
+  telemetryStream?: TelemetryStreamState;
 }
 
 export function PatientOverviewView({
   data,
   isLoading,
   onRefresh,
+  telemetryStream,
 }: PatientOverviewViewProps): React.JSX.Element {
+  const alerts = telemetryStream?.alerts || [];
+
   return (
     <div className="space-y-6">
       {/* Top Header */}
@@ -41,11 +46,51 @@ export function PatientOverviewView({
         </div>
       </div>
 
-      {/* Patient & Device Status Banner */}
+      {/* Live Alerts Toast Container */}
+      {alerts.length > 0 && (
+        <div className="space-y-2.5">
+          {alerts.map((alert, idx) => {
+            const isCritical = alert.severity === 'CRITICAL';
+            return (
+              <div
+                key={idx}
+                className={`p-4 rounded-2xl border flex items-center justify-between gap-3 shadow-md animate-in slide-in-from-top-2 duration-300 ${
+                  isCritical
+                    ? 'bg-rose-50 border-rose-200 text-rose-900'
+                    : 'bg-amber-50 border-amber-200 text-amber-900'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  {isCritical ? (
+                    <XCircle className="w-5 h-5 text-rose-600 shrink-0" />
+                  ) : (
+                    <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+                  )}
+                  <div>
+                    <h4 className="text-xs font-extrabold tracking-wide uppercase">
+                      {alert.title}
+                    </h4>
+                    <p className="text-xs opacity-90 mt-0.5">{alert.message}</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold opacity-75 shrink-0">
+                  {new Date(alert.timestamp).toLocaleTimeString()}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Patient & Smartwatch Status Banner */}
       <PatientDeviceBanner
         patientInfo={data?.patientInfo}
         deviceInfo={data?.deviceInfo}
         digitalTwinState={data?.digitalTwinState}
+        isLiveStreaming={telemetryStream?.isConnected}
+        batteryLevel={telemetryStream?.batteryLevel}
+        liveDeviceId={telemetryStream?.deviceId}
+        lastUpdated={telemetryStream?.lastUpdated}
       />
 
       {/* Key Physiological Metrics Grid */}
@@ -53,6 +98,7 @@ export function PatientOverviewView({
         vitals={data?.latestVitals}
         cardioRisk={data?.latestCardiovascularRisk}
         stress={data?.latestStressAssessment}
+        liveReadings={telemetryStream?.liveVitals}
       />
 
       {/* Charts Grid */}

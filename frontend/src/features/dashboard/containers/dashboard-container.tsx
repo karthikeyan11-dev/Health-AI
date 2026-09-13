@@ -6,11 +6,13 @@ import { PATIENT_OVERVIEW_TEXTS } from '../constants/patient-overview.constants'
 import { ErrorCard } from '@/components/ui';
 import { PageLoader } from '@/components/common';
 import { extractErrorMessage } from '@/utils/error.util';
+import { useTelemetryStream } from '../utils/useTelemetryStream';
 
 export function DashboardContainer(): React.JSX.Element {
   const [data, setData] = useState<PatientOverviewData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const telemetryStream = useTelemetryStream();
 
   const fetchOverview = useCallback(async () => {
     setIsLoading(true);
@@ -46,5 +48,12 @@ export function DashboardContainer(): React.JSX.Element {
     );
   }
 
-  return <PatientOverviewView data={data} isLoading={isLoading} onRefresh={fetchOverview} />;
+  return (
+    <PatientOverviewView
+      data={data}
+      isLoading={isLoading}
+      onRefresh={fetchOverview}
+      telemetryStream={telemetryStream}
+    />
+  );
 }

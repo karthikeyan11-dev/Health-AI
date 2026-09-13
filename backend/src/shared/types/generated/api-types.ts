@@ -1619,23 +1619,30 @@ export interface components {
          * @example HEART_RATE
          * @enum {string}
          */
-        SensorTypeEnum: "HEART_RATE" | "TEMPERATURE" | "SPO2" | "EMOTION";
+        SensorTypeEnum: "HEART_RATE" | "RESTING_HEART_RATE" | "SPO2" | "TEMPERATURE" | "BLOOD_PRESSURE_SYSTOLIC" | "BLOOD_PRESSURE_DIASTOLIC" | "HRV" | "STEPS" | "CALORIES_BURNED" | "DISTANCE" | "SLEEP_HOURS" | "SLEEP_EFFICIENCY" | "RESPIRATORY_RATE" | "EMOTION";
         IngestReadingsRequest: {
-            /** @example ESP32-HEALTH-001 */
-            deviceId: string;
-            /** @example 64f1a2b3c4d5e6f7a8b9c0d1 */
-            userId: string;
+            /** @example WATCH_HEALTH_AI_PRO_01 */
+            deviceId?: string;
+            /** @example 6aa63692d48b7752f16803d2 */
+            userId?: string;
+            /** @example 94 */
+            batteryLevel?: number;
             readings: {
                 sensorType: components["schemas"]["SensorTypeEnum"];
                 /** @example 72 */
                 value: number;
                 /** @example bpm */
-                unit: string;
+                unit?: string;
+                /** @example 98.5 */
+                confidence?: number;
                 /**
                  * Format: date-time
-                 * @example 2026-08-07T09:00:00.000Z
+                 * @example 2026-09-13T09:00:00.000Z
                  */
                 timestamp?: string;
+                metadata?: {
+                    [key: string]: unknown;
+                };
             }[];
         };
         LatestReadingsResponse: {
