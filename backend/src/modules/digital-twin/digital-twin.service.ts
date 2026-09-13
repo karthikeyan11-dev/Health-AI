@@ -673,7 +673,7 @@ export class DigitalTwinService {
           forecast_days: forecastDays,
         },
         {
-          timeout: 15000,
+          timeout: Config.AI_SERVICE_TIMEOUT_MS,
           headers: { 'Content-Type': 'application/json' },
         },
       );

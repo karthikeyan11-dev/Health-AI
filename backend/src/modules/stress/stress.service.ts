@@ -98,7 +98,7 @@ export class StressService {
       const response = await axios.post<AIStressResponse>(
         aiUrl,
         { readings: telemetryReadings },
-        { timeout: 15000, headers: { 'Content-Type': 'application/json' } },
+        { timeout: Config.AI_SERVICE_TIMEOUT_MS, headers: { 'Content-Type': 'application/json' } },
       );
       aiResponseData = response.data;
     } catch (err) {

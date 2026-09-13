@@ -22,7 +22,15 @@ export const Config = cleanEnv(process.env, {
 
   AI_SERVICE_URL: str({
     default: 'http://localhost:5001',
-    desc: 'Python emotion detection AI microservice URL',
+    desc: 'Unified Health AI Microservice URL (Cardio, Digital Twin, Stress)',
+  }),
+  AI_SERVICE_TIMEOUT_MS: num({
+    default: 15000,
+    desc: 'HTTP request timeout for AI Microservice in milliseconds',
+  }),
+  CORS_ORIGIN: str({
+    default: '*',
+    desc: 'Allowed CORS origins (comma-separated list or * for all)',
   }),
 
   // Redis Configuration

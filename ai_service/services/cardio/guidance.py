@@ -9,6 +9,19 @@ import os
 import logging
 from typing import Dict, Any, Optional
 
+from config import (
+    GEMINI_API_KEY,
+    GEMINI_PRIMARY_MODEL,
+    GEMINI_FALLBACK_MODEL,
+    GEMINI_TIMEOUT_MS,
+    GROQ_API_KEY,
+    GROQ_PRIMARY_MODEL,
+    GROQ_FALLBACK_MODEL,
+    GROQ_TIMEOUT_MS,
+    GUIDANCE_MAX_TOKENS,
+    GUIDANCE_TEMPERATURE,
+)
+
 logger = logging.getLogger("ai_service.cardio.guidance")
 
 STATIC_FALLBACK_GUIDANCE = (
@@ -54,15 +67,16 @@ def generate_patient_guidance(
     """.strip()
 
     # 1. Attempt Primary Provider (Google Gemini)
-    effective_gemini_key = gemini_api_key or os.environ.get("GEMINI_API_KEY", "")
+    effective_gemini_key = gemini_api_key or GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY", "")
     if effective_gemini_key and effective_gemini_key not in ["YOUR_GEMINI_API_KEY_HERE", ""]:
-        for gemini_model in ["gemini-3.5-flash", "gemini-3.6-flash"]:
+        gemini_models = [m for m in [GEMINI_PRIMARY_MODEL, GEMINI_FALLBACK_MODEL] if m]
+        for gemini_model in gemini_models:
             try:
                 from google import genai
                 from google.genai import types
                 client = genai.Client(
                     api_key=effective_gemini_key,
-                    http_options=types.HttpOptions(timeout=10000)
+                    http_options=types.HttpOptions(timeout=GEMINI_TIMEOUT_MS)
                 )
                 response = client.models.generate_content(
                     model=gemini_model,
@@ -78,17 +92,19 @@ def generate_patient_guidance(
                 logger.warning(f"Gemini ({gemini_model}) guidance generation failed: {e}. Trying next...")
 
     # 2. Attempt Secondary Fallback Provider (Groq Fast LLM)
-    effective_groq_key = groq_api_key or os.environ.get("GROQ_API_KEY", "")
+    effective_groq_key = groq_api_key or GROQ_API_KEY or os.environ.get("GROQ_API_KEY", "")
     if effective_groq_key and effective_groq_key not in ["YOUR_GROQ_API_KEY_HERE", ""]:
-        for groq_model in ["openai/gpt-oss-120b", "qwen/qwen3.8-27b", "groq/compound-mini"]:
+        groq_models = [m for m in [GROQ_PRIMARY_MODEL, GROQ_FALLBACK_MODEL] if m]
+        for groq_model in groq_models:
             try:
                 from groq import Groq
-                groq_client = Groq(api_key=effective_groq_key, timeout=5.0)
+                groq_timeout_sec = float(GROQ_TIMEOUT_MS) / 1000.0
+                groq_client = Groq(api_key=effective_groq_key, timeout=groq_timeout_sec)
                 groq_response = groq_client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
                     model=groq_model,
-                    max_tokens=250,
-                    temperature=0.6,
+                    max_tokens=GUIDANCE_MAX_TOKENS,
+                    temperature=GUIDANCE_TEMPERATURE,
                 )
                 if groq_response and groq_response.choices:
                     choice = groq_response.choices[0]
