@@ -6,9 +6,14 @@ import {
   X,
   User,
   HeartPulse,
+  Heart,
+  Brain,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  Activity,
   LogOut,
+  Dna,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { storage } from '@/lib/storage';
@@ -18,24 +23,14 @@ export function PatientLayout(): React.JSX.Element {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [assessmentsOpen, setAssessmentsOpen] = useState(true);
 
   const handleLogout = (): void => {
     storage.removeToken();
     navigate('/login', { replace: true });
   };
 
-  const navItems = [
-    {
-      title: 'Overview',
-      path: '/dashboard',
-      icon: LayoutDashboard,
-    },
-    {
-      title: 'Health Monitoring',
-      path: '/health-monitoring',
-      icon: HeartPulse,
-    },
-  ];
+  const isAssessmentsActive = location.pathname.startsWith('/assessments');
 
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-[#083032] antialiased selection:bg-[#083032] selection:text-white">
@@ -117,35 +112,195 @@ export function PatientLayout(): React.JSX.Element {
               </p>
             )}
             <nav className="space-y-1">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive =
-                  location.pathname === item.path ||
-                  (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
-                return (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setMobileOpen(false)}
-                    title={collapsed ? item.title : undefined}
-                    className={cn(
-                      'flex items-center rounded-xl text-sm font-medium transition-all duration-200 group',
-                      collapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5',
-                      isActive
-                        ? 'bg-white/15 text-white font-semibold shadow-inner border border-white/10 backdrop-blur-md'
-                        : 'text-white/75 hover:bg-white/10 hover:text-white',
-                    )}
-                  >
-                    <Icon
+              {/* Overview */}
+              <NavLink
+                to="/dashboard"
+                onClick={() => setMobileOpen(false)}
+                title={collapsed ? 'Overview' : undefined}
+                className={cn(
+                  'flex items-center rounded-xl text-sm font-medium transition-all duration-200 group',
+                  collapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5',
+                  location.pathname === '/dashboard'
+                    ? 'bg-white/15 text-white font-semibold shadow-inner border border-white/10 backdrop-blur-md'
+                    : 'text-white/75 hover:bg-white/10 hover:text-white',
+                )}
+              >
+                <LayoutDashboard
+                  className={cn(
+                    'w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110',
+                    location.pathname === '/dashboard'
+                      ? 'text-emerald-400'
+                      : 'text-white/60 group-hover:text-white',
+                  )}
+                />
+                {!collapsed && <span className="truncate">Overview</span>}
+              </NavLink>
+
+              {/* Health Monitoring */}
+              <NavLink
+                to="/health-monitoring"
+                onClick={() => setMobileOpen(false)}
+                title={collapsed ? 'Health Monitoring' : undefined}
+                className={cn(
+                  'flex items-center rounded-xl text-sm font-medium transition-all duration-200 group',
+                  collapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5',
+                  location.pathname === '/health-monitoring'
+                    ? 'bg-white/15 text-white font-semibold shadow-inner border border-white/10 backdrop-blur-md'
+                    : 'text-white/75 hover:bg-white/10 hover:text-white',
+                )}
+              >
+                <Activity
+                  className={cn(
+                    'w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110',
+                    location.pathname === '/health-monitoring'
+                      ? 'text-emerald-400'
+                      : 'text-white/60 group-hover:text-white',
+                  )}
+                />
+                {!collapsed && <span className="truncate">Health Monitoring</span>}
+              </NavLink>
+
+              {/* Patient Digital Twin */}
+              <NavLink
+                to="/digital-twin"
+                onClick={() => setMobileOpen(false)}
+                title={collapsed ? 'Digital Twin' : undefined}
+                className={cn(
+                  'flex items-center rounded-xl text-sm font-medium transition-all duration-200 group',
+                  collapsed ? 'justify-center p-2.5' : 'gap-3 px-3.5 py-2.5',
+                  location.pathname === '/digital-twin'
+                    ? 'bg-white/15 text-white font-semibold shadow-inner border border-white/10 backdrop-blur-md'
+                    : 'text-white/75 hover:bg-white/10 hover:text-white',
+                )}
+              >
+                <Dna
+                  className={cn(
+                    'w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110',
+                    location.pathname === '/digital-twin'
+                      ? 'text-emerald-400'
+                      : 'text-white/60 group-hover:text-white',
+                  )}
+                />
+                {!collapsed && <span className="truncate">Digital Twin</span>}
+              </NavLink>
+
+              {/* Section 3: AI Assessments Dropdown Group */}
+              <div className="pt-2">
+                {!collapsed ? (
+                  <div className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => setAssessmentsOpen(!assessmentsOpen)}
                       className={cn(
-                        'w-5 h-5 shrink-0 transition-transform duration-200 group-hover:scale-110',
-                        isActive ? 'text-emerald-400' : 'text-white/60 group-hover:text-white',
+                        'w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors',
+                        isAssessmentsActive ? 'text-emerald-300' : 'text-white/60 hover:text-white',
                       )}
-                    />
-                    {!collapsed && <span className="truncate">{item.title}</span>}
-                  </NavLink>
-                );
-              })}
+                    >
+                      <span className="flex items-center gap-2">
+                        <HeartPulse className="w-4 h-4 text-emerald-400" />
+                        <span>AI Assessments</span>
+                      </span>
+                      <ChevronDown
+                        className={cn(
+                          'w-3.5 h-3.5 transition-transform duration-200',
+                          assessmentsOpen ? 'rotate-180' : '',
+                        )}
+                      />
+                    </button>
+
+                    {assessmentsOpen && (
+                      <div className="pl-3 space-y-1 border-l-2 border-white/10 ml-4 mt-1">
+                        {/* Cardiovascular Risk */}
+                        <NavLink
+                          to="/assessments/cardiovascular"
+                          onClick={() => setMobileOpen(false)}
+                          className={cn(
+                            'flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all group',
+                            location.pathname === '/assessments/cardiovascular'
+                              ? 'bg-white/15 text-white shadow-inner border border-white/10 backdrop-blur-md font-bold'
+                              : 'text-white/70 hover:bg-white/10 hover:text-white',
+                          )}
+                        >
+                          <Heart
+                            className={cn(
+                              'w-4 h-4 shrink-0 transition-transform group-hover:scale-110',
+                              location.pathname === '/assessments/cardiovascular'
+                                ? 'text-rose-400'
+                                : 'text-white/50 group-hover:text-rose-400',
+                            )}
+                          />
+                          <span className="truncate">Cardiovascular Risk</span>
+                        </NavLink>
+
+                        {/* Stress Assessment */}
+                        <NavLink
+                          to="/assessments/stress"
+                          onClick={() => setMobileOpen(false)}
+                          className={cn(
+                            'flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all group',
+                            location.pathname === '/assessments/stress'
+                              ? 'bg-white/15 text-white shadow-inner border border-white/10 backdrop-blur-md font-bold'
+                              : 'text-white/70 hover:bg-white/10 hover:text-white',
+                          )}
+                        >
+                          <Brain
+                            className={cn(
+                              'w-4 h-4 shrink-0 transition-transform group-hover:scale-110',
+                              location.pathname === '/assessments/stress'
+                                ? 'text-indigo-400'
+                                : 'text-white/50 group-hover:text-indigo-400',
+                            )}
+                          />
+                          <span className="truncate">Stress Assessment</span>
+                        </NavLink>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <NavLink
+                      to="/assessments/cardiovascular"
+                      onClick={() => setMobileOpen(false)}
+                      title="Cardiovascular Risk"
+                      className={cn(
+                        'flex items-center justify-center p-2.5 rounded-xl text-sm font-medium transition-all group',
+                        location.pathname === '/assessments/cardiovascular'
+                          ? 'bg-white/15 text-white shadow-inner border border-white/10'
+                          : 'text-white/75 hover:bg-white/10',
+                      )}
+                    >
+                      <Heart
+                        className={cn(
+                          'w-5 h-5 shrink-0 transition-transform group-hover:scale-110',
+                          location.pathname === '/assessments/cardiovascular'
+                            ? 'text-rose-400'
+                            : 'text-white/60',
+                        )}
+                      />
+                    </NavLink>
+                    <NavLink
+                      to="/assessments/stress"
+                      onClick={() => setMobileOpen(false)}
+                      title="Stress Assessment"
+                      className={cn(
+                        'flex items-center justify-center p-2.5 rounded-xl text-sm font-medium transition-all group',
+                        location.pathname === '/assessments/stress'
+                          ? 'bg-white/15 text-white shadow-inner border border-white/10'
+                          : 'text-white/75 hover:bg-white/10',
+                      )}
+                    >
+                      <Brain
+                        className={cn(
+                          'w-5 h-5 shrink-0 transition-transform group-hover:scale-110',
+                          location.pathname === '/assessments/stress'
+                            ? 'text-indigo-400'
+                            : 'text-white/60',
+                        )}
+                      />
+                    </NavLink>
+                  </div>
+                )}
+              </div>
             </nav>
           </div>
         </div>
@@ -201,12 +356,22 @@ export function PatientLayout(): React.JSX.Element {
         </div>
       </aside>
 
-      {/* Right Content Area: White Page Card Container */}
-      <div className="flex-1 h-full bg-[#083032] flex flex-col p-3 sm:p-4 lg:p-5 overflow-hidden min-w-0 pt-16 lg:pt-5">
-        <div className="w-full h-full bg-white rounded-2xl sm:rounded-[2rem] shadow-2xl border border-white/20 p-5 sm:p-7 lg:p-8 overflow-y-auto custom-scrollbar min-w-0">
-          <Outlet />
-        </div>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50 relative">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 custom-scrollbar pt-20 lg:pt-8">
+          <div className="max-w-7xl mx-auto space-y-6">
+            <Outlet />
+          </div>
+        </main>
       </div>
+
+      {/* Mobile Drawer Overlay */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          className="lg:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-xs transition-opacity"
+        />
+      )}
     </div>
   );
 }

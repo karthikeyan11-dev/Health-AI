@@ -5,7 +5,8 @@ import { HealthMonitoringFilters } from './HealthMonitoringFilters';
 import { CurrentReadingsCards } from './CurrentReadingsCards';
 import { VitalCharts } from './VitalCharts';
 import { ErrorCard } from '@/components/ui';
-import { HeartPulse, Loader2 } from 'lucide-react';
+import { PageLoader } from '@/components/common';
+import { HeartPulse } from 'lucide-react';
 
 export const HealthMonitoringView: React.FC<HealthMonitoringViewProps> = ({
   data,
@@ -16,14 +17,7 @@ export const HealthMonitoringView: React.FC<HealthMonitoringViewProps> = ({
   onRetry,
 }) => {
   if (isLoading && !data) {
-    return (
-      <div className="flex flex-col items-center justify-center h-80 space-y-4">
-        <Loader2 className="w-10 h-10 text-emerald-600 animate-spin" />
-        <p className="text-sm font-semibold text-slate-500">
-          {HEALTH_MONITORING_TEXTS.LOADING_TEXT}
-        </p>
-      </div>
-    );
+    return <PageLoader page="health-monitoring" />;
   }
 
   if (error && !data) {

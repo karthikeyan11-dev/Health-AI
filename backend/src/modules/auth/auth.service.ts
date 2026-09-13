@@ -19,7 +19,7 @@ import type {
   UserProfileData,
 } from './auth.dto';
 import { toUserRole, toGender } from '../../shared/utils/auth.util';
-import { generateTokens } from '../../shared/utils/token.util';
+import { generateTokens, verifyRefreshToken } from '../../shared/utils/token.util';
 import { logger } from '@config/logger';
 
 /**
@@ -261,6 +261,35 @@ export class AuthService {
         'AuthService.getUserProfile - Error processing profile retrieval',
       );
       throw error;
+    }
+  }
+
+  /**
+   * Validates refresh token and generates a new pair of JWT access/refresh tokens.
+   */
+  public async refreshToken(refreshTokenInput: string): Promise<AuthTokensResponse> {
+    try {
+      const decoded = verifyRefreshToken(refreshTokenInput);
+      const user = await this.repo.findById(decoded.userId);
+      if (!user || !user.isActive) {
+        logger.warn(
+          { userId: decoded.userId },
+          'AuthService.refreshToken - User inactive or not found',
+        );
+        throw new UnauthorizedError('Invalid or inactive user session');
+      }
+
+      const tokens = generateTokens({
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+      });
+
+      logger.info({ userId: user.id }, 'AuthService.refreshToken - Tokens refreshed successfully');
+      return tokens;
+    } catch (error) {
+      logger.error({ err: error }, 'AuthService.refreshToken - Error refreshing token');
+      throw new UnauthorizedError('Invalid or expired refresh token');
     }
   }
 }

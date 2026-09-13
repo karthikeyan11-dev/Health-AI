@@ -1,7 +1,14 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { RootLayout, PatientLayout } from '@/app/layouts';
 import { RegisterPage, VerifyOtpPage, LoginPage } from '@/pages/auth';
-import { OverviewPage, ProfilePage, HealthMonitoringPage } from '@/pages/patient';
+import {
+  OverviewPage,
+  ProfilePage,
+  HealthMonitoringPage,
+  CardiovascularPage,
+  StressPage,
+  DigitalTwinPage,
+} from '@/pages/patient';
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +41,27 @@ export const router = createBrowserRouter([
           {
             path: 'health-monitoring',
             element: <HealthMonitoringPage />,
+          },
+          {
+            path: 'digital-twin',
+            element: <DigitalTwinPage />,
+          },
+          {
+            path: 'assessments',
+            children: [
+              {
+                index: true,
+                element: <Navigate to="/assessments/cardiovascular" replace />,
+              },
+              {
+                path: 'cardiovascular',
+                element: <CardiovascularPage />,
+              },
+              {
+                path: 'stress',
+                element: <StressPage />,
+              },
+            ],
           },
           {
             path: 'profile',

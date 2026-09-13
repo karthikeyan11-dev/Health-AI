@@ -1,0 +1,182 @@
+export const CARDIO_RISK_COLORS = {
+  OPTIMAL: {
+    bg: 'bg-emerald-500/10',
+    border: 'border-emerald-500/30',
+    text: 'text-emerald-700',
+    badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    barColor: '#10b981',
+    gradient: 'from-emerald-500 to-teal-600',
+    label: 'Optimal',
+    description: 'Outstanding cardiovascular health markers. Minimal risk profile.',
+  },
+  LOW: {
+    bg: 'bg-emerald-500/10',
+    border: 'border-emerald-400/30',
+    text: 'text-emerald-600',
+    badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    barColor: '#059669',
+    gradient: 'from-emerald-400 to-emerald-600',
+    label: 'Low Risk',
+    description: 'Vitals and lifestyle indicators are well within standard ranges.',
+  },
+  MODERATE: {
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-400/30',
+    text: 'text-amber-700',
+    badgeBg: 'bg-amber-50 text-amber-800 border-amber-200',
+    barColor: '#f59e0b',
+    gradient: 'from-amber-400 to-amber-600',
+    label: 'Moderate Risk',
+    description: 'Elevated physiological markers observed. Lifestyle optimization advised.',
+  },
+  HIGH: {
+    bg: 'bg-orange-500/10',
+    border: 'border-orange-400/30',
+    text: 'text-orange-700',
+    badgeBg: 'bg-orange-50 text-orange-800 border-orange-200',
+    barColor: '#f97316',
+    gradient: 'from-orange-500 to-rose-500',
+    label: 'High Risk',
+    description: 'Multiple cardiovascular risk drivers detected. Medical review suggested.',
+  },
+  CRITICAL: {
+    bg: 'bg-rose-500/10',
+    border: 'border-rose-400/30',
+    text: 'text-rose-700',
+    badgeBg: 'bg-rose-50 text-rose-800 border-rose-200',
+    barColor: '#ef4444',
+    gradient: 'from-rose-500 to-red-600',
+    label: 'Critical Risk',
+    description: 'Immediate clinical attention and physician consultation recommended.',
+  },
+} as const;
+
+export const FEATURE_HUMAN_NAMES: Record<
+  string,
+  { label: string; unit: string; description: string }
+> = {
+  age: { label: 'Age', unit: 'yrs', description: 'Patient biological age' },
+  sex: { label: 'Biological Sex', unit: '', description: 'Male (1) or Female (0)' },
+  bmi: { label: 'Body Mass Index (BMI)', unit: 'kg/m²', description: 'Weight-to-height ratio' },
+  smoking_status: { label: 'Smoking History', unit: '', description: 'Tobacco smoking status' },
+  family_history_cvd: {
+    label: 'Family History of CVD',
+    unit: '',
+    description: 'Cardiovascular disease in immediate family',
+  },
+  avg_heart_rate: {
+    label: 'Average Heart Rate',
+    unit: 'bpm',
+    description: 'Daily mean cardiac beats per minute',
+  },
+  resting_hr: { label: 'Resting Heart Rate', unit: 'bpm', description: 'Baseline resting pulse' },
+  spo2: { label: 'Blood Oxygen (SpO₂)', unit: '%', description: 'Peripheral oxygen saturation' },
+  body_temp_c: { label: 'Body Temperature', unit: '°C', description: 'Core skin temperature' },
+  bp_systolic: {
+    label: 'Systolic Blood Pressure',
+    unit: 'mmHg',
+    description: 'Peak arterial contraction pressure',
+  },
+  bp_diastolic: {
+    label: 'Diastolic Blood Pressure',
+    unit: 'mmHg',
+    description: 'Resting arterial pressure between beats',
+  },
+  hrv: {
+    label: 'Heart Rate Variability (HRV)',
+    unit: 'ms',
+    description: 'Autonomic nervous system variation',
+  },
+  steps: { label: 'Daily Step Count', unit: 'steps', description: 'Accumulated physical movement' },
+  calories_burned: {
+    label: 'Active Calories Burned',
+    unit: 'kcal',
+    description: 'Energy expenditure',
+  },
+  distance_km: {
+    label: 'Distance Covered',
+    unit: 'km',
+    description: 'Total daily travel distance',
+  },
+  sleep_hours: {
+    label: 'Sleep Duration',
+    unit: 'hrs',
+    description: 'Total nocturnal rest duration',
+  },
+  sleep_efficiency: {
+    label: 'Sleep Efficiency',
+    unit: '%',
+    description: 'Percentage of time in bed asleep',
+  },
+  calories_consumed: {
+    label: 'Caloric Intake',
+    unit: 'kcal',
+    description: 'Daily nutritional energy',
+  },
+  water_intake_l: { label: 'Water Intake', unit: 'L', description: 'Hydration volume' },
+  pulse_pressure: {
+    label: 'Pulse Pressure',
+    unit: 'mmHg',
+    description: 'Difference between systolic and diastolic BP (vascular compliance)',
+  },
+  map_score: {
+    label: 'Mean Arterial Pressure (MAP)',
+    unit: 'mmHg',
+    description: 'Average organ perfusion pressure over cardiac cycle',
+  },
+  rpp: {
+    label: 'Rate Pressure Product (RPP)',
+    unit: 'bpm·mmHg',
+    description: 'Myocardial oxygen consumption and cardiac workload',
+  },
+  sleep_impact: {
+    label: 'Sleep Quality Index',
+    unit: '',
+    description: 'Composite sleep duration and sleep efficiency product',
+  },
+  autonomic_stress_proxy: {
+    label: 'Autonomic Balance Score',
+    unit: '',
+    description: 'Sympathovagal balance proxy from suppressed HRV & elevated HR',
+  },
+  activity_efficiency: {
+    label: 'Metabolic Activity Efficiency',
+    unit: 'kcal/step',
+    description: 'Caloric burn rate per physical step taken',
+  },
+  activity_Cycling: {
+    label: 'Activity: Cycling',
+    unit: '',
+    description: 'Aerobic cycling exercise',
+  },
+  activity_Mixed_Cardio: {
+    label: 'Activity: Mixed Cardio',
+    unit: '',
+    description: 'High-intensity interval/cardio sessions',
+  },
+  activity_Rest: {
+    label: 'Activity: Rest / Recovery',
+    unit: '',
+    description: 'Sedentary recovery',
+  },
+  activity_Running: {
+    label: 'Activity: Running',
+    unit: '',
+    description: 'Vigorous running exertion',
+  },
+  activity_Strength: {
+    label: 'Activity: Strength Training',
+    unit: '',
+    description: 'Resistance/weight workout',
+  },
+  activity_Walking: {
+    label: 'Activity: Walking',
+    unit: '',
+    description: 'Moderate walking activity',
+  },
+  activity_Yoga: {
+    label: 'Activity: Yoga / Flexibility',
+    unit: '',
+    description: 'Mindful stretching and flexibility',
+  },
+};

@@ -51,6 +51,7 @@ export interface BaseEntity {
 }
 
 export const CardiovascularRiskEnum = {
+    Optimal: 'OPTIMAL',
     Low: 'LOW',
     Moderate: 'MODERATE',
     High: 'HIGH',
@@ -185,6 +186,8 @@ export interface DeviceStatusResponseData {
 export interface DigitalTwin {
     'id': string;
     'userId': string;
+    'patientId'?: string;
+    'version'?: number;
     'overallHealthScore': number;
     'healthState': TwinHealthStateEnum;
     'baselineHeartRate'?: number;
@@ -205,6 +208,40 @@ export interface DigitalTwinResponse {
     'message': string;
     'data': DigitalTwin;
     'meta': Metadata;
+}
+export interface DigitalTwinSnapshot {
+    'id': string;
+    'userId': string;
+    'patientId'?: string;
+    'digitalTwinId': string;
+    'overallHealthScore': number;
+    'healthState': TwinHealthStateEnum;
+    'heartRate'?: number;
+    'spO2'?: number;
+    'temperature'?: number;
+    'dominantEmotion'?: EmotionEnum;
+    'stressScore'?: number;
+    'cardioRiskScore'?: number;
+    'confidence'?: number;
+    'triggerReason': SnapshotTriggerReasonEnum;
+    'version': number;
+    'timestamp': string;
+    'createdAt': string;
+}
+
+
+export interface DigitalTwinSnapshotListResponse {
+    'success': boolean;
+    'message': string;
+    'data': DigitalTwinSnapshotListResponseData;
+    'meta': Metadata;
+}
+export interface DigitalTwinSnapshotListResponseData {
+    'items': Array<DigitalTwinSnapshot>;
+    'total': number;
+    'page': number;
+    'limit': number;
+    'totalPages': number;
 }
 
 export const EmotionEnum = {
@@ -837,17 +874,85 @@ export interface ResetPasswordRequest {
 export interface RiskAssessmentRequest {
     'userId': string;
     /**
-     * Continuous PPG heart rate in BPM
+     * Age in years
+     */
+    'age'?: number;
+    /**
+     * Biological sex: 1 for Male, 0 for Female
+     */
+    'sex'?: RiskAssessmentRequestSexEnum;
+    /**
+     * Body Mass Index
+     */
+    'bmi'?: number;
+    /**
+     * Smoking status: 1 for active smoker, 0 for non-smoker
+     */
+    'smokingStatus'?: RiskAssessmentRequestSmokingStatusEnum;
+    /**
+     * Family history of cardiovascular disease: 1 for yes, 0 for no
+     */
+    'familyHistoryCvd'?: RiskAssessmentRequestFamilyHistoryCvdEnum;
+    /**
+     * Average Heart Rate in BPM
      */
     'heartRate'?: number;
     /**
-     * Continuous blood oxygen saturation percentage
+     * Resting Heart Rate in BPM
+     */
+    'restingHr'?: number;
+    /**
+     * Blood oxygen saturation percentage
      */
     'spo2'?: number;
     /**
-     * Continuous body temperature in Celsius
+     * Body temperature in Celsius
      */
     'temperature'?: number;
+    /**
+     * Systolic blood pressure in mmHg
+     */
+    'systolicBp'?: number;
+    /**
+     * Diastolic blood pressure in mmHg
+     */
+    'diastolicBp'?: number;
+    /**
+     * Heart rate variability in ms
+     */
+    'hrv'?: number;
+    /**
+     * Daily steps count
+     */
+    'steps'?: number;
+    /**
+     * Daily active calories burned in kcal
+     */
+    'caloriesBurned'?: number;
+    /**
+     * Daily distance traveled in km
+     */
+    'distanceKm'?: number;
+    /**
+     * Total sleep duration in hours
+     */
+    'sleepHours'?: number;
+    /**
+     * Sleep quality efficiency (0.0 to 1.0)
+     */
+    'sleepEfficiency'?: number;
+    /**
+     * Daily dietary caloric intake in kcal
+     */
+    'caloriesConsumed'?: number;
+    /**
+     * Daily water consumption in liters
+     */
+    'waterIntakeL'?: number;
+    /**
+     * Primary activity mode
+     */
+    'activityType'?: RiskAssessmentRequestActivityTypeEnum;
     'currentEmotion'?: EmotionEnum;
     /**
      * Calculated real-time stress index score (0-100)
@@ -857,16 +962,37 @@ export interface RiskAssessmentRequest {
      * Historical health baseline score from Digital Twin
      */
     'digitalTwinHealthScore'?: number;
-    /**
-     * Optional future enhancement parameter for systolic blood pressure (mmHg)
-     */
-    'systolicBp'?: number | null;
-    /**
-     * Optional future enhancement parameter for diastolic blood pressure (mmHg)
-     */
-    'diastolicBp'?: number | null;
 }
 
+export const RiskAssessmentRequestSexEnum = {
+    NUMBER_0: 0,
+    NUMBER_1: 1,
+} as const;
+
+export type RiskAssessmentRequestSexEnum = typeof RiskAssessmentRequestSexEnum[keyof typeof RiskAssessmentRequestSexEnum];
+export const RiskAssessmentRequestSmokingStatusEnum = {
+    NUMBER_0: 0,
+    NUMBER_1: 1,
+} as const;
+
+export type RiskAssessmentRequestSmokingStatusEnum = typeof RiskAssessmentRequestSmokingStatusEnum[keyof typeof RiskAssessmentRequestSmokingStatusEnum];
+export const RiskAssessmentRequestFamilyHistoryCvdEnum = {
+    NUMBER_0: 0,
+    NUMBER_1: 1,
+} as const;
+
+export type RiskAssessmentRequestFamilyHistoryCvdEnum = typeof RiskAssessmentRequestFamilyHistoryCvdEnum[keyof typeof RiskAssessmentRequestFamilyHistoryCvdEnum];
+export const RiskAssessmentRequestActivityTypeEnum = {
+    Cycling: 'Cycling',
+    MixedCardio: 'Mixed_Cardio',
+    Rest: 'Rest',
+    Running: 'Running',
+    Strength: 'Strength',
+    Walking: 'Walking',
+    Yoga: 'Yoga',
+} as const;
+
+export type RiskAssessmentRequestActivityTypeEnum = typeof RiskAssessmentRequestActivityTypeEnum[keyof typeof RiskAssessmentRequestActivityTypeEnum];
 
 export interface RiskAssessmentResponse {
     'success': boolean;
@@ -879,13 +1005,27 @@ export interface RiskAssessmentResponseData {
     'riskScore': number;
     'riskLevel': CardiovascularRiskEnum;
     'contributingFactors'?: Array<string>;
+    'topDrivers'?: Array<RiskAssessmentResponseDataTopDriversInner>;
+    'probabilities'?: { [key: string]: number; };
     'confidence'?: number;
     'explanation'?: string;
     'recommendations': Array<string>;
+    'recommendedIntervention'?: string;
+    'guidance'?: RiskAssessmentResponseDataGuidance;
     'timestamp': string;
 }
 
 
+export interface RiskAssessmentResponseDataGuidance {
+    'status': string;
+    'provider': string;
+    'message': string;
+}
+export interface RiskAssessmentResponseDataTopDriversInner {
+    'feature': string;
+    'value': number;
+    'impact': number;
+}
 export interface RiskHistoryResponse {
     'success': boolean;
     'message': string;
@@ -942,6 +1082,18 @@ export interface ServiceHealthStatus {
     'latencyMs': number;
     'message'?: string;
 }
+
+
+
+export const SnapshotTriggerReasonEnum = {
+    TelemetrySync: 'TELEMETRY_SYNC',
+    StateTransition: 'STATE_TRANSITION',
+    BaselineCalibration: 'BASELINE_CALIBRATION',
+    AssessmentCompleted: 'ASSESSMENT_COMPLETED',
+    ManualSync: 'MANUAL_SYNC',
+} as const;
+
+export type SnapshotTriggerReasonEnum = typeof SnapshotTriggerReasonEnum[keyof typeof SnapshotTriggerReasonEnum];
 
 
 export interface SpO2Data {
@@ -2776,6 +2928,73 @@ export const DigitalTwinApiAxiosParamCreator = function (configuration?: Configu
             };
         },
         /**
+         * Returns paginated historical evolution snapshots of the patient\'s Digital Twin for auditing and state reconstruction.
+         * @summary Get Digital Twin immutable evolution snapshots
+         * @param {string} userId 
+         * @param {number} [page] 
+         * @param {number} [limit] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {SnapshotTriggerReasonEnum} [trigger] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getDigitalTwinSnapshots: async (userId: string, page?: number, limit?: number, startDate?: string, endDate?: string, trigger?: SnapshotTriggerReasonEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'userId' is not null or undefined
+            assertParamExists('getDigitalTwinSnapshots', 'userId', userId)
+            const localVarPath = `/digital-twin/{userId}/snapshots`
+                .replace('{userId}', encodeURIComponent(String(userId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (limit !== undefined) {
+                localVarQueryParameter['limit'] = limit;
+            }
+
+            if (startDate !== undefined) {
+                localVarQueryParameter['startDate'] = (startDate as any instanceof Date) ?
+                    (startDate as any).toISOString() :
+                    startDate;
+            }
+
+            if (endDate !== undefined) {
+                localVarQueryParameter['endDate'] = (endDate as any instanceof Date) ?
+                    (endDate as any).toISOString() :
+                    endDate;
+            }
+
+            if (trigger !== undefined) {
+                localVarQueryParameter['trigger'] = trigger;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Returns historical health score snapshots and vital trends computed by the Digital Twin core.
          * @summary Get Digital Twin health history
          * @param {string} userId 
@@ -2953,6 +3172,24 @@ export const DigitalTwinApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Returns paginated historical evolution snapshots of the patient\'s Digital Twin for auditing and state reconstruction.
+         * @summary Get Digital Twin immutable evolution snapshots
+         * @param {string} userId 
+         * @param {number} [page] 
+         * @param {number} [limit] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {SnapshotTriggerReasonEnum} [trigger] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getDigitalTwinSnapshots(userId: string, page?: number, limit?: number, startDate?: string, endDate?: string, trigger?: SnapshotTriggerReasonEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<DigitalTwinSnapshotListResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getDigitalTwinSnapshots(userId, page, limit, startDate, endDate, trigger, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DigitalTwinApi.getDigitalTwinSnapshots']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Returns historical health score snapshots and vital trends computed by the Digital Twin core.
          * @summary Get Digital Twin health history
          * @param {string} userId 
@@ -3034,6 +3271,21 @@ export const DigitalTwinApiFactory = function (configuration?: Configuration, ba
             return localVarFp.getDigitalTwin(userId, options).then((request) => request(axios, basePath));
         },
         /**
+         * Returns paginated historical evolution snapshots of the patient\'s Digital Twin for auditing and state reconstruction.
+         * @summary Get Digital Twin immutable evolution snapshots
+         * @param {string} userId 
+         * @param {number} [page] 
+         * @param {number} [limit] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {SnapshotTriggerReasonEnum} [trigger] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getDigitalTwinSnapshots(userId: string, page?: number, limit?: number, startDate?: string, endDate?: string, trigger?: SnapshotTriggerReasonEnum, options?: RawAxiosRequestConfig): AxiosPromise<DigitalTwinSnapshotListResponse> {
+            return localVarFp.getDigitalTwinSnapshots(userId, page, limit, startDate, endDate, trigger, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Returns historical health score snapshots and vital trends computed by the Digital Twin core.
          * @summary Get Digital Twin health history
          * @param {string} userId 
@@ -3104,6 +3356,22 @@ export class DigitalTwinApi extends BaseAPI {
      */
     public getDigitalTwin(userId: string, options?: RawAxiosRequestConfig) {
         return DigitalTwinApiFp(this.configuration).getDigitalTwin(userId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Returns paginated historical evolution snapshots of the patient\'s Digital Twin for auditing and state reconstruction.
+     * @summary Get Digital Twin immutable evolution snapshots
+     * @param {string} userId 
+     * @param {number} [page] 
+     * @param {number} [limit] 
+     * @param {string} [startDate] 
+     * @param {string} [endDate] 
+     * @param {SnapshotTriggerReasonEnum} [trigger] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getDigitalTwinSnapshots(userId: string, page?: number, limit?: number, startDate?: string, endDate?: string, trigger?: SnapshotTriggerReasonEnum, options?: RawAxiosRequestConfig) {
+        return DigitalTwinApiFp(this.configuration).getDigitalTwinSnapshots(userId, page, limit, startDate, endDate, trigger, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

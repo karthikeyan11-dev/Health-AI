@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { UsersDirectoryView } from '../components/UsersDirectoryView';
 import type { UserListItem, UsersPaginationMeta } from '../types/users-directory.types';
-import { Loader2 } from 'lucide-react';
 import { usersApi } from '@/api';
 import { ErrorCard } from '@/components/ui';
+import { PageLoader } from '@/components/common';
 import { extractErrorMessage } from '@/utils/error.util';
 
 export function UsersDirectoryContainer(): React.JSX.Element {
@@ -55,12 +55,7 @@ export function UsersDirectoryContainer(): React.JSX.Element {
   };
 
   if (isLoading && users.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 space-y-3">
-        <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
-        <p className="text-sm font-medium text-slate-500">Loading registered users...</p>
-      </div>
-    );
+    return <PageLoader page="users" />;
   }
 
   if (error && users.length === 0) {

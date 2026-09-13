@@ -341,4 +341,50 @@ describe('AuthService Unit Tests', () => {
       );
     });
   });
+
+  describe('refreshToken', () => {
+    it('should return new tokens when valid refresh token is provided for active user', async () => {
+      mockRepo.findByEmailWithPassword.mockResolvedValue(
+        mockUserDoc as unknown as Awaited<ReturnType<typeof mockRepo.findByEmailWithPassword>>,
+      );
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      mockRepo.findById.mockResolvedValue(
+        mockUserDoc as unknown as Awaited<ReturnType<typeof mockRepo.findById>>,
+      );
+
+      const loginTokens = await service.login({
+        email: 'karthikeyanm2209@gmail.com',
+        password: 'Karthi@1111',
+      });
+
+      const result = await service.refreshToken(loginTokens.refreshToken);
+      expect(result.accessToken).toBeDefined();
+      expect(result.refreshToken).toBeDefined();
+    });
+
+    it('should throw UnauthorizedError when refresh token corresponds to inactive user', async () => {
+      mockRepo.findByEmailWithPassword.mockResolvedValue(
+        mockUserDoc as unknown as Awaited<ReturnType<typeof mockRepo.findByEmailWithPassword>>,
+      );
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      const loginTokens = await service.login({
+        email: 'karthikeyanm2209@gmail.com',
+        password: 'Karthi@1111',
+      });
+
+      mockRepo.findById.mockResolvedValue({
+        ...mockUserDoc,
+        isActive: false,
+      } as unknown as Awaited<ReturnType<typeof mockRepo.findById>>);
+
+      await expect(service.refreshToken(loginTokens.refreshToken)).rejects.toThrow(
+        UnauthorizedError,
+      );
+    });
+
+    it('should throw UnauthorizedError when invalid refresh token string is provided', async () => {
+      await expect(service.refreshToken('invalid_token_string')).rejects.toThrow(UnauthorizedError);
+    });
+  });
 });

@@ -1094,6 +1094,78 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthTrendAnalysisResponse'
+  /digital-twin/{userId}/snapshots:
+    get:
+      tags:
+        - Digital Twin
+      summary: Get Digital Twin immutable evolution snapshots
+      description: Returns paginated historical evolution snapshots of the patient's Digital Twin for auditing and state reconstruction.
+      operationId: getDigitalTwinSnapshots
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: trigger
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/SnapshotTriggerReasonEnum'
+      responses:
+        '200':
+          description: Digital Twin snapshots retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalTwinSnapshotListResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Digital Twin not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /stress/assess:
     post:
       tags:
@@ -2873,6 +2945,13 @@ components:
         userId:
           type: string
           example: 64f1a2b3c4d5e6f7a8b9c0d1
+        patientId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d2
+        version:
+          type: integer
+          minimum: 1
+          example: 1
         overallHealthScore:
           type: number
           minimum: 0
@@ -3049,6 +3128,124 @@ components:
                 - Stress levels decreased by 12% following improved sleep patterns.
         meta:
           $ref: '#/components/schemas/Metadata'
+    SnapshotTriggerReasonEnum:
+      type: string
+      enum:
+        - TELEMETRY_SYNC
+        - STATE_TRANSITION
+        - BASELINE_CALIBRATION
+        - ASSESSMENT_COMPLETED
+        - MANUAL_SYNC
+      example: TELEMETRY_SYNC
+    DigitalTwinSnapshot:
+      type: object
+      required:
+        - id
+        - userId
+        - digitalTwinId
+        - overallHealthScore
+        - healthState
+        - triggerReason
+        - version
+        - timestamp
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d9
+        userId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d1
+        patientId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d2
+        digitalTwinId:
+          type: string
+          example: 64f1a2b3c4d5e6f7a8b9c0d5
+        overallHealthScore:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 84.5
+        healthState:
+          $ref: '#/components/schemas/TwinHealthStateEnum'
+        heartRate:
+          type: number
+          example: 72
+        spO2:
+          type: number
+          example: 98.5
+        temperature:
+          type: number
+          example: 36.6
+        dominantEmotion:
+          $ref: '#/components/schemas/EmotionEnum'
+        stressScore:
+          type: number
+          example: 24
+        cardioRiskScore:
+          type: number
+          example: 14.5
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 92
+        triggerReason:
+          $ref: '#/components/schemas/SnapshotTriggerReasonEnum'
+        version:
+          type: integer
+          minimum: 1
+          example: 3
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-09-12T08:00:00.000Z'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-09-12T08:00:00.000Z'
+    DigitalTwinSnapshotListResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - meta
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Digital twin snapshots retrieved successfully
+        data:
+          type: object
+          required:
+            - items
+            - total
+            - page
+            - limit
+            - totalPages
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/DigitalTwinSnapshot'
+            total:
+              type: integer
+              example: 42
+            page:
+              type: integer
+              example: 1
+            limit:
+              type: integer
+              example: 10
+            totalPages:
+              type: integer
+              example: 5
+        meta:
+          $ref: '#/components/schemas/Metadata'
     StressAssessmentRequest:
       type: object
       required:
@@ -3168,21 +3365,106 @@ components:
         userId:
           type: string
           example: 64f1a2b3c4d5e6f7a8b9c0d1
+        age:
+          type: number
+          example: 45
+          description: Age in years
+        sex:
+          type: integer
+          enum:
+            - 0
+            - 1
+          example: 1
+          description: 'Biological sex: 1 for Male, 0 for Female'
+        bmi:
+          type: number
+          example: 26.5
+          description: Body Mass Index
+        smokingStatus:
+          type: integer
+          enum:
+            - 0
+            - 1
+          example: 0
+          description: 'Smoking status: 1 for active smoker, 0 for non-smoker'
+        familyHistoryCvd:
+          type: integer
+          enum:
+            - 0
+            - 1
+          example: 0
+          description: 'Family history of cardiovascular disease: 1 for yes, 0 for no'
         heartRate:
           type: number
-          example: 85
-          description: Continuous PPG heart rate in BPM
+          example: 78
+          description: Average Heart Rate in BPM
+        restingHr:
+          type: number
+          example: 68
+          description: Resting Heart Rate in BPM
         spo2:
           type: number
           example: 98
-          description: Continuous blood oxygen saturation percentage
+          description: Blood oxygen saturation percentage
         temperature:
           type: number
           example: 36.6
-          description: Continuous body temperature in Celsius
+          description: Body temperature in Celsius
+        systolicBp:
+          type: number
+          example: 120
+          description: Systolic blood pressure in mmHg
+        diastolicBp:
+          type: number
+          example: 80
+          description: Diastolic blood pressure in mmHg
+        hrv:
+          type: number
+          example: 45
+          description: Heart rate variability in ms
+        steps:
+          type: number
+          example: 8500
+          description: Daily steps count
+        caloriesBurned:
+          type: number
+          example: 2200
+          description: Daily active calories burned in kcal
+        distanceKm:
+          type: number
+          example: 5.5
+          description: Daily distance traveled in km
+        sleepHours:
+          type: number
+          example: 7.5
+          description: Total sleep duration in hours
+        sleepEfficiency:
+          type: number
+          example: 0.88
+          description: Sleep quality efficiency (0.0 to 1.0)
+        caloriesConsumed:
+          type: number
+          example: 2100
+          description: Daily dietary caloric intake in kcal
+        waterIntakeL:
+          type: number
+          example: 2.5
+          description: Daily water consumption in liters
+        activityType:
+          type: string
+          enum:
+            - Cycling
+            - Mixed_Cardio
+            - Rest
+            - Running
+            - Strength
+            - Walking
+            - Yoga
+          example: Walking
+          description: Primary activity mode
         currentEmotion:
           $ref: '#/components/schemas/EmotionEnum'
-          description: Facial emotion classified by Python AI Microservice
+          description: Optional emotion classification
         stressScore:
           type: number
           example: 35
@@ -3191,24 +3473,15 @@ components:
           type: number
           example: 88.5
           description: Historical health baseline score from Digital Twin
-        systolicBp:
-          type: number
-          nullable: true
-          example: null
-          description: Optional future enhancement parameter for systolic blood pressure (mmHg)
-        diastolicBp:
-          type: number
-          nullable: true
-          example: null
-          description: Optional future enhancement parameter for diastolic blood pressure (mmHg)
     CardiovascularRiskEnum:
       type: string
       enum:
+        - OPTIMAL
         - LOW
         - MODERATE
         - HIGH
         - CRITICAL
-      example: LOW
+      example: OPTIMAL
     RiskAssessmentResponse:
       type: object
       required:
@@ -3249,6 +3522,34 @@ components:
               example:
                 - Elevated heart rate
                 - Subtle SpO2 drop
+            topDrivers:
+              type: array
+              items:
+                type: object
+                required:
+                  - feature
+                  - value
+                  - impact
+                properties:
+                  feature:
+                    type: string
+                    example: bp_systolic
+                  value:
+                    type: number
+                    example: 160
+                  impact:
+                    type: number
+                    example: 0.205
+            probabilities:
+              type: object
+              additionalProperties:
+                type: number
+              example:
+                OPTIMAL: 0.012
+                LOW: 0.854
+                MODERATE: 0.098
+                HIGH: 0.024
+                CRITICAL: 0.012
             confidence:
               type: number
               minimum: 0
@@ -3256,7 +3557,7 @@ components:
               example: 94
             explanation:
               type: string
-              example: Risk assessment calculated from continuous heart rate, SpO2, body temperature, and emotional indicators.
+              example: Risk assessment calculated from continuous physiological telemetry and lifestyle indicators.
             recommendations:
               type: array
               items:
@@ -3264,6 +3565,25 @@ components:
               example:
                 - Maintain steady hydration
                 - Engage in 30 mins moderate aerobic activity daily
+            recommendedIntervention:
+              type: string
+              example: Diet & Nutrition Intervention
+            guidance:
+              type: object
+              required:
+                - status
+                - provider
+                - message
+              properties:
+                status:
+                  type: string
+                  example: success
+                provider:
+                  type: string
+                  example: gemini
+                message:
+                  type: string
+                  example: Your cardiovascular vitals look strong today. Keep up your active walking routine and healthy hydration.
             timestamp:
               type: string
               format: date-time

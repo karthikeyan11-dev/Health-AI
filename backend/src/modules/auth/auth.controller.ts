@@ -15,7 +15,7 @@ export class AuthController {
   constructor(private readonly service: AuthService = authService) {}
 
   /**
-   * POST /register and POST /auth/register
+   * POST /api/v1/auth/register
    * Validates request DTO and initiates registration OTP flow.
    */
   public register = async (
@@ -74,7 +74,7 @@ export class AuthController {
   };
 
   /**
-   * POST /verify-otp and POST /auth/verify-otp
+   * POST /api/v1/auth/verify-otp
    * Validates submitted OTP code and creates permanent user account.
    */
   public verifyOtp = async (
@@ -132,7 +132,7 @@ export class AuthController {
   };
 
   /**
-   * POST /login and POST /auth/login
+   * POST /api/v1/auth/login
    * Validates user credentials, authenticates password, and issues JWT access/refresh tokens.
    */
   public login = async (
@@ -204,6 +204,52 @@ export class AuthController {
       });
     } catch (error) {
       logger.error({ err: error }, 'AuthController.getProfile - Exception occurred');
+      if (error instanceof HttpErrors) {
+        return res.status(error.statusCode).json({
+          success: false,
+          error: {
+            code: error.name.toUpperCase(),
+            message: error.message,
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: `req_${Math.random().toString(36).substring(2, 10)}`,
+          },
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        error: {
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Internal server error',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: `req_${Math.random().toString(36).substring(2, 10)}`,
+        },
+      });
+    }
+  };
+
+  /**
+   * POST /auth/refresh-token
+   * Validates refresh token DTO and issues new access/refresh tokens.
+   */
+  public refreshToken = async (
+    req: TypedRequest<'refreshToken'>,
+    res: TypedResponse<'refreshToken'>,
+  ): Promise<TypedResponse<'refreshToken'>> => {
+    try {
+      const { refreshToken } = (req.body || {}) as { refreshToken?: string };
+      if (!refreshToken) {
+        throw new BadRequestError('Refresh token is required');
+      }
+
+      const result = await this.service.refreshToken(refreshToken);
+      return res.status(200).json(result);
+    } catch (error) {
+      logger.error({ err: error }, 'AuthController.refreshToken - Exception occurred');
       if (error instanceof HttpErrors) {
         return res.status(error.statusCode).json({
           success: false,

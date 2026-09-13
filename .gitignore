@@ -96,5 +96,21 @@ temp/
 *.mp4
 *.db
 
+# Machine Learning Model Artifacts (Do not commit trained models)
+*.pkl
+*.cbm
+*.pt
+*.onnx
+*.h5
 
-emotion_detection
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# Environment & Secrets (Never commit credentials)
+.env
+.env.*
+
+# Local AI Services & Submodules
+Paper.docx
+emotion_detection/

@@ -1,5 +1,6 @@
 import { Schema, model, type Document, type Model, Types } from 'mongoose';
 import { EmotionType } from './stress-assessment.model';
+export { EmotionType } from './stress-assessment.model';
 
 export enum TwinHealthState {
   OPTIMAL = 'OPTIMAL',
@@ -20,10 +21,11 @@ export interface IDigitalTwin {
   dominantEmotion: EmotionType;
   currentStressScore: number;
   currentCardioRiskScore: number;
-  confidence?: number;
+  confidence: number;
+  version: number;
   lastSyncTimestamp: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface IDigitalTwinDocument extends IDigitalTwin, Document {
@@ -101,6 +103,12 @@ const digitalTwinSchema = new Schema<IDigitalTwinDocument>(
       min: [0, 'Confidence cannot be below 0'],
       max: [100, 'Confidence cannot exceed 100'],
       default: undefined,
+    },
+    version: {
+      type: Number,
+      required: true,
+      default: 1,
+      min: [1, 'Version must be at least 1'],
     },
     lastSyncTimestamp: {
       type: Date,

@@ -39,3 +39,15 @@ export function verifyAccessToken(token: string): TokenPayload {
     role: decoded.role,
   };
 }
+
+/**
+ * Verifies JWT refresh token and returns decoded payload.
+ */
+export function verifyRefreshToken(token: string): { userId: string } {
+  const decoded = jwt.verify(token, Config.JWT_REFRESH_SECRET) as {
+    userId: string;
+  } & jwt.JwtPayload;
+  return {
+    userId: decoded.userId,
+  };
+}

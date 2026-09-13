@@ -1,0 +1,40 @@
+type: object
+required:
+  - success
+  - message
+  - data
+  - meta
+properties:
+  success:
+    type: boolean
+    example: true
+  message:
+    type: string
+    example: "Digital twin snapshots retrieved successfully"
+  data:
+    type: object
+    required:
+      - items
+      - total
+      - page
+      - limit
+      - totalPages
+    properties:
+      items:
+        type: array
+        items:
+          $ref: './DigitalTwinSnapshot.yaml'
+      total:
+        type: integer
+        example: 42
+      page:
+        type: integer
+        example: 1
+      limit:
+        type: integer
+        example: 10
+      totalPages:
+        type: integer
+        example: 5
+  meta:
+    $ref: '../common/Metadata.yaml'

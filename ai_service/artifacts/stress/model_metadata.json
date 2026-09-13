@@ -1,0 +1,122 @@
+{
+  "best_window_size": "90s",
+  "model_name": "SVM (RBF Kernel)",
+  "features_used": [
+    "hr_mean",
+    "hr_std",
+    "hr_min",
+    "hr_max",
+    "hr_range",
+    "hr_median",
+    "hr_p10",
+    "hr_p90",
+    "hr_iqr",
+    "hr_cv",
+    "hr_skew",
+    "hr_kurt",
+    "hr_diff_mean",
+    "hr_diff_rms",
+    "hr_accel_mean",
+    "hr_accel_rms",
+    "hr_slope",
+    "spo2_mean",
+    "spo2_std",
+    "spo2_min",
+    "spo2_max",
+    "spo2_range",
+    "spo2_median",
+    "spo2_p10",
+    "spo2_p90",
+    "spo2_iqr",
+    "spo2_cv",
+    "spo2_slope",
+    "spo2_diff_mean",
+    "temp_mean",
+    "temp_std",
+    "temp_min",
+    "temp_max",
+    "temp_range",
+    "temp_median",
+    "temp_p10",
+    "temp_p90",
+    "temp_iqr",
+    "temp_cv",
+    "temp_slope",
+    "temp_diff_mean",
+    "hr_temp_ratio",
+    "hr_spo2_ratio",
+    "temp_spo2_ratio",
+    "hr_temp_spo2_mult_ratio",
+    "hr_base_delta",
+    "hr_base_zscore",
+    "temp_base_delta",
+    "temp_base_zscore",
+    "spo2_base_delta",
+    "spo2_base_zscore"
+  ],
+  "binary_classes": [
+    "Relax",
+    "Stress"
+  ],
+  "multi_classes": [
+    "CognitiveStress",
+    "EmotionalStress",
+    "PhysicalStress",
+    "Relax"
+  ],
+  "binary_metrics": {
+    "accuracy": 0.7538807649043869,
+    "macro_precision": 0.7550679142242411,
+    "macro_recall": 0.7536471796790474,
+    "macro_f1": 0.7534719940883934,
+    "confusion_matrix": [
+      [
+        1766,
+        471
+      ],
+      [
+        623,
+        1585
+      ]
+    ]
+  },
+  "multi_metrics": {
+    "accuracy": 0.637570303712036,
+    "macro_precision": 0.6179123853438223,
+    "macro_recall": 0.6607197725505246,
+    "macro_f1": 0.6295001358339725,
+    "per_class_f1": {
+      "CognitiveStress": 0.6161680458306811,
+      "EmotionalStress": 0.4346076458752515,
+      "PhysicalStress": 0.7642163661581137,
+      "Relax": 0.7030084854718437
+    },
+    "confusion_matrix": [
+      [
+        484,
+        125,
+        73,
+        39
+      ],
+      [
+        161,
+        432,
+        32,
+        204
+      ],
+      [
+        50,
+        15,
+        551,
+        40
+      ],
+      [
+        155,
+        587,
+        130,
+        1367
+      ]
+    ]
+  },
+  "timestamp": "2026-08-16T15:57:28Z"
+}

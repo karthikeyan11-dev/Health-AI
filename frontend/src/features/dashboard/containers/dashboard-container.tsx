@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { PatientOverviewView } from '../components/PatientOverviewView';
 import { patientOverviewApi } from '../api/patient-overview.api';
 import type { PatientOverviewData } from '@/sdk';
-import { Loader2 } from 'lucide-react';
 import { PATIENT_OVERVIEW_TEXTS } from '../constants/patient-overview.constants';
 import { ErrorCard } from '@/components/ui';
+import { PageLoader } from '@/components/common';
 import { extractErrorMessage } from '@/utils/error.util';
 
 export function DashboardContainer(): React.JSX.Element {
@@ -30,12 +30,7 @@ export function DashboardContainer(): React.JSX.Element {
   }, [fetchOverview]);
 
   if (isLoading && !data) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 space-y-3">
-        <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
-        <p className="text-sm font-medium text-slate-500">{PATIENT_OVERVIEW_TEXTS.LOADING_TEXT}</p>
-      </div>
-    );
+    return <PageLoader page="dashboard" />;
   }
 
   if (error && !data) {

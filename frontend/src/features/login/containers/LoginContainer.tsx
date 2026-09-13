@@ -52,7 +52,7 @@ export const LoginContainer: React.FC = () => {
         storage.setToken(response.accessToken);
       }
       if (response.refreshToken) {
-        storage.set('health_ai_refresh_token', response.refreshToken);
+        storage.setRefreshToken(response.refreshToken);
       }
 
       navigate('/');
